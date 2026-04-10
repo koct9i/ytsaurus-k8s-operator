@@ -10522,6 +10522,19 @@ spec:
                             default is 5 per CPU.
                           type: integer
                       type: object
+                    jobProxyLogManager:
+                      description: JobProxyLogManagerSpec configures how the exec
+                        node lays out and manages...
+                      properties:
+                        mode:
+                          default: simple
+                          description: JobProxyLoggingMode describes how the exec
+                            node stores job-proxy logs.
+                          enum:
+                          - simple
+                          - per_job_directory
+                          type: string
+                      type: object
                     jobProxyLoggers:
                       items:
                         properties:

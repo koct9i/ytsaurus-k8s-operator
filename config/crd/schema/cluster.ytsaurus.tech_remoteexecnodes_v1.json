@@ -1172,6 +1172,21 @@
           "description": "Default docker image for user jobs.",
           "type": "string"
         },
+        "jobProxyLogManager": {
+          "description": "JobProxyLogManagerSpec configures how the exec node lays out and manages...",
+          "type": "object",
+          "properties": {
+            "mode": {
+              "description": "JobProxyLoggingMode describes how the exec node stores job-proxy logs.",
+              "type": "string",
+              "default": "simple",
+              "enum": [
+                "simple",
+                "per_job_directory"
+              ]
+            }
+          }
+        },
         "jobProxyLoggers": {
           "type": "array",
           "items": {

@@ -260,8 +260,17 @@ type LogDump struct {
 	LogWriterName string `yson:"log_writer_name"`
 }
 
+type JobProxyLogManagerLocation struct {
+	Path string `yson:"path"`
+}
+
 type JobProxyLogManager struct {
-	Directory                     string        `yson:"directory"`
+	// Directory holds all job-proxy logs together. Used in "simple" mode.
+	Directory string `yson:"directory,omitempty"`
+	// Locations spread per-job log directories across disks. Used in "per_job_directory" mode.
+	Locations []JobProxyLogManagerLocation `yson:"locations,omitempty"`
+	// JobProxyLogSymlinksPath holds per-job symlinks to the latest logs. Used in "per_job_directory" mode.
+	JobProxyLogSymlinksPath       string        `yson:"job_proxy_log_symlinks_path,omitempty"`
 	ShardingKeyLength             int           `yson:"sharding_key_length"`
 	LogsStoragePeriod             yson.Duration `yson:"logs_storage_period"`
 	DirectoryTraversalConcurrency int           `yson:"directory_traversal_concurrency"`
@@ -734,29 +743,51 @@ func getExecNodeServerCarcass(spec *ytv1.ExecNodesSpec, commonSpec *ytv1.CommonS
 			jobProxyLoggingBuilder.addLogger(loggerSpec)
 		}
 	} else {
-		for _, defaultLoggerSpec := range []ytv1.TextLoggerSpec{defaultInfoLoggerSpec(), defaultStderrLoggerSpec()} {
+		for _, defaultLoggerSpec := range []ytv1.TextLoggerSpec{defaultInfoLoggerSpec(), defaultDebugLoggerSpec(), defaultStderrLoggerSpec()} {
 			jobProxyLoggingBuilder.addLogger(defaultLoggerSpec)
 		}
 	}
 	jobProxyLoggingBuilder.logging.FlushPeriod = 3000
 	jobProxyLogging := jobProxyLoggingBuilder.logging
+
+	jobProxyLoggingMode := ytv1.JobProxyLoggingModeSimple
+	if spec.JobProxyLogManager != nil && spec.JobProxyLogManager.Mode != "" {
+		jobProxyLoggingMode = spec.JobProxyLogManager.Mode
+	}
+
 	c.ExecNode.JobProxy.JobProxyLogging = JobProxyLogging{
 		Logging:            jobProxyLogging,
 		LogManagerTemplate: jobProxyLogging,
-		Mode:               "simple",
+		Mode:               string(jobProxyLoggingMode),
 	}
 
 	c.ExecNode.JobProxy.JobProxyAuthenticationManager.RequireAuthentication = true
 	c.ExecNode.JobProxy.JobProxyAuthenticationManager.CypressTokenAuthenticator.Secure = true
 
-	// Configure JobProxyLogManager
-	c.ExecNode.JobProxyLogManager.Directory = ChooseJobProxyLoggingPath(&spec.InstanceSpec)
-	c.ExecNode.JobProxyLogManager.ShardingKeyLength = 2
-	c.ExecNode.JobProxyLogManager.LogsStoragePeriod = yson.Duration(7 * 24 * time.Hour) // 1 week
-	c.ExecNode.JobProxyLogManager.DirectoryTraversalConcurrency = 4
-	c.ExecNode.JobProxyLogManager.LogDump = LogDump{
-		BufferSize:    1024 * 1024, // 1MB
-		LogWriterName: "debug",
+	// Configure JobProxyLogManager. Sharding, retention period and traversal concurrency
+	// are operator-managed defaults; advanced tuning is expected via config overrides.
+	c.ExecNode.JobProxyLogManager = JobProxyLogManager{
+		ShardingKeyLength:             2,
+		LogsStoragePeriod:             yson.Duration(7 * 24 * time.Hour), // 1 week
+		DirectoryTraversalConcurrency: 4,
+		LogDump: LogDump{
+			BufferSize:    1024 * 1024, // 1MB
+			LogWriterName: "debug",
+		},
+	}
+	if jobProxyLoggingMode == ytv1.JobProxyLoggingModePerJobDirectory {
+		// Each job gets its own log directory under one of the JobProxyLogs locations,
+		// with per-job symlinks gathered under a separate canonical directory.
+		c.ExecNode.JobProxyLogManager.JobProxyLogSymlinksPath = JobProxyLogSymlinksPath
+		for _, location := range ytv1.FindAllLocations(spec.Locations, ytv1.LocationTypeJobProxyLogs) {
+			c.ExecNode.JobProxyLogManager.Locations = append(
+				c.ExecNode.JobProxyLogManager.Locations,
+				JobProxyLogManagerLocation{Path: location.Path},
+			)
+		}
+	} else {
+		// "simple" mode keeps all job-proxy logs in a single shared directory.
+		c.ExecNode.JobProxyLogManager.Directory = ChooseJobProxyLoggingPath(&spec.InstanceSpec)
 	}
 
 	// TODO(khlebnikov): Drop legacy fields depending on ytsaurus version.

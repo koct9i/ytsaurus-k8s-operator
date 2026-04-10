@@ -950,6 +950,7 @@ _Appears in:_
 | `privileged` _boolean_ |  | true |  |
 | `gpuManager` _[GPUManagerSpec](#gpumanagerspec)_ |  |  |  |
 | `jobProxyLoggers` _[TextLoggerSpec](#textloggerspec) array_ |  |  |  |
+| `jobProxyLogManager` _[JobProxyLogManagerSpec](#jobproxylogmanagerspec)_ |  |  |  |
 | `jobResources` _[ResourceRequirements](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.28/#resourcerequirements-v1-core)_ | Resources dedicated for running jobs. Capacity is defined by requests, or limits for zero requests. Default: same limits as exec node with zero requests. |  |  |
 | `jobEnvironment` _[JobEnvironmentSpec](#jobenvironmentspec)_ |  |  |  |
 
@@ -1225,6 +1226,44 @@ _Appears in:_
 | `runtime` _[JobRuntimeSpec](#jobruntimespec)_ | Container Runtime configuration for CRI service. Default: runc. |  |  |
 
 
+#### JobProxyLogManagerSpec
+
+
+
+JobProxyLogManagerSpec configures how the exec node lays out and manages job-proxy logs.
+It complements JobProxyLoggers, which configures the logging rules/writers themselves.
+Fine-grained tuning (sharding, retention period, traversal concurrency) is left to
+config overrides; this spec only exposes the user-facing logging layout.
+
+
+
+_Appears in:_
+- [ExecNodesSpec](#execnodesspec)
+- [RemoteExecNodesSpec](#remoteexecnodesspec)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `mode` _[JobProxyLoggingMode](#jobproxyloggingmode)_ |  | simple | Enum: [simple per_job_directory] <br /> |
+
+
+#### JobProxyLoggingMode
+
+_Underlying type:_ _string_
+
+JobProxyLoggingMode describes how the exec node stores job-proxy logs.
+
+_Validation:_
+- Enum: [simple per_job_directory]
+
+_Appears in:_
+- [JobProxyLogManagerSpec](#jobproxylogmanagerspec)
+
+| Field | Description |
+| --- | --- |
+| `simple` | JobProxyLoggingModeSimple keeps job-proxy logs of all jobs together in a single<br />shared directory (derived from the Logs location). This is the default and the<br />only mode supported by YTsaurus < 26.1.<br /> |
+| `per_job_directory` | JobProxyLoggingModePerJobDirectory makes the exec node store each job's job-proxy<br />logs in its own directory and manage their retention. Logs are placed into the<br />JobProxyLogs locations. Available in YTsaurus >= 26.1.<br /> |
+
+
 #### JobRuntimeSpec
 
 
@@ -1350,6 +1389,7 @@ _Appears in:_
 | `MasterChangelogs` |  |
 | `MasterSnapshots` |  |
 | `ImageCache` |  |
+| `JobProxyLogs` | LocationTypeJobProxyLogs holds per-job job-proxy logs when JobProxyLogManager<br />runs in the "per_job_directory" mode. May be specified several times to spread<br />logs across several disks.<br /> |
 
 
 #### LogCompression
@@ -2335,6 +2375,7 @@ _Appears in:_
 | `privileged` _boolean_ |  | true |  |
 | `gpuManager` _[GPUManagerSpec](#gpumanagerspec)_ |  |  |  |
 | `jobProxyLoggers` _[TextLoggerSpec](#textloggerspec) array_ |  |  |  |
+| `jobProxyLogManager` _[JobProxyLogManagerSpec](#jobproxylogmanagerspec)_ |  |  |  |
 | `jobResources` _[ResourceRequirements](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.28/#resourcerequirements-v1-core)_ | Resources dedicated for running jobs. Capacity is defined by requests, or limits for zero requests. Default: same limits as exec node with zero requests. |  |  |
 | `jobEnvironment` _[JobEnvironmentSpec](#jobenvironmentspec)_ |  |  |  |
 

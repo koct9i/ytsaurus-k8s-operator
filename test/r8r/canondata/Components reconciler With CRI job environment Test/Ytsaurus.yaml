@@ -32,6 +32,8 @@ spec:
     jobEnvironment:
       cri:
         apiRetryTimeoutSeconds: 120
+    jobProxyLogManager:
+      mode: per_job_directory
     jobResources:
       limits:
         cpu: "4"
@@ -44,6 +46,8 @@ spec:
       path: /yt/node-data/chunk-cache
     - locationType: Slots
       path: /yt/node-data/slots
+    - locationType: JobProxyLogs
+      path: /yt/node-data/job-proxy-logs
     - locationType: ImageCache
       path: /yt/node-data/image-cache
     loggers:

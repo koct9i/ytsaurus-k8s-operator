@@ -194,6 +194,7 @@ const (
 	LocationTypeMasterChangelogs LocationType = "MasterChangelogs"
 	LocationTypeMasterSnapshots  LocationType = "MasterSnapshots"
 	LocationTypeImageCache       LocationType = "ImageCache"
+	LocationTypeJobProxyLogs     LocationType = "JobProxyLogs"
 )
 
 type LocationSpec struct {
@@ -226,6 +227,23 @@ const (
 	LogLevelWarning LogLevel = "warning"
 	LogLevelError   LogLevel = "error"
 )
+
+// JobProxyLoggingMode describes how the exec node stores job-proxy logs.
+// +kubebuilder:validation:Enum=simple;per_job_directory
+type JobProxyLoggingMode string
+
+const (
+	JobProxyLoggingModeSimple JobProxyLoggingMode = "simple"
+	// JobProxyLoggingModePerJobDirectory makes the exec node store each job's job-proxy
+	// logs in its own directory and manage their retention. Logs are placed into the
+	// JobProxyLogs locations. Available in YTsaurus >= 26.1.
+	JobProxyLoggingModePerJobDirectory JobProxyLoggingMode = "per_job_directory"
+)
+
+type JobProxyLogManagerSpec struct {
+	//+kubebuilder:default:=simple
+	Mode JobProxyLoggingMode `json:"mode,omitempty"`
+}
 
 // LogWriterType string describes types of possible log writers.
 // +enum
@@ -692,6 +710,8 @@ type ExecNodesSpec struct {
 	//+optional
 	GPUManager      *GPUManagerSpec  `json:"gpuManager,omitempty"`
 	JobProxyLoggers []TextLoggerSpec `json:"jobProxyLoggers,omitempty"`
+	//+optional
+	JobProxyLogManager *JobProxyLogManagerSpec `json:"jobProxyLogManager,omitempty"`
 	// Resources dedicated for running jobs. Capacity is defined by requests, or limits for zero requests. Default: same limits as exec node with zero requests.
 	//+optional
 	JobResources *corev1.ResourceRequirements `json:"jobResources,omitempty"`

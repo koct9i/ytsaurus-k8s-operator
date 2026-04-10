@@ -152,6 +152,12 @@ data:
                 };
                 "job_proxy_logging"={
                     writers={
+                        debug={
+                            type=file;
+                            "file_name"="job-proxy.debug.log";
+                            format="plain_text";
+                            "enable_system_messages"=%true;
+                        };
                         info={
                             type=file;
                             "file_name"="job-proxy.info.log";
@@ -173,6 +179,13 @@ data:
                             family="plain_text";
                         };
                         {
+                            "min_level"=debug;
+                            writers=[
+                                debug;
+                            ];
+                            family="plain_text";
+                        };
+                        {
                             "min_level"=error;
                             writers=[
                                 stderr;
@@ -183,6 +196,12 @@ data:
                     "flush_period"=3000;
                     "log_manager_template"={
                         writers={
+                            debug={
+                                type=file;
+                                "file_name"="job-proxy.debug.log";
+                                format="plain_text";
+                                "enable_system_messages"=%true;
+                            };
                             info={
                                 type=file;
                                 "file_name"="job-proxy.info.log";
@@ -204,6 +223,13 @@ data:
                                 family="plain_text";
                             };
                             {
+                                "min_level"=debug;
+                                writers=[
+                                    debug;
+                                ];
+                                family="plain_text";
+                            };
+                            {
                                 "min_level"=error;
                                 writers=[
                                     stderr;
@@ -213,7 +239,7 @@ data:
                         ];
                         "flush_period"=3000;
                     };
-                    mode=simple;
+                    mode="per_job_directory";
                 };
                 "forward_all_environment_variables"=%true;
             };
@@ -229,6 +255,12 @@ data:
             };
             "job_proxy_logging"={
                 writers={
+                    debug={
+                        type=file;
+                        "file_name"="job-proxy.debug.log";
+                        format="plain_text";
+                        "enable_system_messages"=%true;
+                    };
                     info={
                         type=file;
                         "file_name"="job-proxy.info.log";
@@ -250,6 +282,13 @@ data:
                         family="plain_text";
                     };
                     {
+                        "min_level"=debug;
+                        writers=[
+                            debug;
+                        ];
+                        family="plain_text";
+                    };
+                    {
                         "min_level"=error;
                         writers=[
                             stderr;
@@ -263,7 +302,12 @@ data:
             "forward_all_environment_variables"=%true;
             "use_artifact_binds"=%true;
             "job_proxy_log_manager"={
-                directory="/var/log/job-proxy";
+                locations=[
+                    {
+                        path="/yt/node-data/job-proxy-logs";
+                    };
+                ];
+                "job_proxy_log_symlinks_path"="/var/log/job-proxy-logs";
                 "sharding_key_length"=2;
                 "logs_storage_period"=604800000;
                 "directory_traversal_concurrency"=4;
