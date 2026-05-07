@@ -224,7 +224,9 @@ type GpuInfoSource struct {
 const GpuAgentPort = 23105
 
 type GpuManager struct {
-	GpuInfoSource GpuInfoSource `yson:"gpu_info_source"`
+	GpuInfoSource                        GpuInfoSource `yson:"gpu_info_source"`
+	GpuFlavor                            *string       `yson:"gpu_flavor,omitempty"`
+	UseGpuInfoProviderForDeviceDiscovery bool          `yson:"use_gpu_info_provider_for_device_discovery,omitempty"`
 }
 
 type JobController struct {
@@ -704,19 +706,24 @@ func getExecNodeServerCarcass(spec *ytv1.ExecNodesSpec, commonSpec *ytv1.CommonS
 		return c, err
 	}
 
-	gpuInfoSource := &c.ExecNode.GpuManager.GpuInfoSource
+	gpuManager := &c.ExecNode.GpuManager
 	switch {
-	case spec.GPUManager != nil && spec.GPUManager.GPUInfoProvider != nil:
-		gpuInfoSource.Type = *spec.GPUManager.GPUInfoProvider
+	case spec.GPUManager != nil && spec.GPUManager.GPUInfoProvider != nil && ptr.Deref(spec.GPUManager.GPUInfoProvider, ytv1.GPUInfoProviderGPUAgent) != ytv1.GPUInfoProviderGPUAgent:
+		gpuManager.GpuInfoSource.Type = *spec.GPUManager.GPUInfoProvider
 	case spec.JobEnvironment != nil && spec.JobEnvironment.Runtime != nil && spec.JobEnvironment.Runtime.Nvidia != nil:
-		gpuInfoSource.Type = ytv1.GPUInfoProviderGPUAgent
+		gpuManager.GpuInfoSource.Type = ytv1.GPUInfoProviderGPUAgent
+		gpuManager.UseGpuInfoProviderForDeviceDiscovery = true
+	case spec.JobEnvironment != nil && spec.JobEnvironment.Runtime != nil && spec.JobEnvironment.Runtime.Metax != nil:
+		gpuManager.GpuInfoSource.Type = ytv1.GPUInfoProviderGPUAgent
+		gpuManager.UseGpuInfoProviderForDeviceDiscovery = true
+		gpuManager.GpuFlavor = ptr.To("other")
 	default:
-		gpuInfoSource.Type = ytv1.GPUInfoProviderNvidiaSMI
+		gpuManager.GpuInfoSource.Type = ytv1.GPUInfoProviderNvidiaSMI
 	}
 
-	if gpuInfoSource.Type == ytv1.GPUInfoProviderGPUAgent {
-		gpuInfoSource.Address = fmt.Sprintf("localhost:%d", GpuAgentPort)
-		gpuInfoSource.ServiceName = "NYT.NGpuAgent.NProto.GpuAgent"
+	if gpuManager.GpuInfoSource.Type == ytv1.GPUInfoProviderGPUAgent {
+		gpuManager.GpuInfoSource.Address = fmt.Sprintf("localhost:%d", GpuAgentPort)
+		gpuManager.GpuInfoSource.ServiceName = "NYT.NGpuAgent.NProto.GpuAgent"
 	}
 
 	c.Logging = getExecNodeLogging(spec)
