@@ -4,6 +4,24 @@ import (
 	"time"
 )
 
+const (
+	// YTsaurus tokens follow format "ytct-{4}-{32}".
+	TokenPrefixPrefix = "ytct-"
+
+	// Token prefix "ytct-XXXX-" which is safe to disclose.
+	TokenPrefixLength  = 10
+	TokenMinimalLength = 40
+
+	// Hashed token prefix "XXXXXXXX" which is safe to disclose.
+	TokenHashPrefixLength  = 8
+	TokenMinimalHashLength = 64
+)
+
+const SuperusersGroupName = "superusers"
+
+const DefaultAdminLogin = "admin"
+const DefaultAdminPassword = "password"
+
 const RandomTokenPrefix = "ytct-ytop-"
 const RandomTokenBytes = 30
 

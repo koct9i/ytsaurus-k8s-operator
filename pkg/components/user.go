@@ -3,6 +3,9 @@ package components
 import (
 	"crypto/sha256"
 	"fmt"
+	"strings"
+
+	"github.com/ytsaurus/ytsaurus-k8s-operator/pkg/consts"
 )
 
 func sha256String(value string) string {
@@ -14,6 +17,20 @@ func sha256String(value string) string {
 	}
 	bs := hash.Sum(nil)
 	return fmt.Sprintf("%x", bs)
+}
+
+func GetTokenPrefix(token string) string {
+	if len(token) >= consts.TokenMinimalLength && strings.HasPrefix(token, consts.TokenPrefixPrefix) {
+		return token[:consts.TokenPrefixLength]
+	}
+	return "..."
+}
+
+func GetHashedTokenPrefix(hash string) string {
+	if len(hash) >= consts.TokenMinimalHashLength {
+		return hash[:consts.TokenHashPrefixLength] + "..."
+	}
+	return "..."
 }
 
 func createUserCommand(userName, password, token string, isSuperuser bool) []string {
