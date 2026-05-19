@@ -35,7 +35,10 @@ import (
 
 type internalYtsaurusClient interface {
 	Component
+
 	GetYtClient() yt.Client
+
+	shouldSkipCypressOperations() bool
 }
 
 type YtsaurusClient struct {

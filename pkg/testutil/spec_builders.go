@@ -231,6 +231,13 @@ type YtsaurusBuilder struct {
 	YtsaurusAdminSecret *corev1.Secret
 }
 
+func (b *YtsaurusBuilder) ExpectedTokenSecrets() map[string]string {
+	tokens := map[string]string{
+		"yt-client-secret": consts.YtsaurusOperatorUserName,
+	}
+	return tokens
+}
+
 func (b *YtsaurusBuilder) CreateVolumeClaim(name string, size resource.Quantity) ytv1.EmbeddedPersistentVolumeClaim {
 	return ytv1.EmbeddedPersistentVolumeClaim{
 		EmbeddedObjectMetadata: ytv1.EmbeddedObjectMetadata{
