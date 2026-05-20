@@ -10,7 +10,6 @@
   lastTimestamp: null
   message: Created YT object end-rmt (*v1.StatefulSet)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -30,7 +29,6 @@
   lastTimestamp: null
   message: Config ytserver-exec-node.yson needs creation
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -50,7 +48,6 @@
   lastTimestamp: null
   message: Created YT object yt-exec-node-config (*v1.ConfigMap)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -70,7 +67,6 @@
   lastTimestamp: null
   message: Created YT object exec-nodes-rmt (*v1.Service)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -90,7 +86,6 @@
   lastTimestamp: null
   message: Created YT object yt-exec-node-monitoring (*v1.Service)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus

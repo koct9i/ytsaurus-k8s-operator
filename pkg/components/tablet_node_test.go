@@ -7,6 +7,8 @@ import (
 
 	"go.uber.org/mock/gomock"
 
+	"github.com/google/go-cmp/cmp"
+
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	otypes "github.com/onsi/gomega/types"
@@ -53,8 +55,8 @@ var _ = Describe("Tablet node test", func() {
 
 		ytsaurusSpec = &ytv1.Ytsaurus{
 			TypeMeta: metav1.TypeMeta{
-				Kind:       "Ytsaurus",
-				APIVersion: "cluster.ytsaurus.tech/v1",
+				// Kind:       "Ytsaurus",
+				// APIVersion: "cluster.ytsaurus.tech/v1",
 			},
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      ytsaurusName,
@@ -172,7 +174,7 @@ var _ = Describe("Tablet node test", func() {
 			ytsaurusSpecCopy := &ytv1.Ytsaurus{}
 			ytsaurusLookupKey := types.NamespacedName{Name: ytsaurusName, Namespace: namespace}
 			Expect(client.Get(ctx, ytsaurusLookupKey, ytsaurusSpecCopy)).Should(Succeed())
-			Expect(ytsaurusSpecCopy).Should(Equal(ytsaurusSpec))
+			Expect(cmp.Diff(ytsaurusSpecCopy, ytsaurusSpec)).Should(BeEmpty())
 		})
 
 		It("Tablet node Sync; ytclient not ready", func(ctx context.Context) {

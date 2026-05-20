@@ -414,6 +414,7 @@ var _ = Describe("Components reconciler", Label("reconciler"), func() {
 
 				log.Info("Reconcile", "kind", req.Kind, "name", req.Name)
 				result, err := reconcilers[req.Kind].Reconcile(ctx, reconcilerRequest)
+				//nolint:staticcheck // Deprecated.
 				if result.Requeue || result.RequeueAfter > 0 {
 					log.Info("Requeue", "kind", req.Kind, "name", req.Name, "delay", result.RequeueAfter, "error", err)
 				} else {
