@@ -115,6 +115,20 @@ func (mr *MockClientMockRecorder) AddMember(ctx, group, member, options any) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddMember", reflect.TypeOf((*MockClient)(nil).AddMember), ctx, group, member, options)
 }
 
+// AdvanceQueueConsumer mocks base method.
+func (m *MockClient) AdvanceQueueConsumer(ctx context.Context, consumerPath, queuePath ypath.Path, options *yt.AdvanceQueueConsumerOptions) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AdvanceQueueConsumer", ctx, consumerPath, queuePath, options)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AdvanceQueueConsumer indicates an expected call of AdvanceQueueConsumer.
+func (mr *MockClientMockRecorder) AdvanceQueueConsumer(ctx, consumerPath, queuePath, options any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AdvanceQueueConsumer", reflect.TypeOf((*MockClient)(nil).AdvanceQueueConsumer), ctx, consumerPath, queuePath, options)
+}
+
 // AlterQuery mocks base method.
 func (m *MockClient) AlterQuery(ctx context.Context, id yt.QueryID, options *yt.AlterQueryOptions) error {
 	m.ctrl.T.Helper()
@@ -203,10 +217,10 @@ func (mr *MockClientMockRecorder) BeginTx(ctx, options any) *gomock.Call {
 }
 
 // BuildMasterSnapshots mocks base method.
-func (m *MockClient) BuildMasterSnapshots(ctx context.Context, options *yt.BuildMasterSnapshotsOptions) (*[]yt.BuildMasterSnapshot, error) {
+func (m *MockClient) BuildMasterSnapshots(ctx context.Context, options *yt.BuildMasterSnapshotsOptions) (*yt.BuildMasterSnapshotsResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "BuildMasterSnapshots", ctx, options)
-	ret0, _ := ret[0].(*[]yt.BuildMasterSnapshot)
+	ret0, _ := ret[0].(*yt.BuildMasterSnapshotsResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -232,8 +246,23 @@ func (mr *MockClientMockRecorder) BuildSnapshot(ctx, options any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BuildSnapshot", reflect.TypeOf((*MockClient)(nil).BuildSnapshot), ctx, options)
 }
 
+// CheckOperationPermission mocks base method.
+func (m *MockClient) CheckOperationPermission(ctx context.Context, operationID yt.OperationID, user string, permission yt.Permission, options *yt.CheckOperationPermissionOptions) (*yt.CheckOperationPermissionResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CheckOperationPermission", ctx, operationID, user, permission, options)
+	ret0, _ := ret[0].(*yt.CheckOperationPermissionResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CheckOperationPermission indicates an expected call of CheckOperationPermission.
+func (mr *MockClientMockRecorder) CheckOperationPermission(ctx, operationID, user, permission, options any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckOperationPermission", reflect.TypeOf((*MockClient)(nil).CheckOperationPermission), ctx, operationID, user, permission, options)
+}
+
 // CheckPermission mocks base method.
-func (m *MockClient) CheckPermission(ctx context.Context, user, permission string, path ypath.YPath, options *yt.CheckPermissionOptions) (*yt.CheckPermissionResponse, error) {
+func (m *MockClient) CheckPermission(ctx context.Context, user string, permission yt.Permission, path ypath.YPath, options *yt.CheckPermissionOptions) (*yt.CheckPermissionResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CheckPermission", ctx, user, permission, path, options)
 	ret0, _ := ret[0].(*yt.CheckPermissionResponse)
@@ -248,7 +277,7 @@ func (mr *MockClientMockRecorder) CheckPermission(ctx, user, permission, path, o
 }
 
 // CheckPermissionByACL mocks base method.
-func (m *MockClient) CheckPermissionByACL(ctx context.Context, user, permission string, ACL []yt.ACE, options *yt.CheckPermissionByACLOptions) (*yt.CheckPermissionResponse, error) {
+func (m *MockClient) CheckPermissionByACL(ctx context.Context, user string, permission yt.Permission, ACL []yt.ACE, options *yt.CheckPermissionByACLOptions) (*yt.CheckPermissionResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CheckPermissionByACL", ctx, user, permission, ACL, options)
 	ret0, _ := ret[0].(*yt.CheckPermissionResponse)
@@ -406,6 +435,20 @@ func (m *MockClient) DisableChunkLocations(ctx context.Context, nodeAddress stri
 func (mr *MockClientMockRecorder) DisableChunkLocations(ctx, nodeAddress, locationUUIDs, options any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DisableChunkLocations", reflect.TypeOf((*MockClient)(nil).DisableChunkLocations), ctx, nodeAddress, locationUUIDs, options)
+}
+
+// FinishDistributedWriteSession mocks base method.
+func (m *MockClient) FinishDistributedWriteSession(ctx context.Context, session yt.DistributedWriteSession, results []yt.WriteFragmentResult, options *yt.FinishDistributedWriteSessionOptions) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FinishDistributedWriteSession", ctx, session, results, options)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// FinishDistributedWriteSession indicates an expected call of FinishDistributedWriteSession.
+func (mr *MockClientMockRecorder) FinishDistributedWriteSession(ctx, session, results, options any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FinishDistributedWriteSession", reflect.TypeOf((*MockClient)(nil).FinishDistributedWriteSession), ctx, session, results, options)
 }
 
 // FreezeTable mocks base method.
@@ -658,6 +701,21 @@ func (mr *MockClientMockRecorder) ListNode(ctx, path, result, options any) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListNode", reflect.TypeOf((*MockClient)(nil).ListNode), ctx, path, result, options)
 }
 
+// ListOperationEvents mocks base method.
+func (m *MockClient) ListOperationEvents(ctx context.Context, opID yt.OperationID, options *yt.ListOperationEventsOptions) (*yt.ListOperationEventsResult, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListOperationEvents", ctx, opID, options)
+	ret0, _ := ret[0].(*yt.ListOperationEventsResult)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListOperationEvents indicates an expected call of ListOperationEvents.
+func (mr *MockClientMockRecorder) ListOperationEvents(ctx, opID, options any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListOperationEvents", reflect.TypeOf((*MockClient)(nil).ListOperationEvents), ctx, opID, options)
+}
+
 // ListOperations mocks base method.
 func (m *MockClient) ListOperations(ctx context.Context, options *yt.ListOperationsOptions) (*yt.ListOperationsResult, error) {
 	m.ctrl.T.Helper()
@@ -849,6 +907,20 @@ func (mr *MockClientMockRecorder) NodeExists(ctx, path, options any) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NodeExists", reflect.TypeOf((*MockClient)(nil).NodeExists), ctx, path, options)
 }
 
+// PingDistributedWriteSession mocks base method.
+func (m *MockClient) PingDistributedWriteSession(ctx context.Context, session yt.DistributedWriteSession, options *yt.PingDistributedWriteSessionOptions) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PingDistributedWriteSession", ctx, session, options)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PingDistributedWriteSession indicates an expected call of PingDistributedWriteSession.
+func (mr *MockClientMockRecorder) PingDistributedWriteSession(ctx, session, options any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PingDistributedWriteSession", reflect.TypeOf((*MockClient)(nil).PingDistributedWriteSession), ctx, session, options)
+}
+
 // PingTx mocks base method.
 func (m *MockClient) PingTx(ctx context.Context, id yt.TxID, options *yt.PingTxOptions) error {
 	m.ctrl.T.Helper()
@@ -861,6 +933,22 @@ func (m *MockClient) PingTx(ctx context.Context, id yt.TxID, options *yt.PingTxO
 func (mr *MockClientMockRecorder) PingTx(ctx, id, options any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PingTx", reflect.TypeOf((*MockClient)(nil).PingTx), ctx, id, options)
+}
+
+// PullQueueConsumer mocks base method.
+func (m *MockClient) PullQueueConsumer(ctx context.Context, consumerPath, queuePath ypath.Path, options *yt.PullQueueConsumerOptions) (yt.TableReader, *yt.PullQueueConsumerResult, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PullQueueConsumer", ctx, consumerPath, queuePath, options)
+	ret0, _ := ret[0].(yt.TableReader)
+	ret1, _ := ret[1].(*yt.PullQueueConsumerResult)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// PullQueueConsumer indicates an expected call of PullQueueConsumer.
+func (mr *MockClientMockRecorder) PullQueueConsumer(ctx, consumerPath, queuePath, options any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PullQueueConsumer", reflect.TypeOf((*MockClient)(nil).PullQueueConsumer), ctx, consumerPath, queuePath, options)
 }
 
 // PushQueueProducer mocks base method.
@@ -951,6 +1039,20 @@ func (m *MockClient) ReadTable(ctx context.Context, path ypath.YPath, options *y
 func (mr *MockClientMockRecorder) ReadTable(ctx, path, options any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadTable", reflect.TypeOf((*MockClient)(nil).ReadTable), ctx, path, options)
+}
+
+// RegisterQueueConsumer mocks base method.
+func (m *MockClient) RegisterQueueConsumer(ctx context.Context, queuePath, consumerPath ypath.Path, options *yt.RegisterQueueConsumerOptions) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RegisterQueueConsumer", ctx, queuePath, consumerPath, options)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RegisterQueueConsumer indicates an expected call of RegisterQueueConsumer.
+func (mr *MockClientMockRecorder) RegisterQueueConsumer(ctx, queuePath, consumerPath, options any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterQueueConsumer", reflect.TypeOf((*MockClient)(nil).RegisterQueueConsumer), ctx, queuePath, consumerPath, options)
 }
 
 // RemountTable mocks base method.
@@ -1152,6 +1254,21 @@ func (mr *MockClientMockRecorder) SetUserPassword(ctx, user, newPassword, curren
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetUserPassword", reflect.TypeOf((*MockClient)(nil).SetUserPassword), ctx, user, newPassword, currentPassword, options)
 }
 
+// StartDistributedWriteSession mocks base method.
+func (m *MockClient) StartDistributedWriteSession(ctx context.Context, path ypath.YPath, options *yt.StartDistributedWriteSessionOptions) (yt.DistributedWriteSessionWithCookies, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StartDistributedWriteSession", ctx, path, options)
+	ret0, _ := ret[0].(yt.DistributedWriteSessionWithCookies)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// StartDistributedWriteSession indicates an expected call of StartDistributedWriteSession.
+func (mr *MockClientMockRecorder) StartDistributedWriteSession(ctx, path, options any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartDistributedWriteSession", reflect.TypeOf((*MockClient)(nil).StartDistributedWriteSession), ctx, path, options)
+}
+
 // StartOperation mocks base method.
 func (m *MockClient) StartOperation(ctx context.Context, opType yt.OperationType, spec any, options *yt.StartOperationOptions) (yt.OperationID, error) {
 	m.ctrl.T.Helper()
@@ -1294,6 +1411,20 @@ func (mr *MockClientMockRecorder) UnmountTable(ctx, path, options any) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnmountTable", reflect.TypeOf((*MockClient)(nil).UnmountTable), ctx, path, options)
 }
 
+// UnregisterQueueConsumer mocks base method.
+func (m *MockClient) UnregisterQueueConsumer(ctx context.Context, queuePath, consumerPath ypath.Path, options *yt.UnregisterQueueConsumerOptions) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UnregisterQueueConsumer", ctx, queuePath, consumerPath, options)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UnregisterQueueConsumer indicates an expected call of UnregisterQueueConsumer.
+func (mr *MockClientMockRecorder) UnregisterQueueConsumer(ctx, queuePath, consumerPath, options any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnregisterQueueConsumer", reflect.TypeOf((*MockClient)(nil).UnregisterQueueConsumer), ctx, queuePath, consumerPath, options)
+}
+
 // UpdateOperationParameters mocks base method.
 func (m *MockClient) UpdateOperationParameters(ctx context.Context, opID yt.OperationID, params any, options *yt.UpdateOperationParametersOptions) error {
 	m.ctrl.T.Helper()
@@ -1351,4 +1482,19 @@ func (m *MockClient) WriteTable(ctx context.Context, path ypath.YPath, options *
 func (mr *MockClientMockRecorder) WriteTable(ctx, path, options any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WriteTable", reflect.TypeOf((*MockClient)(nil).WriteTable), ctx, path, options)
+}
+
+// WriteTableFragment mocks base method.
+func (m *MockClient) WriteTableFragment(ctx context.Context, cookie yt.WriteFragmentCookie, options *yt.TableFragmentWriterOptions) (yt.TableFragmentWriter, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "WriteTableFragment", ctx, cookie, options)
+	ret0, _ := ret[0].(yt.TableFragmentWriter)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// WriteTableFragment indicates an expected call of WriteTableFragment.
+func (mr *MockClientMockRecorder) WriteTableFragment(ctx, cookie, options any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WriteTableFragment", reflect.TypeOf((*MockClient)(nil).WriteTableFragment), ctx, cookie, options)
 }

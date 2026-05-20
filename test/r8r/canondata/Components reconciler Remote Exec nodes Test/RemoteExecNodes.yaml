@@ -1,7 +1,4 @@
-apiVersion: cluster.ytsaurus.tech/v1
-kind: RemoteExecNodes
 metadata:
-  creationTimestamp: null
   generation: 1
   name: rmt
   namespace: ytsaurus-components

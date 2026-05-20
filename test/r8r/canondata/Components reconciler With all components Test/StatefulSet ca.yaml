@@ -1,11 +1,8 @@
-apiVersion: apps/v1
-kind: StatefulSet
 metadata:
   annotations:
     extra-pod-annotation: "true"
     ytsaurus.tech/instance-hash: <censored>
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-controller-agent
@@ -37,7 +34,6 @@ spec:
         extra-pod-annotation: "true"
         global-pod-annotation: "true"
         ytsaurus.tech/config-hash: <censored>
-      creationTimestamp: null
       labels:
         app.kubernetes.io/component: yt-controller-agent
         app.kubernetes.io/managed-by: ytsaurus-k8s-operator

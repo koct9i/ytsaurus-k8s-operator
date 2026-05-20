@@ -1,12 +1,9 @@
-apiVersion: apps/v1
-kind: DaemonSet
 metadata:
   annotations:
     extra-pod-annotation: "true"
     ytsaurus.tech/image-heater-targets: ca dnd ds end hp ms-2 msc rp sch
     ytsaurus.tech/instance-hash: <censored>
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-image-heater-ca
@@ -34,7 +31,6 @@ spec:
     metadata:
       annotations:
         extra-pod-annotation: "true"
-      creationTimestamp: null
       labels:
         app.kubernetes.io/component: yt-image-heater-ca
         app.kubernetes.io/managed-by: ytsaurus-k8s-operator

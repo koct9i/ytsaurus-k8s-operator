@@ -2770,7 +2770,7 @@ var _ = Describe("Spec version lock test", Label("version_lock"), Ordered, func(
 			},
 
 			Entry("Handles empty version in spec", "", ""),
-			Entry("Rejects invalid version constraint", "abcd", `spec.requiresOperatorVersion: Invalid value: "abcd": improper constraint: abcd`),
+			Entry("Rejects invalid version constraint", "abcd", `spec.requiresOperatorVersion: Invalid value: "abcd": improper constraint: "abcd"`),
 			Entry("Handles success case for exact version match", operatorVersion, ""),
 			Entry("Handles failure case for exact version match", "= 2.0.0", "current operator version .* does not satisfy the spec version constraint: .*"),
 			Entry("Handles success case for not equal", "!= 2.0.0", ""),

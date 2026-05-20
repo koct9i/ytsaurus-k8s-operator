@@ -1,11 +1,8 @@
-apiVersion: apps/v1
-kind: DaemonSet
 metadata:
   annotations:
     ytsaurus.tech/image-heater-targets: ms
     ytsaurus.tech/instance-hash: <censored>
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-image-heater-ms
@@ -31,7 +28,6 @@ spec:
       yt_component: test-ytsaurus-yt-image-heater-ms
   template:
     metadata:
-      creationTimestamp: null
       labels:
         app.kubernetes.io/component: yt-image-heater-ms
         app.kubernetes.io/managed-by: ytsaurus-k8s-operator

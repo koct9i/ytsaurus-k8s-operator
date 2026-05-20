@@ -1,7 +1,6 @@
 - annotations:
     ytsaurus.tech/instance-hash: <censored>
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-offshore-data-gateway
@@ -22,7 +21,6 @@
   resourceVersion: "1"
 - annotations:
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-offshore-data-gateway
@@ -41,15 +39,13 @@
     name: rmt
     uid: ""
   resourceVersion: "1"
-- creationTimestamp: null
-  generation: 1
+- generation: 1
   name: rmt
   namespace: ytsaurus-components
   resourceVersion: "1"
 - annotations:
     ytsaurus.tech/config-hash: <censored>
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-offshore-data-gateway
@@ -70,7 +66,6 @@
   resourceVersion: "1"
 - annotations:
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-offshore-data-gateway

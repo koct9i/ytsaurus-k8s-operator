@@ -12,7 +12,6 @@
     set ih-strawberry need sync; daemon set ih-ui need sync; daemon set ih-yqla need
     sync
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: ImageHeater
   reportingComponent: ytsaurus
@@ -34,7 +33,6 @@
     set ih-strawberry need sync; daemon set ih-ui need sync; daemon set ih-yqla need
     sync
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: ImageHeater
   reportingComponent: ytsaurus
@@ -56,7 +54,6 @@
     set ih-strawberry need sync; daemon set ih-ui need sync; daemon set ih-yqla need
     sync
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: ImageHeater
   reportingComponent: ytsaurus
@@ -76,7 +73,6 @@
   lastTimestamp: null
   message: Created YT object ih-ca (*v1.DaemonSet)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -96,7 +92,6 @@
   lastTimestamp: null
   message: Created YT object ih-ms (*v1.DaemonSet)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -116,7 +111,6 @@
   lastTimestamp: null
   message: Created YT object ih-strawberry (*v1.DaemonSet)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -136,7 +130,6 @@
   lastTimestamp: null
   message: Created YT object ih-ui (*v1.DaemonSet)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -156,7 +149,6 @@
   lastTimestamp: null
   message: Created YT object ih-yqla (*v1.DaemonSet)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -178,7 +170,6 @@
     set ih-strawberry need sync; daemon set ih-ui need sync; daemon set ih-yqla need
     sync
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: ImageHeater
   reportingComponent: ytsaurus
@@ -200,7 +191,6 @@
     sync; daemon set ih-ms need sync; daemon set ih-strawberry need sync; daemon set
     ih-ui need sync; daemon set ih-yqla need sync'
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Initialization
   reportingComponent: ytsaurus
@@ -222,7 +212,6 @@
     ready at 1 nodes; daemon set ih-strawberry is ready at 1 nodes; daemon set ih-ui
     is ready at 1 nodes; daemon set ih-yqla is ready at 1 nodes
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: ImageHeater
   reportingComponent: ytsaurus
@@ -242,7 +231,6 @@
   lastTimestamp: null
   message: Created YT object ms-2 (*v1.StatefulSet)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -262,7 +250,6 @@
   lastTimestamp: null
   message: Config ytserver-master.yson needs creation
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -282,7 +269,6 @@
   lastTimestamp: null
   message: Created YT object yt-master-2-config (*v1.ConfigMap)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -302,7 +288,6 @@
   lastTimestamp: null
   message: Created YT object masters-2 (*v1.Service)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -322,7 +307,6 @@
   lastTimestamp: null
   message: Created YT object yt-master-2-monitoring (*v1.Service)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -342,7 +326,6 @@
   lastTimestamp: null
   message: Created YT object robot-hydra-persistence-uploader-secret (*v1.Secret)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -362,7 +345,6 @@
   lastTimestamp: null
   message: Created YT object ds (*v1.StatefulSet)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -382,7 +364,6 @@
   lastTimestamp: null
   message: Config ytserver-discovery.yson needs creation
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -402,7 +383,6 @@
   lastTimestamp: null
   message: Created YT object yt-discovery-config (*v1.ConfigMap)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -422,7 +402,6 @@
   lastTimestamp: null
   message: Created YT object discovery (*v1.Service)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -442,7 +421,6 @@
   lastTimestamp: null
   message: Created YT object yt-discovery-monitoring (*v1.Service)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -462,7 +440,6 @@
   lastTimestamp: null
   message: Created YT object msc (*v1.StatefulSet)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -482,7 +459,6 @@
   lastTimestamp: null
   message: Config ytserver-master-cache.yson needs creation
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -502,7 +478,6 @@
   lastTimestamp: null
   message: Created YT object yt-master-cache-config (*v1.ConfigMap)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -522,7 +497,6 @@
   lastTimestamp: null
   message: Created YT object master-caches (*v1.Service)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -542,7 +516,6 @@
   lastTimestamp: null
   message: Created YT object yt-master-cache-monitoring (*v1.Service)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -562,7 +535,6 @@
   lastTimestamp: null
   message: Created YT object robot-timbertruck-secret (*v1.Secret)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -582,7 +554,6 @@
   lastTimestamp: null
   message: Created YT object ms (*v1.StatefulSet)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -602,7 +573,6 @@
   lastTimestamp: null
   message: Config ytserver-master.yson needs creation
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -622,7 +592,6 @@
   lastTimestamp: null
   message: Created YT object yt-master-config (*v1.ConfigMap)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -642,7 +611,6 @@
   lastTimestamp: null
   message: Created YT object masters (*v1.Service)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -662,7 +630,6 @@
   lastTimestamp: null
   message: Created YT object yt-master-monitoring (*v1.Service)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -682,7 +649,6 @@
   lastTimestamp: null
   message: Config client.yson needs creation
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -702,7 +668,6 @@
   lastTimestamp: null
   message: Created YT object yt-master-init-job-default-config (*v1.ConfigMap)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -722,7 +687,6 @@
   lastTimestamp: null
   message: Created YT object yt-master-init-job-default (*v1.Job)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -742,7 +706,6 @@
   lastTimestamp: null
   message: Created YT object hp (*v1.StatefulSet)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -762,7 +725,6 @@
   lastTimestamp: null
   message: Config ytserver-http-proxy.yson needs creation
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -782,7 +744,6 @@
   lastTimestamp: null
   message: Created YT object yt-http-proxy-config (*v1.ConfigMap)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -802,7 +763,6 @@
   lastTimestamp: null
   message: Created YT object http-proxies (*v1.Service)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -822,7 +782,6 @@
   lastTimestamp: null
   message: Created YT object yt-http-proxy-monitoring (*v1.Service)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -842,7 +801,6 @@
   lastTimestamp: null
   message: Created YT object dnd (*v1.StatefulSet)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -862,7 +820,6 @@
   lastTimestamp: null
   message: Config ytserver-data-node.yson needs creation
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -882,7 +839,6 @@
   lastTimestamp: null
   message: Created YT object yt-data-node-config (*v1.ConfigMap)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -902,7 +858,6 @@
   lastTimestamp: null
   message: Created YT object data-nodes (*v1.Service)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -922,7 +877,6 @@
   lastTimestamp: null
   message: Created YT object yt-data-node-monitoring (*v1.Service)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -942,7 +896,6 @@
   lastTimestamp: null
   message: Created YT object yt-ui-secret (*v1.Secret)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -962,7 +915,6 @@
   lastTimestamp: null
   message: Created YT object rp (*v1.StatefulSet)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -982,7 +934,6 @@
   lastTimestamp: null
   message: Config ytserver-rpc-proxy.yson needs creation
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -1002,7 +953,6 @@
   lastTimestamp: null
   message: Created YT object yt-rpc-proxy-config (*v1.ConfigMap)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -1022,7 +972,6 @@
   lastTimestamp: null
   message: Created YT object rpc-proxies (*v1.Service)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -1042,7 +991,6 @@
   lastTimestamp: null
   message: Created YT object yt-rpc-proxy-monitoring (*v1.Service)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -1062,7 +1010,6 @@
   lastTimestamp: null
   message: Created YT object end (*v1.StatefulSet)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -1082,7 +1029,6 @@
   lastTimestamp: null
   message: Config ytserver-exec-node.yson needs creation
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -1102,7 +1048,6 @@
   lastTimestamp: null
   message: Created YT object yt-exec-node-config (*v1.ConfigMap)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -1122,7 +1067,6 @@
   lastTimestamp: null
   message: Created YT object exec-nodes (*v1.Service)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -1142,7 +1086,6 @@
   lastTimestamp: null
   message: Created YT object yt-exec-node-monitoring (*v1.Service)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -1162,7 +1105,6 @@
   lastTimestamp: null
   message: Config containerd.toml needs creation
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -1182,7 +1124,6 @@
   lastTimestamp: null
   message: Created YT object yt-exec-node-jobs-config (*v1.ConfigMap)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -1202,7 +1143,6 @@
   lastTimestamp: null
   message: Created YT object yt-scheduler-secret (*v1.Secret)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -1222,7 +1162,6 @@
   lastTimestamp: null
   message: Created YT object ca (*v1.StatefulSet)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -1242,7 +1181,6 @@
   lastTimestamp: null
   message: Config ytserver-controller-agent.yson needs creation
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -1262,7 +1200,6 @@
   lastTimestamp: null
   message: Created YT object yt-controller-agent-config (*v1.ConfigMap)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -1282,7 +1219,6 @@
   lastTimestamp: null
   message: Created YT object controller-agents (*v1.Service)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -1302,7 +1238,6 @@
   lastTimestamp: null
   message: Created YT object yt-controller-agent-monitoring (*v1.Service)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -1322,7 +1257,6 @@
   lastTimestamp: null
   message: Created YT object yt-yql-agent-secret (*v1.Secret)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -1342,7 +1276,6 @@
   lastTimestamp: null
   message: Created YT object http-proxies-lb (*v1.Service)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -1362,7 +1295,6 @@
   lastTimestamp: null
   message: Config client.yson needs creation
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -1382,7 +1314,6 @@
   lastTimestamp: null
   message: Created YT object yt-ui-init-job-default-config (*v1.ConfigMap)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -1402,7 +1333,6 @@
   lastTimestamp: null
   message: Created YT object yt-ui-init-job-default (*v1.Job)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -1422,7 +1352,6 @@
   lastTimestamp: null
   message: Created YT object rpc-proxies-lb (*v1.Service)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -1442,7 +1371,6 @@
   lastTimestamp: null
   message: Created YT object sch (*v1.StatefulSet)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -1462,7 +1390,6 @@
   lastTimestamp: null
   message: Config ytserver-scheduler.yson needs creation
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -1482,7 +1409,6 @@
   lastTimestamp: null
   message: Created YT object yt-scheduler-config (*v1.ConfigMap)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -1502,7 +1428,6 @@
   lastTimestamp: null
   message: Created YT object schedulers (*v1.Service)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -1522,7 +1447,6 @@
   lastTimestamp: null
   message: Created YT object yt-scheduler-monitoring (*v1.Service)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -1542,7 +1466,6 @@
   lastTimestamp: null
   message: Created YT object yt-yql-agent-exec-secret (*v1.Secret)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -1562,7 +1485,6 @@
   lastTimestamp: null
   message: Created YT object yt-client-secret (*v1.Secret)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -1582,7 +1504,6 @@
   lastTimestamp: null
   message: Config client.yson needs creation
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -1602,7 +1523,6 @@
   lastTimestamp: null
   message: Created YT object yt-yql-agent-init-job-yql-agent-environment-config (*v1.ConfigMap)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -1622,7 +1542,6 @@
   lastTimestamp: null
   message: Created YT object yt-yql-agent-init-job-yql-agent-environment (*v1.Job)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -1642,7 +1561,6 @@
   lastTimestamp: null
   message: Created YT object yt-strawberry-controller-secret (*v1.Secret)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -1662,7 +1580,6 @@
   lastTimestamp: null
   message: Config clusters-config.json needs creation
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -1682,7 +1599,6 @@
   lastTimestamp: null
   message: Config client.yson needs creation
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -1702,7 +1618,6 @@
   lastTimestamp: null
   message: Created YT object yt-client-init-job-user-config (*v1.ConfigMap)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -1722,7 +1637,6 @@
   lastTimestamp: null
   message: Created YT object yt-client-init-job-user (*v1.Job)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -1742,7 +1656,6 @@
   lastTimestamp: null
   message: Config clusters-config.json needs creation
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -1762,7 +1675,6 @@
   lastTimestamp: null
   message: Config clusters-config.json needs creation
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -1782,7 +1694,6 @@
   lastTimestamp: null
   message: Created YT object ytsaurus-ui-deployment (*v1.Deployment)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -1802,7 +1713,6 @@
   lastTimestamp: null
   message: Config clusters-config.json needs creation
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -1822,7 +1732,6 @@
   lastTimestamp: null
   message: Created YT object yt-ui-config (*v1.ConfigMap)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -1842,7 +1751,6 @@
   lastTimestamp: null
   message: Created YT object ytsaurus-ui (*v1.Service)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -1862,7 +1770,6 @@
   lastTimestamp: null
   message: Config client.yson needs creation
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -1882,7 +1789,6 @@
   lastTimestamp: null
   message: Created YT object yt-strawberry-controller-init-job-user-config (*v1.ConfigMap)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -1902,7 +1808,6 @@
   lastTimestamp: null
   message: Created YT object yt-strawberry-controller-init-job-user (*v1.Job)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -1922,7 +1827,6 @@
   lastTimestamp: null
   message: Created YT object yqla (*v1.StatefulSet)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -1942,7 +1846,6 @@
   lastTimestamp: null
   message: Config ytserver-yql-agent.yson needs creation
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -1962,7 +1865,6 @@
   lastTimestamp: null
   message: Created YT object yt-yql-agent-config (*v1.ConfigMap)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -1982,7 +1884,6 @@
   lastTimestamp: null
   message: Created YT object yql-agents (*v1.Service)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -2002,7 +1903,6 @@
   lastTimestamp: null
   message: Created YT object yt-yql-agent-monitoring (*v1.Service)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -2022,7 +1922,6 @@
   lastTimestamp: null
   message: Created YT object yt-cypress-patch (*v1.ConfigMap)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -2042,7 +1941,6 @@
   lastTimestamp: null
   message: Skip patch apply in test
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: CypressPatch
   reportingComponent: ytsaurus
@@ -2062,7 +1960,6 @@
   lastTimestamp: null
   message: Config chyt-init-cluster.yson needs creation
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -2082,7 +1979,6 @@
   lastTimestamp: null
   message: Created YT object yt-strawberry-controller-init-job-cluster-config (*v1.ConfigMap)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -2102,7 +1998,6 @@
   lastTimestamp: null
   message: Created YT object yt-strawberry-controller-init-job-cluster (*v1.Job)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -2122,7 +2017,6 @@
   lastTimestamp: null
   message: Config strawberry-controller.yson needs creation
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -2142,7 +2036,6 @@
   lastTimestamp: null
   message: Config strawberry-controller.yson needs creation
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -2162,7 +2055,6 @@
   lastTimestamp: null
   message: Config strawberry-controller.yson needs creation
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -2182,7 +2074,6 @@
   lastTimestamp: null
   message: Created YT object strawberry-controller (*v1.Deployment)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -2202,7 +2093,6 @@
   lastTimestamp: null
   message: Config strawberry-controller.yson needs creation
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -2222,7 +2112,6 @@
   lastTimestamp: null
   message: Created YT object yt-strawberry-controller-config (*v1.ConfigMap)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
@@ -2242,7 +2131,6 @@
   lastTimestamp: null
   message: Created YT object strawberry (*v1.Service)
   metadata:
-    creationTimestamp: null
     namespace: ytsaurus-components
   reason: Reconciliation
   reportingComponent: ytsaurus
