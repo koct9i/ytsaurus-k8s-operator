@@ -42,6 +42,7 @@ import (
 
 	metricsdto "github.com/prometheus/client_model/go"
 	metricsfmt "github.com/prometheus/common/expfmt"
+	metricsmodel "github.com/prometheus/common/model"
 )
 
 func YsonPretty(value any) string {
@@ -196,7 +197,7 @@ func collectMetrics(ctx context.Context, metricsURL string) (Metrics, error) {
 	if rsp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("response: %v", rsp.Status)
 	}
-	var parser metricsfmt.TextParser
+	parser := metricsfmt.NewTextParser(metricsmodel.LegacyValidation)
 	metrics, err := parser.TextToMetricFamilies(bufio.NewReader(rsp.Body))
 	if err != nil {
 		return nil, err

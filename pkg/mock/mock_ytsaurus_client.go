@@ -203,10 +203,10 @@ func (mr *MockClientMockRecorder) BeginTx(ctx, options any) *gomock.Call {
 }
 
 // BuildMasterSnapshots mocks base method.
-func (m *MockClient) BuildMasterSnapshots(ctx context.Context, options *yt.BuildMasterSnapshotsOptions) (*[]yt.BuildMasterSnapshot, error) {
+func (m *MockClient) BuildMasterSnapshots(ctx context.Context, options *yt.BuildMasterSnapshotsOptions) (*yt.BuildMasterSnapshotsResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "BuildMasterSnapshots", ctx, options)
-	ret0, _ := ret[0].(*[]yt.BuildMasterSnapshot)
+	ret0, _ := ret[0].(*yt.BuildMasterSnapshotsResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -232,8 +232,23 @@ func (mr *MockClientMockRecorder) BuildSnapshot(ctx, options any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BuildSnapshot", reflect.TypeOf((*MockClient)(nil).BuildSnapshot), ctx, options)
 }
 
+// CheckOperationPermission mocks base method.
+func (m *MockClient) CheckOperationPermission(ctx context.Context, operationID yt.OperationID, user string, permission yt.Permission, options *yt.CheckOperationPermissionOptions) (*yt.CheckOperationPermissionResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CheckOperationPermission", ctx, operationID, user, permission, options)
+	ret0, _ := ret[0].(*yt.CheckOperationPermissionResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CheckOperationPermission indicates an expected call of CheckOperationPermission.
+func (mr *MockClientMockRecorder) CheckOperationPermission(ctx, operationID, user, permission, options any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckOperationPermission", reflect.TypeOf((*MockClient)(nil).CheckOperationPermission), ctx, operationID, user, permission, options)
+}
+
 // CheckPermission mocks base method.
-func (m *MockClient) CheckPermission(ctx context.Context, user, permission string, path ypath.YPath, options *yt.CheckPermissionOptions) (*yt.CheckPermissionResponse, error) {
+func (m *MockClient) CheckPermission(ctx context.Context, user string, permission yt.Permission, path ypath.YPath, options *yt.CheckPermissionOptions) (*yt.CheckPermissionResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CheckPermission", ctx, user, permission, path, options)
 	ret0, _ := ret[0].(*yt.CheckPermissionResponse)
@@ -248,7 +263,7 @@ func (mr *MockClientMockRecorder) CheckPermission(ctx, user, permission, path, o
 }
 
 // CheckPermissionByACL mocks base method.
-func (m *MockClient) CheckPermissionByACL(ctx context.Context, user, permission string, ACL []yt.ACE, options *yt.CheckPermissionByACLOptions) (*yt.CheckPermissionResponse, error) {
+func (m *MockClient) CheckPermissionByACL(ctx context.Context, user string, permission yt.Permission, ACL []yt.ACE, options *yt.CheckPermissionByACLOptions) (*yt.CheckPermissionResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CheckPermissionByACL", ctx, user, permission, ACL, options)
 	ret0, _ := ret[0].(*yt.CheckPermissionResponse)

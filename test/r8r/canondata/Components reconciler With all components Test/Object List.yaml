@@ -2,7 +2,6 @@
     extra-pod-annotation: "true"
     ytsaurus.tech/instance-hash: <censored>
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-controller-agent
@@ -24,7 +23,6 @@
 - annotations:
     extra-pod-annotation: "true"
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-controller-agent
@@ -46,7 +44,6 @@
 - annotations:
     extra-pod-annotation: "true"
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-data-node
@@ -68,7 +65,6 @@
 - annotations:
     extra-pod-annotation: "true"
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-discovery
@@ -91,7 +87,6 @@
     extra-pod-annotation: "true"
     ytsaurus.tech/instance-hash: <censored>
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-data-node
@@ -114,7 +109,6 @@
     extra-pod-annotation: "true"
     ytsaurus.tech/instance-hash: <censored>
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-discovery
@@ -137,7 +131,6 @@
     extra-pod-annotation: "true"
     ytsaurus.tech/instance-hash: <censored>
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-exec-node
@@ -159,7 +152,6 @@
 - annotations:
     extra-pod-annotation: "true"
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-exec-node
@@ -182,7 +174,6 @@
     extra-pod-annotation: "true"
     ytsaurus.tech/instance-hash: <censored>
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-http-proxy
@@ -204,7 +195,6 @@
 - annotations:
     extra-pod-annotation: "true"
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-http-proxy
@@ -226,7 +216,6 @@
 - annotations:
     extra-pod-annotation: "true"
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-http-proxy
@@ -250,7 +239,6 @@
     ytsaurus.tech/image-heater-targets: ca dnd ds end hp ms-2 msc rp sch
     ytsaurus.tech/instance-hash: <censored>
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-image-heater-ca
@@ -275,7 +263,6 @@
     ytsaurus.tech/image-heater-targets: ms
     ytsaurus.tech/instance-hash: <censored>
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-image-heater-ms
@@ -300,7 +287,6 @@
     ytsaurus.tech/image-heater-targets: strawberry
     ytsaurus.tech/instance-hash: <censored>
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-image-heater-strawberry
@@ -325,7 +311,6 @@
     ytsaurus.tech/image-heater-targets: ui
     ytsaurus.tech/instance-hash: <censored>
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-image-heater-ui
@@ -350,7 +335,6 @@
     ytsaurus.tech/image-heater-targets: yqla
     ytsaurus.tech/instance-hash: <censored>
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-image-heater-yqla
@@ -373,7 +357,6 @@
 - annotations:
     extra-pod-annotation: "true"
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-master-cache
@@ -395,7 +378,6 @@
 - annotations:
     extra-pod-annotation: "true"
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-master
@@ -417,7 +399,6 @@
 - annotations:
     extra-pod-annotation: "true"
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-master-2
@@ -440,7 +421,6 @@
     extra-pod-annotation: "true"
     ytsaurus.tech/instance-hash: <censored>
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-master
@@ -463,7 +443,6 @@
     extra-pod-annotation: "true"
     ytsaurus.tech/instance-hash: <censored>
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-master-2
@@ -486,7 +465,6 @@
     extra-pod-annotation: "true"
     ytsaurus.tech/instance-hash: <censored>
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-master-cache
@@ -508,7 +486,6 @@
 - annotations:
     extra-pod-annotation: "true"
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-master
@@ -530,7 +507,6 @@
 - annotations:
     extra-pod-annotation: "true"
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-timbertruck
@@ -553,7 +529,6 @@
     extra-pod-annotation: "true"
     ytsaurus.tech/instance-hash: <censored>
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-rpc-proxy
@@ -575,7 +550,6 @@
 - annotations:
     extra-pod-annotation: "true"
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-rpc-proxy
@@ -597,7 +571,6 @@
 - annotations:
     extra-pod-annotation: "true"
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-rpc-proxy
@@ -620,7 +593,6 @@
     extra-pod-annotation: "true"
     ytsaurus.tech/instance-hash: <censored>
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-scheduler
@@ -642,7 +614,6 @@
 - annotations:
     extra-pod-annotation: "true"
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-scheduler
@@ -664,7 +635,6 @@
 - annotations:
     extra-pod-annotation: "true"
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-strawberry-controller
@@ -687,7 +657,6 @@
     extra-pod-annotation: "true"
     ytsaurus.tech/instance-hash: <censored>
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-strawberry-controller
@@ -706,15 +675,13 @@
     name: test-ytsaurus
     uid: ""
   resourceVersion: "1"
-- creationTimestamp: null
-  generation: 1
+- generation: 1
   name: test-overrides
   namespace: ytsaurus-components
   resourceVersion: "1"
 - annotations:
     extra-pod-annotation: "true"
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-yql-agent
@@ -737,7 +704,6 @@
     extra-pod-annotation: "true"
     ytsaurus.tech/instance-hash: <censored>
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-yql-agent
@@ -759,7 +725,6 @@
 - annotations:
     extra-pod-annotation: "true"
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-client
@@ -783,7 +748,6 @@
     ytsaurus.tech/config-hash: <censored>
     ytsaurus.tech/init-job-reason: InitJob
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-client
@@ -805,7 +769,6 @@
 - annotations:
     extra-pod-annotation: "true"
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-client
@@ -829,7 +792,6 @@
     ytsaurus.tech/config-hash: <censored>
     ytsaurus.tech/config-overrides-version: "1"
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-controller-agent
@@ -850,7 +812,6 @@
   resourceVersion: "1"
 - annotations:
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-controller-agent
@@ -876,7 +837,6 @@
       overrides-version: 1
     ytsaurus.tech/config-overrides-version: "1"
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-client
@@ -900,7 +860,6 @@
     ytsaurus.tech/config-hash: <censored>
     ytsaurus.tech/config-overrides-version: "1"
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-data-node
@@ -921,7 +880,6 @@
   resourceVersion: "1"
 - annotations:
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-data-node
@@ -946,7 +904,6 @@
     ytsaurus.tech/config-hash: <censored>
     ytsaurus.tech/config-overrides-version: "1"
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-discovery
@@ -967,7 +924,6 @@
   resourceVersion: "1"
 - annotations:
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-discovery
@@ -992,7 +948,6 @@
     ytsaurus.tech/config-hash: <censored>
     ytsaurus.tech/config-overrides-version: "1"
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-exec-node
@@ -1016,7 +971,6 @@
     ytsaurus.tech/config-hash: <censored>
     ytsaurus.tech/config-overrides-version: "1"
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-exec-node
@@ -1037,7 +991,6 @@
   resourceVersion: "1"
 - annotations:
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-exec-node
@@ -1062,7 +1015,6 @@
     ytsaurus.tech/config-hash: <censored>
     ytsaurus.tech/config-overrides-version: "1"
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-http-proxy
@@ -1083,7 +1035,6 @@
   resourceVersion: "1"
 - annotations:
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-http-proxy
@@ -1108,7 +1059,6 @@
     ytsaurus.tech/config-hash: <censored>
     ytsaurus.tech/config-overrides-version: "1"
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-master-2
@@ -1129,7 +1079,6 @@
   resourceVersion: "1"
 - annotations:
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-master-2
@@ -1154,7 +1103,6 @@
     ytsaurus.tech/config-hash: <censored>
     ytsaurus.tech/config-overrides-version: "1"
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-master-cache
@@ -1175,7 +1123,6 @@
   resourceVersion: "1"
 - annotations:
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-master-cache
@@ -1200,7 +1147,6 @@
     ytsaurus.tech/config-hash: <censored>
     ytsaurus.tech/config-overrides-version: "1"
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-master
@@ -1222,7 +1168,6 @@
 - annotations:
     extra-pod-annotation: "true"
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-master
@@ -1246,7 +1191,6 @@
     ytsaurus.tech/config-hash: <censored>
     ytsaurus.tech/init-job-reason: ClusterInitialization
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-master
@@ -1267,7 +1211,6 @@
   resourceVersion: "1"
 - annotations:
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-master
@@ -1292,7 +1235,6 @@
     ytsaurus.tech/config-hash: <censored>
     ytsaurus.tech/config-overrides-version: "1"
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-rpc-proxy
@@ -1313,7 +1255,6 @@
   resourceVersion: "1"
 - annotations:
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-rpc-proxy
@@ -1338,7 +1279,6 @@
     ytsaurus.tech/config-hash: <censored>
     ytsaurus.tech/config-overrides-version: "1"
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-scheduler
@@ -1359,7 +1299,6 @@
   resourceVersion: "1"
 - annotations:
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-scheduler
@@ -1382,7 +1321,6 @@
 - annotations:
     extra-pod-annotation: "true"
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-scheduler
@@ -1406,7 +1344,6 @@
     ytsaurus.tech/config-hash: <censored>
     ytsaurus.tech/config-overrides-version: "1"
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-strawberry-controller
@@ -1428,7 +1365,6 @@
 - annotations:
     extra-pod-annotation: "true"
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-strawberry-controller
@@ -1452,7 +1388,6 @@
     ytsaurus.tech/config-hash: <censored>
     ytsaurus.tech/init-job-reason: InitJob
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-strawberry-controller
@@ -1474,7 +1409,6 @@
 - annotations:
     extra-pod-annotation: "true"
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-strawberry-controller
@@ -1498,7 +1432,6 @@
     ytsaurus.tech/config-hash: <censored>
     ytsaurus.tech/init-job-reason: InitJob
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-strawberry-controller
@@ -1520,7 +1453,6 @@
 - annotations:
     extra-pod-annotation: "true"
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-strawberry-controller
@@ -1544,7 +1476,6 @@
     ytsaurus.tech/config-hash: <censored>
     ytsaurus.tech/config-overrides-version: "1"
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-ui
@@ -1566,7 +1497,6 @@
 - annotations:
     extra-pod-annotation: "true"
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-ui
@@ -1590,7 +1520,6 @@
     ytsaurus.tech/config-hash: <censored>
     ytsaurus.tech/init-job-reason: InitJob
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-ui
@@ -1612,7 +1541,6 @@
 - annotations:
     extra-pod-annotation: "true"
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-ui
@@ -1636,7 +1564,6 @@
     ytsaurus.tech/config-hash: <censored>
     ytsaurus.tech/config-overrides-version: "1"
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-yql-agent
@@ -1658,7 +1585,6 @@
 - annotations:
     extra-pod-annotation: "true"
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-yql-agent
@@ -1680,7 +1606,6 @@
 - annotations:
     extra-pod-annotation: "true"
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-yql-agent
@@ -1704,7 +1629,6 @@
     ytsaurus.tech/config-hash: <censored>
     ytsaurus.tech/init-job-reason: YQLAgentInit
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-yql-agent
@@ -1725,7 +1649,6 @@
   resourceVersion: "1"
 - annotations:
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-yql-agent
@@ -1748,7 +1671,6 @@
 - annotations:
     extra-pod-annotation: "true"
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-yql-agent
@@ -1770,7 +1692,6 @@
 - annotations:
     extra-pod-annotation: "true"
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-ui
@@ -1793,7 +1714,6 @@
     extra-pod-annotation: "true"
     ytsaurus.tech/instance-hash: <censored>
     ytsaurus.tech/observed-generation: "1"
-  creationTimestamp: null
   generation: 1
   labels:
     app.kubernetes.io/component: yt-ui

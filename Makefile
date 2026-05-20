@@ -41,8 +41,11 @@ YTSAURUS_SPEC ?= config/samples/cluster_v1_cri.yaml
 ## Version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION ?= 1.24.2
 
-CERT_MANAGER_VERSION ?= v1.17.4
-TRUST_MANAGER_VERSION ?= v0.17.1
+## https://github.com/cert-manager/cert-manager
+CERT_MANAGER_VERSION ?= v1.19.5
+
+## https://github.com/cert-manager/trust-manager
+TRUST_MANAGER_VERSION ?= v0.22.1
 
 ## YTsaurus operator image name.
 OPERATOR_IMAGE ?= ytsaurus/k8s-operator
