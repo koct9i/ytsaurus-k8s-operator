@@ -168,9 +168,6 @@ spec:
         - mountPath: /yt/master-data
           name: master-data
           readOnly: true
-        - mountPath: /yt/master-logs
-          name: master-logs
-          readOnly: true
         - mountPath: /shared-binaries
           name: shared-binaries
       dnsConfig:
