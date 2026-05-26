@@ -1,15 +1,18 @@
 package components
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"go.ytsaurus.tech/yt/go/yson"
 	v1 "github.com/ytsaurus/ytsaurus-k8s-operator/api/v1"
 	"github.com/ytsaurus/ytsaurus-k8s-operator/pkg/canonize"
 	"github.com/ytsaurus/ytsaurus-k8s-operator/pkg/ytconfig"
+	"sigs.k8s.io/yaml"
 )
 
-func TestGetTimbertruckInitScript(t *testing.T) {
+func TestGetTimbertruckConfig(t *testing.T) {
 	timbertruckConfig := ytconfig.NewTimbertruckConfig(
 		[]v1.StructuredLoggerSpec{
 			{
@@ -44,7 +47,14 @@ func TestGetTimbertruckInitScript(t *testing.T) {
 		"http-proxies-lb.ytsaurus-dev.svc.cluster.local",
 		"//sys/admin/logs",
 	)
-	timbertruckInitScript, err := getTimbertruckInitScript(timbertruckConfig)
+
+	ysonData, err := timbertruckConfig.ToYSON()
 	require.NoError(t, err)
-	canonize.Assert(t, []byte(timbertruckInitScript))
+
+	var config any
+	require.NoError(t, yson.Unmarshal(ysonData, &config))
+	yamlData, err := yaml.Marshal(config)
+	require.NoError(t, err)
+
+	canonize.Assert(t, []byte(strings.TrimSpace(string(yamlData))))
 }

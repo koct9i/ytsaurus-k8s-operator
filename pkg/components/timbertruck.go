@@ -15,7 +15,6 @@ import (
 	"go.ytsaurus.tech/yt/go/yt"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/yaml"
 )
 
 type Timbertruck struct {
@@ -285,14 +284,6 @@ func (tt *Timbertruck) prepareTimbertruckTables(ctx context.Context) error {
 	return nil
 }
 
-func getTimbertruckInitScript(timbertruckConfig *ytconfig.TimbertruckConfig) (string, error) {
-	configText, err := yaml.Marshal(timbertruckConfig)
-	if err != nil {
-		return "", fmt.Errorf("failed to marshal Timbertruck config: %w", err)
-	}
-	return fmt.Sprintf("%s%s%s", timbertruckInitScriptPrefix, string(configText), timbertruckInitScriptSuffix), nil
-}
-
 func prepareTimbertruckTablesFromConfig(ctx context.Context, ytClient yt.Client, timbertruckConfig *ytconfig.TimbertruckConfig, logsDeliveryPath string) error {
 	for _, jsonLog := range timbertruckConfig.JsonLogs {
 		for _, ytQueue := range jsonLog.YTQueue {
@@ -406,7 +397,7 @@ func getLogsDirectoryPath(timbertruck *ytv1.TimbertruckSpec) string {
 	return consts.DefaultTimbertruckDirectoryPath
 }
 
-func checkAndAddTimbertruckToPodSpec(timbertruck *ytv1.TimbertruckSpec, podSpec *corev1.PodSpec, instanceSpec *ytv1.InstanceSpec, labeler *labeller.Labeller, cfgen *ytconfig.Generator) error {
+func checkAndAddTimbertruckToPodSpec(ctx context.Context, proxy apiproxy.APIProxy, configOverrides *corev1.LocalObjectReference, timbertruck *ytv1.TimbertruckSpec, podSpec *corev1.PodSpec, instanceSpec *ytv1.InstanceSpec, labeler *labeller.Labeller, cfgen *ytconfig.Generator) error {
 	if timbertruck == nil || timbertruck.Image == nil || *timbertruck.Image == "" {
 		return nil
 	}
@@ -421,14 +412,13 @@ func checkAndAddTimbertruckToPodSpec(timbertruck *ytv1.TimbertruckSpec, podSpec 
 	if logsLocation == nil {
 		return fmt.Errorf("you are trying to use Timbertruck, but no logs location is defined in the instance spec")
 	}
-	structuredLoggres := instanceSpec.StructuredLoggers
 	logsDirectory := logsLocation.Path
 	componentName := consts.GetServiceKebabCase(labeler.ComponentType)
 	workDir := fmt.Sprintf("%s/%s", logsDirectory, consts.TimbertruckWorkDirName)
 	deliveryProxy := cfgen.GetHTTPProxiesAddress(consts.DefaultHTTPProxyRole)
 
 	timbertruckConfig := ytconfig.NewTimbertruckConfig(
-		structuredLoggres,
+		instanceSpec.StructuredLoggers,
 		workDir,
 		componentName,
 		logsDirectory,
@@ -440,15 +430,32 @@ func checkAndAddTimbertruckToPodSpec(timbertruck *ytv1.TimbertruckSpec, podSpec 
 		return nil
 	}
 
-	timbertruckInitScript, err := getTimbertruckInitScript(timbertruckConfig)
-	if err != nil {
-		return fmt.Errorf("failed to get timbertruck init script: %w", err)
+	configMapName := labeler.GetSidecarConfigMapName(consts.TimbertruckContainerName)
+	configBuilder := NewConfigMapBuilder(
+		labeler,
+		proxy,
+		configMapName,
+		configOverrides,
+		ConfigGenerator{
+			FileName:  "config.yaml",
+			Format:    ConfigFormatYaml,
+			Generator: timbertruckConfig.ToYSON,
+		},
+	)
+	if err := configBuilder.Fetch(ctx); err != nil {
+		return fmt.Errorf("failed to fetch timbertruck configmap: %w", err)
 	}
+	if err := configBuilder.Sync(ctx); err != nil {
+		return fmt.Errorf("failed to sync timbertruck configmap: %w", err)
+	}
+
+	const configVolumeName = consts.TimbertruckContainerName + "-config"
+	podSpec.Volumes = append(podSpec.Volumes, createConfigVolume(configVolumeName, configMapName, nil))
 
 	podSpec.Containers = append(podSpec.Containers, corev1.Container{
 		Name:    consts.TimbertruckContainerName,
 		Image:   *timbertruck.Image,
-		Command: []string{"/bin/bash", "-c", timbertruckInitScript},
+		Command: []string{"/usr/bin/timbertruck_os", "-config", "/etc/timbertruck/config.yaml"},
 		Env: append([]corev1.EnvVar{
 			{
 				Name: consts.TokenSecretKey,
@@ -468,6 +475,7 @@ func checkAndAddTimbertruckToPodSpec(timbertruck *ytv1.TimbertruckSpec, podSpec 
 		}, getDefaultEnv()...),
 		VolumeMounts: []corev1.VolumeMount{
 			{Name: path.Base(logsDirectory), MountPath: logsDirectory, ReadOnly: false},
+			{Name: configVolumeName, MountPath: "/etc/timbertruck", ReadOnly: true},
 		},
 		ImagePullPolicy: corev1.PullIfNotPresent,
 	})

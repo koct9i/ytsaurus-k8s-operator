@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"path"
 
+	"go.ytsaurus.tech/yt/go/yson"
+
 	ytv1 "github.com/ytsaurus/ytsaurus-k8s-operator/api/v1"
 )
 
@@ -64,3 +66,10 @@ func NewTimbertruckConfig(structuredLoggers []ytv1.StructuredLoggerSpec, workDir
 
 	return timbertruckConfig
 }
+
+func (c *TimbertruckConfig) ToYSON() ([]byte, error) {
+	return yson.MarshalFormat((*timbertruckConfigAlias)(c), yson.FormatPretty)
+}
+
+// timbertruckConfigAlias breaks the MarshalYSON recursion if yson ever detects a ToYSON method.
+type timbertruckConfigAlias TimbertruckConfig

@@ -536,7 +536,7 @@ func (m *Master) doServerSync(ctx context.Context) error {
 			m.uploaderSecret.Name(),
 		)
 	}
-	if err := checkAndAddTimbertruckToPodSpec(m.mastersSpec.Timbertruck, podSpec, &m.mastersSpec.InstanceSpec, m.labeller, m.cfgen); err != nil {
+	if err := checkAndAddTimbertruckToPodSpec(ctx, m.ytsaurus, m.ytsaurus.GetCommonSpec().ConfigOverrides, m.mastersSpec.Timbertruck, podSpec, &m.mastersSpec.InstanceSpec, m.labeller, m.cfgen); err != nil {
 		return err
 	}
 	if err := AddSidecarsToPodSpec(m.mastersSpec.Sidecars, podSpec); err != nil {
