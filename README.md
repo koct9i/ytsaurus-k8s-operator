@@ -16,6 +16,42 @@ You can install pre-built versions of operator via [helm chart](https://hub.dock
 
 Next you need to [prepare the Ytsaurus specification](https://ytsaurus.tech/docs/en/admin-guide/prepare-spec), see provided [samples](config/samples) and [API Reference](docs/api.md).
 
+### ACL management from shell scripts
+
+Use the local Kind helper to configure `yt` CLI access:
+
+```sh
+. <(make kind-yt-env)
+```
+
+Check ACLs and effective permissions:
+
+```sh
+yt get //sys/accounts/research/@acl
+yt check-permission --user alice --permission use --path //sys/accounts/research
+```
+
+Grant permissions with ACL entries:
+
+```sh
+yt set //sys/accounts/research/@acl/end '{action=allow;subjects=["alice";];permissions=[use;administer;];}'
+yt set //home/project/@acl/end '{action=allow;subjects=["analytics";];permissions=[read;write;create;remove;];}'
+```
+
+Create a nested account without explicit limits (inherits parent limits):
+
+```sh
+yt create account --attributes '{name="research-dev";parent_name="research"}' --ignore-existing
+```
+
+Review user and group access:
+
+```sh
+yt get //sys/users/alice/@member_of
+yt get //sys/groups/analytics/@members
+yt check-permission --user alice --permission read --path //home/project
+```
+
 ### Running on the cluster
 1. Install Instances of Custom Resources:
 
@@ -103,4 +139,3 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-
