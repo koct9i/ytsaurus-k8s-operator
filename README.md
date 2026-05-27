@@ -38,18 +38,41 @@ yt set //sys/accounts/research/@acl/end '{action=allow;subjects=["alice";];permi
 yt set //home/project/@acl/end '{action=allow;subjects=["analytics";];permissions=[read;write;create;remove;];}'
 ```
 
-Create a nested account without explicit limits (inherits parent limits):
+Create a nested account with default limits:
 
 ```sh
 yt create account --attributes '{name="research-dev";parent_name="research"}' --ignore-existing
+yt get //sys/accounts/research-dev/@resource_limits
 ```
 
-Review user and group access:
+By default, a nested account does not define its own local limits and is constrained by parent account limits.
+
+Make a nested account unlimited from the account itself:
+
+```sh
+yt set //sys/accounts/research-dev/@resource_limits '{}'
+```
+
+For full unlimited behavior, the parent chain must also have no restrictive limits.
+
+Grant permissions independently on different resources:
+
+```sh
+yt set //sys/accounts/research-dev/@acl/end '{action=allow;subjects=["alice";];permissions=[use;];}'
+yt set //home/research-dev/@acl/end '{action=allow;subjects=["alice";];permissions=[read;write;create;remove;];}'
+```
+
+Review user and group access and locate resources where they are present in ACLs:
 
 ```sh
 yt get //sys/users/alice/@member_of
 yt get //sys/groups/analytics/@members
 yt check-permission --user alice --permission read --path //home/project
+
+subject='alice'
+yt find // | while read -r path; do
+  yt get "$path/@acl" 2>/dev/null | grep -q "\"$subject\"" && echo "$path"
+done
 ```
 
 ### Running on the cluster
