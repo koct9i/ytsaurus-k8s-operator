@@ -701,7 +701,3 @@ func getNodeSelectorWithDefault(componentNodeSelector, defaultNodeSelector map[s
 	}
 	return defaultNodeSelector
 }
-
-func buildUserCredentialsSecretname(username string) string {
-	return fmt.Sprintf("%s-secret", username)
-}

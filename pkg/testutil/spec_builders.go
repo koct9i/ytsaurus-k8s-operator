@@ -235,6 +235,9 @@ func (b *YtsaurusBuilder) ExpectedTokenSecrets() map[string]string {
 	tokens := map[string]string{
 		"yt-client-secret": consts.YtsaurusOperatorUserName,
 	}
+	if b.Ytsaurus.Spec.PrimaryMasters.Timbertruck != nil {
+		tokens["robot-timbertruck-secret"] = consts.TimbertruckUserName
+	}
 	return tokens
 }
 
