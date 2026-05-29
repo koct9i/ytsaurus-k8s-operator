@@ -111,7 +111,7 @@ func NewComponentManager(
 	allComponents = append(allComponents, dnds...)
 
 	if resource.Spec.UI != nil {
-		ui := components.NewUI(cfgen, ytsaurus, m)
+		ui := components.NewUI(cfgen, ytsaurus, yc)
 		allComponents = append(allComponents, ui)
 	}
 

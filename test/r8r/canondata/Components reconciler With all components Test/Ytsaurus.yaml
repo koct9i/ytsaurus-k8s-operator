@@ -473,18 +473,6 @@ status:
     status: "True"
     type: RpcProxyReady
   - lastTransitionTime: null
-    message: Job yt-ui-init-job-default completed in -1ns
-    observedGeneration: 1
-    reason: InitJob
-    status: "True"
-    type: defaultUIInitJobCompleted
-  - lastTransitionTime: null
-    message: 'Pods are ready: 0 of 0, running 0, need 0'
-    observedGeneration: 1
-    reason: Ready
-    status: "True"
-    type: UIReady
-  - lastTransitionTime: null
     message: Job yt-client-init-job-user completed in -1ns
     observedGeneration: 1
     reason: BootstrapToken
@@ -508,6 +496,12 @@ status:
     reason: Ready
     status: "True"
     type: TimbertruckReady
+  - lastTransitionTime: null
+    message: 'Pods are ready: 0 of 0, running 0, need 0'
+    observedGeneration: 1
+    reason: Ready
+    status: "True"
+    type: UIReady
   - lastTransitionTime: null
     message: Ready
     observedGeneration: 1

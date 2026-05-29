@@ -256,6 +256,9 @@ func (b *YtsaurusBuilder) ExpectedTokenSecrets() map[string]string {
 	if b.Ytsaurus.Spec.StrawberryController != nil {
 		tokens["yt-strawberry-controller-secret"] = consts.StrawberryControllerUserName
 	}
+	if b.Ytsaurus.Spec.UI != nil {
+		tokens["yt-ui-secret"] = consts.UIUserName
+	}
 	return tokens
 }
 
