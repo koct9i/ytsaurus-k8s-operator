@@ -1228,6 +1228,13 @@
   namespace: ytsaurus-components
   resourceVersion: "1"
 - annotations:
+    ytsaurus.tech/user-name: queue_agent
+  creationTimestamp: null
+  generation: 1
+  name: yt-queue-agent-secret
+  namespace: ytsaurus-components
+  resourceVersion: "1"
+- annotations:
     extra-pod-annotation: "true"
     ytsaurus.tech/config-hash: <censored>
     ytsaurus.tech/config-overrides-version: "1"

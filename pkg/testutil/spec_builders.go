@@ -244,6 +244,9 @@ func (b *YtsaurusBuilder) ExpectedTokenSecrets() map[string]string {
 	if b.Ytsaurus.Spec.QueryTrackers != nil {
 		tokens["yt-query-tracker-secret"] = consts.QueryTrackerUserName
 	}
+	if b.Ytsaurus.Spec.QueueAgents != nil {
+		tokens["yt-queue-agent-secret"] = consts.QueueAgentUserName
+	}
 	return tokens
 }
 
