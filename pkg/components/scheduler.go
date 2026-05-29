@@ -186,7 +186,7 @@ func (s *Scheduler) initOpArchive(ctx context.Context, dry bool) (ComponentStatu
 
 func (s *Scheduler) createInitUserScript() string {
 	token, _ := s.secret.GetValue(consts.TokenSecretKey)
-	commands := createUserCommand("operation_archivarius", "", token, true)
+	commands := createUserCommand(consts.OperationArchivariusUserName, "", token, true)
 	script := []string{
 		initJobWithNativeDriverPrologue(),
 	}

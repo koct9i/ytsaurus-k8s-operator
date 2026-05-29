@@ -11,17 +11,20 @@ const AdminLoginSecretKey = "login"
 const AdminPasswordSecretKey = "password"
 const AdminTokenSecretKey = "token"
 
-const DefaultCABundlePath = "/etc/ssl/certs/ca-certificates.crt"
-
-const HydraPersistenceUploaderUserName = "robot-hydra-persistence-uploader"
-const TimbertruckUserName = "robot-timbertruck"
-
-const UIUserName = "robot-ui"
-const StrawberryControllerUserName = "robot-strawberry-controller"
-const YtsaurusOperatorUserName = "robot-ytsaurus-k8s-operator"
-
-const YQLAgentUserName = "yql_agent"
-const YQLAgentExecUserName = "yql_agent_exec"
+const (
+	YtsaurusOperatorUserName         = "robot-ytsaurus-k8s-operator"
+	TimbertruckUserName              = "robot-timbertruck"
+	HydraPersistenceUploaderUserName = "robot-hydra-persistence-uploader"
+	UIUserName                       = "robot-ui"
+	StrawberryControllerUserName     = "robot-strawberry-controller"
+	OperationArchivariusUserName     = "operation_archivarius"
+	QueueAgentUserName               = "queue_agent"
+	QueryTrackerUserName             = "query_tracker"
+	YQLAgentUserName                 = "yql_agent"
+	YQLAgentExecUserName             = "yql_agent_exec"
+	ChytReleaserUserName             = "chyt_releaser"
+	SpytReleaserUserName             = "spyt_releaser"
+)
 
 const StartUID = 19500
 

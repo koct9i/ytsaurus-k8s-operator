@@ -201,7 +201,7 @@ func (qa *QueueAgent) createUser(ctx context.Context, ytClient yt.Client) (err e
 	logger := log.FromContext(ctx)
 
 	token, _ := qa.secret.GetValue(consts.TokenSecretKey)
-	err = CreateUser(ctx, ytClient, "queue_agent", token, true)
+	err = CreateUser(ctx, ytClient, consts.QueueAgentUserName, token, true)
 	if err != nil {
 		logger.Error(err, "Creating user 'queue_agent' failed")
 		return err

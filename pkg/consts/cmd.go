@@ -107,6 +107,8 @@ const (
 	SecureVaultEnvPrefix = "YT_SECURE_VAULT_"
 )
 
+const DefaultCABundlePath = "/etc/ssl/certs/ca-certificates.crt"
+
 const (
 	HTTPSSecretUpdatePeriod = time.Second * 60
 )
