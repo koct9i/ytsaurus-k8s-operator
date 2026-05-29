@@ -241,6 +241,9 @@ func (b *YtsaurusBuilder) ExpectedTokenSecrets() map[string]string {
 	if b.Ytsaurus.Spec.Schedulers != nil {
 		tokens["yt-scheduler-secret"] = consts.OperationArchivariusUserName
 	}
+	if b.Ytsaurus.Spec.QueryTrackers != nil {
+		tokens["yt-query-tracker-secret"] = consts.QueryTrackerUserName
+	}
 	return tokens
 }
 
