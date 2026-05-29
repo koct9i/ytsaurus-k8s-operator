@@ -840,7 +840,6 @@ var _ = Describe("Basic e2e test for Ytsaurus controller", Label("e2e"), func() 
 					Expect(completedJobs).Should(ConsistOf(
 						"yt-master-init-job-default",
 						"yt-client-init-job-user",
-						"yt-scheduler-init-job-user",
 						"yt-scheduler-init-job-op-archive",
 					))
 

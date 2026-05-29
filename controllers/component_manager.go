@@ -153,7 +153,7 @@ func NewComponentManager(
 
 	var sch components.Component
 	if resource.Spec.Schedulers != nil {
-		sch = components.NewScheduler(cfgen, ytsaurus, m, yc, tnds)
+		sch = components.NewScheduler(cfgen, ytsaurus, yc, tnds)
 		allComponents = append(allComponents, sch)
 	}
 
