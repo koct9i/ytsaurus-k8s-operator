@@ -180,7 +180,7 @@ func NewComponentManager(
 	}
 
 	if resource.Spec.StrawberryController != nil && resource.Spec.Schedulers != nil {
-		strawberry := components.NewStrawberryController(cfgen, ytsaurus, m, sch, dnds)
+		strawberry := components.NewStrawberryController(cfgen, ytsaurus, yc, sch, dnds)
 		allComponents = append(allComponents, strawberry)
 	}
 

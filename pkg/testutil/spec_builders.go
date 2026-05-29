@@ -253,6 +253,9 @@ func (b *YtsaurusBuilder) ExpectedTokenSecrets() map[string]string {
 			tokens["yt-yql-agent-exec-secret"] = consts.YQLAgentExecUserName
 		}
 	}
+	if b.Ytsaurus.Spec.StrawberryController != nil {
+		tokens["yt-strawberry-controller-secret"] = consts.StrawberryControllerUserName
+	}
 	return tokens
 }
 
