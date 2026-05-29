@@ -247,6 +247,12 @@ func (b *YtsaurusBuilder) ExpectedTokenSecrets() map[string]string {
 	if b.Ytsaurus.Spec.QueueAgents != nil {
 		tokens["yt-queue-agent-secret"] = consts.QueueAgentUserName
 	}
+	if b.Ytsaurus.Spec.YQLAgents != nil {
+		tokens["yt-yql-agent-secret"] = consts.YQLAgentUserName
+		if b.Ytsaurus.Spec.YQLAgents.DQEngine != nil {
+			tokens["yt-yql-agent-exec-secret"] = consts.YQLAgentExecUserName
+		}
+	}
 	return tokens
 }
 

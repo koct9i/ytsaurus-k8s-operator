@@ -479,12 +479,6 @@ status:
     status: "True"
     type: defaultUIInitJobCompleted
   - lastTransitionTime: null
-    message: Job yt-yql-agent-init-job-yql-agent-environment completed in -1ns
-    observedGeneration: 1
-    reason: YQLAgentInit
-    status: "True"
-    type: yql-agent-environmentYqlAgentInitJobCompleted
-  - lastTransitionTime: null
     message: 'Pods are ready: 0 of 0, running 0, need 0'
     observedGeneration: 1
     reason: Ready
@@ -496,12 +490,6 @@ status:
     reason: BootstrapToken
     status: "True"
     type: userYtsaurusClientInitJobCompleted
-  - lastTransitionTime: null
-    message: Ready
-    observedGeneration: 1
-    reason: Ready
-    status: "True"
-    type: YqlAgentReady
   - lastTransitionTime: null
     message: Cypress operations skipped
     observedGeneration: 1
@@ -526,6 +514,18 @@ status:
     reason: Ready
     status: "True"
     type: SchedulerReady
+  - lastTransitionTime: null
+    message: Job yt-yql-agent-init-job-yql-agent-environment completed in -1ns
+    observedGeneration: 1
+    reason: YQLAgentInit
+    status: "True"
+    type: yql-agent-environmentYqlAgentInitJobCompleted
+  - lastTransitionTime: null
+    message: Ready
+    observedGeneration: 1
+    reason: Ready
+    status: "True"
+    type: YqlAgentReady
   - lastTransitionTime: null
     message: Job yt-strawberry-controller-init-job-user completed in -1ns
     observedGeneration: 1
