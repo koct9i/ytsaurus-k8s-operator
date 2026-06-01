@@ -111,26 +111,22 @@ func (tt *Timbertruck) initTimbertruckUser(ctx context.Context, deliveryLoggers 
 }
 
 func (tt *Timbertruck) handleUpdatingState(ctx context.Context) (ComponentStatus, error) {
-	var err error
-
-	if tt.ytsaurus.GetUpdateState() == ytv1.UpdateStateWaitingForTimbertruckPrepared {
-		if !tt.ytsaurus.IsUpdateStatusConditionTrue(consts.ConditionTimbertruckPrepared) {
-			err := tt.prepareTimbertruckTables(ctx)
-			if err != nil {
-				return SimpleStatus(SyncStatusUpdating), err
-			}
-
-			tt.ytsaurus.SetUpdateStatusCondition(ctx, metav1.Condition{
-				Type:    consts.ConditionTimbertruckPrepared,
-				Status:  metav1.ConditionTrue,
-				Reason:  "Update",
-				Message: "Timbertruck prepared successfully",
-			})
-			return SimpleStatus(SyncStatusUpdating), nil
+	if tt.ytsaurus.GetUpdateState() == ytv1.UpdateStateWaitingForTimbertruckPrepared &&
+		!tt.ytsaurus.IsUpdateStatusConditionTrue(consts.ConditionTimbertruckPrepared) {
+		if err := tt.prepareTimbertruckTables(ctx); err != nil {
+			return SimpleStatus(SyncStatusUpdating), err
 		}
+
+		tt.ytsaurus.SetUpdateStatusCondition(ctx, metav1.Condition{
+			Type:    consts.ConditionTimbertruckPrepared,
+			Status:  metav1.ConditionTrue,
+			Reason:  "Update",
+			Message: "Timbertruck prepared successfully",
+		})
+		return SimpleStatus(SyncStatusUpdating), nil
 	}
 
-	return SimpleStatus(SyncStatusUpdating), err
+	return ComponentStatusReady(), nil
 }
 
 func (tt *Timbertruck) Sync(ctx context.Context, dry bool) (ComponentStatus, error) {
