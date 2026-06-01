@@ -2,6 +2,7 @@ package components
 
 import (
 	"context"
+	"maps"
 
 	"go.ytsaurus.tech/yt/go/ypath"
 	"go.ytsaurus.tech/yt/go/yt"
@@ -198,9 +199,7 @@ func (tn *TabletNode) initBundles(ctx context.Context) (ComponentStatus, error) 
 				logger.Error(err, "Getting options for `default` bundle failed")
 				return ComponentStatusWaitingFor("getting default bundle options"), err
 			}
-			for option, value := range options {
-				bundleOptions[option] = value
-			}
+			maps.Copy(bundleOptions, options)
 			err = ytClient.SetNode(ctx, path.Attr("options"), bundleOptions, nil)
 			if err != nil {
 				logger.Error(err, "Setting options for `default` bundle failed", "options", options)
