@@ -1,4 +1,5 @@
 # https://golangci-lint.run/docs/configuration/file/
+# https://golangci-lint.run/docs/linters/configuration/
 
 version: "2"
 
@@ -6,17 +7,16 @@ run:
   timeout: 5m
   allow-parallel-runners: false
   allow-serial-runners: true
-  concurrency: 0  # auto
+  concurrency: 0 # auto
 
 issues:
-  max-same-issues: 0  # disable
+  max-same-issues: 0 # disable
   max-issues-per-linter: 0 # disable
 
 # References:
 # https://golangci-lint.run/usage/linters/
 # https://gist.github.com/maratori/47a4d00457a92aa426dbd48a18776322
 # https://github.com/kubernetes/kubernetes/blob/master/hack/golangci-hints.yaml
-
 formatters:
   enable:
     # - gci     # Check if code and import statements are formatted, with additional rules.
@@ -26,7 +26,6 @@ formatters:
     # - golines   # Checks if code is formatted, and fixes long lines.
     # - swaggo 	  # Check if swaggo comments are formatted.
   settings: {}
-
 
 linters:
   enable: # please keep this alphabetized
@@ -62,14 +61,12 @@ linters:
     - recvcheck # Checks for receiver type consistency.
     # - nlreturn # Checks for a new line before return and branch statements to increase code clarity. [fast, auto-fix]
     - nakedret # Checks that functions with naked returns are not longer than a maximum size (can be zero). [fast, auto-fix]
-
     ## "complexity"
     # - gocognit # computes and checks the cognitive complexity of functions
     # - gocyclo # computes and checks the cyclomatic complexity of functions
     - nestif # reports deeply nested if statements
     - cyclop # Checks function and package cyclomatic complexity. [fast]
     - maintidx # Maintidx measures the maintainability index of each function. [fast]
-
     ## "errors"
     - errcheck # checking for unchecked errors, these unchecked errors can be critical bugs in some cases
     # - forcetypeassert # Find forced type assertions.
@@ -113,7 +110,6 @@ linters:
     - usestdlibvars # detects the possibility to use variables/constants from the Go standard library
     - iface # Detect the incorrect use of interfaces, helping developers avoid interface pollution. [auto-fix]
     - intrange # Intrange is a linter to find places where for loops could make use of an integer range. [auto-fix]
-
     ## "performance"
     - fatcontext # Detects nested contexts in loops and function literals.
     # - prealloc # Find slice declarations that could potentially be pre-allocated. [fast]
@@ -122,7 +118,8 @@ linters:
     - gocritic # provides diagnostics that check for bugs, performance and style issues
     # - gomnd # detects magic numbers
     - gomoddirectives # manages the use of 'replace', 'retract', and 'excludes' directives in go.mod
-    - gomodguard # allow and block lists linter for direct Go module dependencies. This is different from depguard where there are different block types for example version constraints and module recommendations
+    # - gomodguard # allow and block lists linter for direct Go module dependencies. This is different from depguard where there are different block types for example version constraints and module recommendations
+    - gomodguard_v2  # Allow and blocklist linter for direct Go module dependencies. This is different from depguard where there are different block types for example version constraints and module recommendations.
     - goprintffuncname # checks that printf-like functions are named with f at the end
     - importas # enforces consistent import aliases (not useful without config)
     - inamedparam # Reports interfaces with unnamed method parameters
@@ -138,7 +135,6 @@ linters:
     - tagliatelle # checks the struct tags
     - testableexamples # checks if examples are testable (have an expected output)
     - wastedassign # finds wasted assignment statements
-
     ## tests
     - ginkgolinter # enforces standards of using ginkgo and gomega
     - usetesting # Reports uses of functions with replacement inside the testing package. [auto-fix]
@@ -146,7 +142,6 @@ linters:
     # - testpackage # Linter that makes you use a separate _test package. [fast]
     # - paralleltest # Detects missing usage of t.Parallel() method in your Go test.
     - tparallel # detects inappropriate usage of t.Parallel() method in your Go test codes
-
     ## "new"
     # - arangolint # Opinionated best practices for arangodb client.
     # - canonicalheader # Canonicalheader checks whether net/http.Header uses canonical header. [auto-fix]
@@ -154,8 +149,26 @@ linters:
     # - exhaustruct # Checks if all structure fields are initialized.
     - exptostd # Detects functions from golang.org/x/exp/ that can be replaced by std functions. [auto-fix]
     - grouper # Analyze expression groups. [fast]
+    # - clickhouselint  # Detects common mistakes with the ClickHouse native Go driver API.
+    # - godoclint  # Checks Golang's documentation practice (godoc)
+    - modernize  # A suite of analyzers that suggest simplifications to Go code, using modern language and library features.
+    - iotamixing  # checks if iotas are being used in const blocks with other non-iota declarations.
+    # - unqueryvet  # detects SELECT * in SQL queries and SQL builders, preventing performance issues and encouraging explicit column selection
 
   settings:
+    goconst:
+      ignore-tests: true
+      min-occurrences: 10 # TODO
+      ignore-string-values:
+        - "allow"
+        - "true"
+        - "false"
+        - "name"
+        - "debug"
+        - "Update" # TODO
+    modernize:
+      disable:
+        - any # TODO
     cyclop:
       # The maximal code complexity to report.
       # Default: 10
@@ -164,30 +177,25 @@ linters:
       # If it's higher than 0.0 (float) the check is enabled
       # Default: 0.0
       package-average: 20.0
-
     nestif:
       # Minimal complexity of if statements to report.
       # Default: 5
       min-complexity: 12
-
     maintidx:
       # Show functions with maintainability index lower than N.
       # A high index indicates better maintainability (it's kind of the opposite of complexity).
       # Default: 20
       under: 10
-
     nakedret:
       # Make an issue if func has more lines of code than this setting, and it has naked returns.
       # Default: 30
       max-func-lines: 0
-
     errcheck:
       verbose: true # Display function signature instead of selector.
       check-blank: true # report about assignment of errors to blank identifier: `num, _ := strconv.Atoi(numStr)`.
       # check-type-assertions: true  # Report about not checking of errors in type assertions: `a := b.(MyStruct)`.
       # disable-default-exclusions: true # To disable the errcheck built-in exclude list.
       # exclude-functions: # List of functions to exclude from checking.
-
     forbidigo:
       # Instead of matching the literal source code,
       # use type information to replace expressions with strings that contain the package name
@@ -202,13 +210,12 @@ linters:
         - pattern: ^gomega\.BeFalse$
           pkg: ^github.com/onsi/gomega$
           msg: "it does not produce a good failure message - use BeFalseBecause with an explicit printf-style failure message instead, or plain Go: if ... { ginkgo.Fail(...) }"
-
     gocritic:
       # Enable all checks.
       # Default: false
       enable-all: true
       disabled-checks:
-        - ifElseChain  # rewrite if-else to switch statement
+        - ifElseChain # rewrite if-else to switch statement
         - sprintfQuotedString
         - importShadow
         - paramTypeCombine
@@ -218,11 +225,9 @@ linters:
           sizeThreshold: 4096
         rangeValCopy:
           sizeThreshold: 4096
-
     gomoddirectives:
       # Allow local `replace` directives.
       replace-local: true
-
     importas:
       # Do not allow unaliased imports of aliased packages.
       # Default: false
@@ -254,7 +259,6 @@ linters:
         # YTsaurus
         - pkg: github.com/ytsaurus/yt-k8s-operator/api/v1
           alias: ytv1
-
     staticcheck:
       checks:
         - "all"
@@ -264,7 +268,6 @@ linters:
         - "-ST1003" # Poorly chosen identifier.
         - "-ST1020" # The documentation of an exported function should start with the function's name.
         - "-ST1021" # The documentation of an exported type should start with type's name.
-
     tagalign:
       # Align tags for adjacent fields
       # align: false
@@ -273,77 +276,57 @@ linters:
       order:
         - yson
         - json
-
     lll:
       # Max line length, lines longer will be reported.
       # '\t' is counted as 1 character by default, and can be changed with the tab-width option.
       # Default: 120.
       line-length: 180
-
     interfacebloat:
       # Default: 10
       max: 16
-
   exclusions:
     rules:
       - path: api/v1/ytsaurus_types.go
         text: "json\\(camel\\): got 'downwardAPI' want 'downwardApi'"
-
       - path: pkg/ytconfig/timbertruck.go
         text: "json\\(camel\\)"
-
       - path: pkg/consts/cmd.go
         text: "G101: Potential hardcoded credentials" # Reacts at secret path and name
-
       - path: pkg/consts/defaults.go
         text: "G101: Potential hardcoded credentials"
-
       - path: 'main\.go'
         linters:
           - gochecknoglobals
-
       - path: 'controllers'
         linters:
           - gochecknoglobals
-
       - path: validators
         text: "SA1019: instanceSpec.EnableAntiAffinity is deprecated"
-
       - path: validators
         text: "SA1019: .*\\.ExtraPodAnnotations is deprecated"
-
       - path: pkg/ytconfig/generator.go
         text: "SA1019: .*\\.ExtraPodAnnotations is deprecated"
-
       - path: pkg/testutil/spec_builders.go
         text: "SA1019: .*\\.ExtraPodAnnotations is deprecated"
-
       - path: pkg/testutil
         text: "ST1001: should not use dot imports"
-
       - path: 'pkg/testutil'
         linters:
           - gochecknoglobals
-
       - path: 'pkg/canonize'
         linters:
           - gosec
-
       - path: 'hack'
         linters:
           - gosec
-
       - path: 'pkg/consts'
         linters:
           - gochecknoglobals
-
       - path: 'api'
         linters:
           - gochecknoglobals
-
       - path: test/e2e/suite_test.go
         text: "SA1019: .*Status.UpdateStatus.Flow is deprecated"
-
       - path: '_test\.go'
         linters:
           - fatcontext

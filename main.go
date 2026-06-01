@@ -152,7 +152,7 @@ func main() {
 	// https://github.com/kubernetes-sigs/controller-runtime/issues/2628
 	if watchNamespace := os.Getenv("WATCH_NAMESPACE"); watchNamespace != "" {
 		managerOptions.Cache.DefaultNamespaces = map[string]cache.Config{}
-		for _, namespace := range strings.Split(watchNamespace, ",") {
+		for namespace := range strings.SplitSeq(watchNamespace, ",") {
 			managerOptions.Cache.DefaultNamespaces[namespace] = cache.Config{}
 			setupLog.Info("Watching namespace", "namespace", namespace)
 		}
