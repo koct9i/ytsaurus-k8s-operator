@@ -110,9 +110,12 @@ func (tt *Timbertruck) initTimbertruckUser(ctx context.Context, deliveryLoggers 
 	return nil
 }
 
-func (tt *Timbertruck) handleUpdatingState(ctx context.Context) (ComponentStatus, error) {
+func (tt *Timbertruck) handleUpdatingState(ctx context.Context, dry bool) (ComponentStatus, error) {
 	if tt.ytsaurus.GetUpdateState() == ytv1.UpdateStateWaitingForTimbertruckPrepared &&
 		!tt.ytsaurus.IsUpdateStatusConditionTrue(consts.ConditionTimbertruckPrepared) {
+		if dry {
+			return SimpleStatus(SyncStatusUpdating), nil
+		}
 		if err := tt.prepareTimbertruckTables(ctx); err != nil {
 			return SimpleStatus(SyncStatusUpdating), err
 		}
@@ -136,10 +139,7 @@ func (tt *Timbertruck) Sync(ctx context.Context, dry bool) (ComponentStatus, err
 		if tt.ytsaurus.GetUpdateState() == ytv1.UpdateStateImpossibleToStart {
 			return ComponentStatusReady(), err
 		}
-		if dry {
-			return SimpleStatus(SyncStatusUpdating), err
-		}
-		return tt.handleUpdatingState(ctx)
+		return tt.handleUpdatingState(ctx, dry)
 	}
 
 	if tt.timbertruckSecret.NeedSync(consts.TokenSecretKey, "") {
