@@ -445,6 +445,9 @@ func checkAndAddTimbertruckToPodSpec(ctx context.Context, proxy apiproxy.APIProx
 	if err := configBuilder.Fetch(ctx); err != nil {
 		return fmt.Errorf("failed to fetch timbertruck configmap: %w", err)
 	}
+	if _, err := configBuilder.Build(); err != nil {
+		return fmt.Errorf("failed to build timbertruck configmap: %w", err)
+	}
 	if err := configBuilder.Sync(ctx); err != nil {
 		return fmt.Errorf("failed to sync timbertruck configmap: %w", err)
 	}
