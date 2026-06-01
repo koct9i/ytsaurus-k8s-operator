@@ -1,18 +1,21 @@
 JsonLogs:
 - LogFile: /yt/master-logs/master.access.log.json
   Name: master-access
+  QueueBatchSize: 8388608
   YTQueue:
   - Cluster: http-proxies-lb.ytsaurus-dev.svc.cluster.local
     ProducerPath: //sys/admin/logs/master-access/producer
     QueuePath: //sys/admin/logs/master-access/queue
 - LogFile: /yt/master-logs/master.security.log.yson.zstd
   Name: master-security
+  QueueBatchSize: 8388608
   YTQueue:
   - Cluster: http-proxies-lb.ytsaurus-dev.svc.cluster.local
     ProducerPath: //sys/admin/logs/master-security/producer
     QueuePath: //sys/admin/logs/master-security/queue
 - LogFile: /yt/master-logs/master.other.log.zstd
   Name: master-other
+  QueueBatchSize: 8388608
   YTQueue:
   - Cluster: http-proxies-lb.ytsaurus-dev.svc.cluster.local
     ProducerPath: //sys/admin/logs/master-other/producer

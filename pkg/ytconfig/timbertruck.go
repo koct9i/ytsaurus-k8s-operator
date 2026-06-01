@@ -14,10 +14,13 @@ type TimbertruckConfig struct {
 	JsonLogs []TimbertruckJsonLogConfig `json:"json_logs"`
 }
 
+const timbertruckQueueBatchSize = 8 * 1024 * 1024 // 8 MiB
+
 type TimbertruckJsonLogConfig struct {
-	Name    string                     `json:"name"`
-	LogFile string                     `json:"log_file"`
-	YTQueue []TimbertruckYTQueueConfig `json:"yt_queue"`
+	Name           string                     `json:"name"`
+	LogFile        string                     `json:"log_file"`
+	QueueBatchSize int                        `json:"queue_batch_size"`
+	YTQueue        []TimbertruckYTQueueConfig `json:"yt_queue"`
 }
 
 type TimbertruckYTQueueConfig struct {
@@ -44,9 +47,10 @@ func NewTimbertruckConfig(structuredLoggers []ytv1.StructuredLoggerSpec, workDir
 		}
 
 		timbertruckJsonLogConfig := TimbertruckJsonLogConfig{
-			Name:    deliveryName,
-			LogFile: fileName,
-			YTQueue: []TimbertruckYTQueueConfig{},
+			Name:           deliveryName,
+			LogFile:        fileName,
+			QueueBatchSize: timbertruckQueueBatchSize,
+			YTQueue:        []TimbertruckYTQueueConfig{},
 		}
 
 		deliveryPath := fmt.Sprintf("%s/%s", logsDeliveryPath, deliveryName)
