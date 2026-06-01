@@ -2,6 +2,8 @@ module github.com/ytsaurus/ytsaurus-k8s-operator/api
 
 go 1.24.13
 
+toolchain go1.25.10
+
 require (
 	k8s.io/api v0.32.12
 	k8s.io/apimachinery v0.32.12

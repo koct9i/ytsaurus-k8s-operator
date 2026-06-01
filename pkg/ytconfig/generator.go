@@ -281,7 +281,7 @@ func (g *NodeGenerator) getHTTPProxyAddress(ytsaurus *ytv1.YtsaurusSpec, role, h
 	address.WriteString(hostname)
 
 	if port := getHTTPProxyPort(ytsaurus, role, portName); port != defaultPort {
-		address.WriteString(fmt.Sprintf(":%v", port))
+		fmt.Fprintf(&address, ":%v", port)
 	}
 
 	return address.String()

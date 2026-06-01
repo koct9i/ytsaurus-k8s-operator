@@ -3,6 +3,7 @@ package components
 import (
 	"fmt"
 	"path"
+	"strings"
 
 	ytv1 "github.com/ytsaurus/ytsaurus-k8s-operator/api/v1"
 	"github.com/ytsaurus/ytsaurus-k8s-operator/pkg/consts"
@@ -106,15 +107,20 @@ func createServerVolumes(specVolumes []ytv1.Volume, configMapName string) []core
 }
 
 func getLocationInitCommand(locations []ytv1.LocationSpec) string {
-	command := "echo 'Init locations'; "
+	var command strings.Builder
+	command.WriteString("echo 'Init locations'; ")
 	for _, location := range locations {
-		command += "mkdir -p " + location.Path + "; "
+		command.WriteString("mkdir -p ")
+		command.WriteString(location.Path)
+		command.WriteString("; ")
 	}
-	return command
+	return command.String()
 }
 
 func getConfigPostprocessingCommand(configFileName string) string {
-	command := fmt.Sprintf("echo 'Postprocess config %v';", configFileName)
+	var command strings.Builder
+
+	fmt.Fprintf(&command, "echo 'Postprocess config %v';", configFileName)
 
 	// Store postprocessing as a script on filesystem to ease up manual
 	// config re-initialization without pod recreation. This will be useful
@@ -124,31 +130,33 @@ func getConfigPostprocessingCommand(configFileName string) string {
 	configPath := path.Join(consts.ConfigMountPoint, configFileName)
 	postprocessScriptPath := path.Join(consts.ConfigMountPoint, consts.PostprocessConfigScriptFileName)
 
-	substituteEnvCommand := func(envVar string) string {
+	var postprocessScript strings.Builder
+
+	substituteEnvCommand := func(envVar string) {
 		// Replace placeholder {envVar} with the actual value of environment variable envVar.
-		return fmt.Sprintf("sed -i -s \"s/{%v}/${%v}/g\" %v; ", envVar, envVar, configPath)
+		fmt.Fprintf(&postprocessScript, "sed -i -s \"s/{%v}/${%v}/g\" %v; ", envVar, envVar, configPath)
 	}
 
-	substitutePlaceholderWithCommand := func(placeholder string, command string) string {
+	substitutePlaceholderWithCommand := func(placeholder string, command string) {
 		// Replace placeholder {placeholder} with the output of the given command.
-		return fmt.Sprintf("sed -i -s \"s/{%v}/$(%v)/g\" %v; ", placeholder, command, configPath)
+		fmt.Fprintf(&postprocessScript, "sed -i -s \"s/{%v}/$(%v)/g\" %v; ", placeholder, command, configPath)
 	}
 
-	postprocessScript := fmt.Sprintf("cp %v %v; ", configTemplatePath, configPath)
+	fmt.Fprintf(&postprocessScript, "cp %v %v; ", configTemplatePath, configPath)
 
 	for _, envVar := range getDefaultEnv() {
-		postprocessScript += substituteEnvCommand(envVar.Name)
+		substituteEnvCommand(envVar.Name)
 	}
 
-	postprocessScript += substitutePlaceholderWithCommand("POD_FQDN", "hostname -f")
-	postprocessScript += substitutePlaceholderWithCommand("POD_SHORT_HOSTNAME", "hostname -s")
+	substitutePlaceholderWithCommand("POD_FQDN", "hostname -f")
+	substitutePlaceholderWithCommand("POD_SHORT_HOSTNAME", "hostname -s")
 
-	command += fmt.Sprintf("echo '%v' > %v; ", postprocessScript, postprocessScriptPath)
-	command += fmt.Sprintf("chmod +x '%v'; ", postprocessScriptPath)
-	command += fmt.Sprintf("source %v; ", postprocessScriptPath)
-	command += fmt.Sprintf("cat %v; ", configPath)
+	fmt.Fprintf(&command, "echo '%v' > %v; ", postprocessScript.String(), postprocessScriptPath)
+	fmt.Fprintf(&command, "chmod +x '%v'; ", postprocessScriptPath)
+	fmt.Fprintf(&command, "source %v; ", postprocessScriptPath)
+	fmt.Fprintf(&command, "cat %v; ", configPath)
 
-	return command
+	return command.String()
 }
 
 func getDefaultEnv() []corev1.EnvVar {

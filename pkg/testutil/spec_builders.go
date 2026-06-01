@@ -153,10 +153,10 @@ func init() {
 	// Pick other versions for tests relative to "CURR" epoch.
 	if index := slices.Index(epochs, images["YTSAURUS"][YtsaurusCurrVersion].Epoch); index != -1 {
 		if YtsaurusPastVersion == "" && index > 1 {
-			YtsaurusPastVersion = epochs[index-2]
+			YtsaurusPastVersion = epochs[index-2] //nolint:gosec //index
 		}
 		if YtsaurusPrevVersion == "" && index > 0 {
-			YtsaurusPrevVersion = epochs[index-1]
+			YtsaurusPrevVersion = epochs[index-1] //nolint:gosec //index
 		}
 		if YtsaurusNextVersion == "" && index < len(epochs)-1 {
 			YtsaurusNextVersion = epochs[index+1]
