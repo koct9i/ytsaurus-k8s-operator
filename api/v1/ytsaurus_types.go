@@ -978,6 +978,8 @@ type YtsaurusSpec struct {
 	//+optional
 	RequiresOperatorVersion string `json:"requiresOperatorVersion,omitempty"`
 
+	// Reference to secret with initial "login", "password", "token" for administrator user.
+	// If secret is not specified or does not exist default admin/password is no longer set.
 	AdminCredentials *corev1.LocalObjectReference `json:"adminCredentials,omitempty"`
 
 	OauthService *OauthServiceSpec `json:"oauthService,omitempty"`

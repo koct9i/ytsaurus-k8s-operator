@@ -8,6 +8,10 @@ import (
 )
 
 const (
+	AdminLogin    = "admin"
+	AdminPassword = "admin-password"
+	AdminToken    = "admin-token"
+
 	testYtsaurusImage = "test-ytsaurus-image"
 	dndsNameOne       = "dn-1"
 )

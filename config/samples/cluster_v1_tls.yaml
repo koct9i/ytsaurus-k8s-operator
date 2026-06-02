@@ -44,7 +44,7 @@ spec:
   # https://github.com/ytsaurus/ytsaurus-ui/
   uiImage: ghcr.io/ytsaurus/ui:stable
 
-  # Default "admin" password and token is "password".
+  # Secret with login, password and token for administrator.
   adminCredentials:
     name: ytsaurus-admin-credentials
 

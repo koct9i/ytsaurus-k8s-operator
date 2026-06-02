@@ -62,8 +62,8 @@ spec:
             description: YtsaurusSpec defines the desired state of Ytsaurus
             properties:
               adminCredentials:
-                description: LocalObjectReference contains enough information to let
-                  you locate the...
+                description: Reference to secret with initial "login", "password",
+                  "token" for administrator...
                 properties:
                   name:
                     default: ""

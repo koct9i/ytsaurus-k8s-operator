@@ -161,31 +161,21 @@ func (m *Master) ArePodsReady(ctx context.Context) (ComponentStatus, error) {
 	return arePodsReady(ctx, m.server, m.labeller, []string{consts.YTServerContainerName})
 }
 
-func (m *Master) getAdminCredentials() (adminLogin string, adminPassword string, adminToken string) {
-	adminLogin, adminPassword = consts.DefaultAdminLogin, consts.DefaultAdminPassword
-	adminToken = consts.DefaultAdminPassword
-
+func (m *Master) getAdminCredentials() (exists bool, adminLogin string, adminPassword string, adminToken string) {
 	if m.adminCredentials.Name != "" {
-		value, ok := m.adminCredentials.Data[consts.AdminLoginSecret]
-		if ok {
-			adminLogin = string(value)
-		}
-		value, ok = m.adminCredentials.Data[consts.AdminPasswordSecret]
-		if ok {
-			adminPassword = string(value)
-		}
-
-		value, ok = m.adminCredentials.Data[consts.AdminTokenSecret]
-		if ok {
-			adminToken = string(value)
-		}
+		adminLogin = string(m.adminCredentials.Data[consts.AdminLoginSecretKey])
+		adminPassword = string(m.adminCredentials.Data[consts.AdminPasswordSecretKey])
+		adminToken = string(m.adminCredentials.Data[consts.AdminTokenSecretKey])
+		exists = adminLogin != "" && adminPassword != "" && adminToken != ""
 	}
-	return adminLogin, adminPassword, adminToken
+	return exists, adminLogin, adminPassword, adminToken
 }
 
 func (m *Master) initAdminUser() string {
-	adminLogin, adminPassword, adminToken := m.getAdminCredentials()
-
+	exists, adminLogin, adminPassword, adminToken := m.getAdminCredentials()
+	if !exists {
+		return ""
+	}
 	commands := createUserCommand(adminLogin, adminPassword, adminToken, true)
 	return RunIfNonexistent(fmt.Sprintf("//sys/users/%s", adminLogin), commands...)
 }

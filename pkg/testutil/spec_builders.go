@@ -13,6 +13,7 @@ import (
 
 	"k8s.io/utils/ptr"
 
+	"github.com/ytsaurus/ytsaurus-k8s-operator/pkg/consts"
 	"github.com/ytsaurus/ytsaurus-k8s-operator/pkg/version"
 
 	ytv1 "github.com/ytsaurus/ytsaurus-k8s-operator/api/v1"
@@ -29,6 +30,8 @@ const (
 	// <...> is too long (64 characters is the max, 67 characters requested)`.
 	// FIXME(khlebnikov): https://github.com/ytsaurus/ytsaurus-k8s-operator/issues/390
 	RemoteResourceName = "rmt"
+
+	YtsaurusAdminSecret = "test-ytsaurus-admin" //nolint:gosec //secret
 )
 
 type YtsaurusImages struct {
@@ -224,6 +227,8 @@ type YtsaurusBuilder struct {
 	WithRPCProxyTLS    bool
 
 	ImagePullSecret *corev1.LocalObjectReference
+
+	YtsaurusAdminSecret *corev1.Secret
 }
 
 func (b *YtsaurusBuilder) CreateVolumeClaim(name string, size resource.Quantity) ytv1.EmbeddedPersistentVolumeClaim {
@@ -309,6 +314,24 @@ func (b *YtsaurusBuilder) CreateMinimal() {
 			HTTPProxies: []ytv1.HTTPProxiesSpec{
 				b.CreateHTTPProxiesSpec(),
 			},
+		},
+	}
+}
+
+func (b *YtsaurusBuilder) WithAdminUser() {
+	b.Ytsaurus.Spec.AdminCredentials = &corev1.LocalObjectReference{
+		Name: YtsaurusAdminSecret,
+	}
+	b.YtsaurusAdminSecret = &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      YtsaurusAdminSecret,
+			Namespace: b.Namespace,
+		},
+		Type: corev1.SecretTypeOpaque,
+		Data: map[string][]byte{
+			consts.AdminLoginSecretKey:    []byte(AdminLogin),
+			consts.AdminPasswordSecretKey: []byte(AdminPassword),
+			consts.AdminTokenSecretKey:    []byte(AdminToken),
 		},
 	}
 }

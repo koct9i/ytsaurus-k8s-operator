@@ -3309,7 +3309,7 @@ _Appears in:_
 | `dnsConfig` _[PodDNSConfig](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.28/#poddnsconfig-v1-core)_ | DNSConfig allows customizing the DNS settings. |  |  |
 | `uiImage` _string_ |  |  |  |
 | `requiresOperatorVersion` _string_ | requiresOperatorVersion is used to lock the YT spec to an Operator version or range.<br />Syntax: https://github.com/Masterminds/semver<br />Example: "~0.1.2" is equivalent to ">= 0.1.2, < 0.2.0". |  |  |
-| `adminCredentials` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.28/#localobjectreference-v1-core)_ |  |  |  |
+| `adminCredentials` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.28/#localobjectreference-v1-core)_ | Reference to secret with initial "login", "password", "token" for administrator user.<br />If secret is not specified or does not exist default admin/password is no longer set. |  |  |
 | `oauthService` _[OauthServiceSpec](#oauthservicespec)_ |  |  |  |
 | `isManaged` _boolean_ | Setting to false disables all operator actions. Default: true. | true |  |
 | `updatePlan` _[ComponentUpdateSelector](#componentupdateselector) array_ | Defines components which are allowed to update.<br />Can contain either single "class" item or several "component" items.<br />When empty: update nothing |  |  |

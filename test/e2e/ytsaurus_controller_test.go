@@ -70,7 +70,7 @@ const (
 func getYtClient(httpClient *http.Client, proxyAddress string) yt.Client {
 	ytClient, err := ythttp.NewClient(&yt.Config{
 		Proxy:                 proxyAddress,
-		Token:                 consts.DefaultAdminPassword,
+		Token:                 testutil.AdminToken,
 		LightRequestTimeout:   ptr.To(lightRequestTimeout),
 		CompressionCodec:      yt.ClientCodecNone,
 		DisableProxyDiscovery: true,
@@ -85,7 +85,7 @@ func getYtRPCClient(httpClient *http.Client, proxyAddress, rpcProxyAddress strin
 	ytClient, err := ytrpc.NewClient(&yt.Config{
 		Proxy:                 proxyAddress,
 		RPCProxy:              rpcProxyAddress,
-		Token:                 consts.DefaultAdminPassword,
+		Token:                 testutil.AdminToken,
 		DisableProxyDiscovery: true,
 		Logger:                ytLogger,
 		HTTPClient:            httpClient,
@@ -318,13 +318,14 @@ var _ = Describe("Basic e2e test for Ytsaurus controller", Label("e2e"), func() 
 			Namespace: namespace,
 		}
 		ytBuilder.CreateMinimal()
+		ytBuilder.WithAdminUser()
 		ytsaurus = ytBuilder.Ytsaurus
 
 		By("Enabling image heater")
 		ytsaurus.Spec.ClusterFeatures.EnableImageHeater = true
 
 		imagePullSecrets = nil
-		objects = []client.Object{ytsaurus}
+		objects = []client.Object{ytsaurus, ytBuilder.YtsaurusAdminSecret}
 
 		By("Tracking Ytsaurus updates")
 		DeferCleanup(TrackObjectUpdates(specCtx, ytsaurus, &ytv1.YtsaurusList{}, NewYtsaurusStatusTracker()))
@@ -517,7 +518,7 @@ var _ = Describe("Basic e2e test for Ytsaurus controller", Label("e2e"), func() 
 				// NOTE: WhoAmI right now does not retry.
 				Eventually(ctx, func(ctx context.Context) (*yt.WhoAmIResult, error) {
 					return ytClient.WhoAmI(ctx, nil)
-				}).To(HaveField("Login", consts.DefaultAdminLogin))
+				}).To(HaveField("Login", testutil.AdminLogin))
 			})
 		}
 
@@ -535,7 +536,7 @@ var _ = Describe("Basic e2e test for Ytsaurus controller", Label("e2e"), func() 
 				// NOTE: WhoAmI right now does not retry.
 				Eventually(ctx, func(ctx context.Context) (*yt.WhoAmIResult, error) {
 					return ytClientHTTPS.WhoAmI(ctx, nil)
-				}).To(HaveField("Login", consts.DefaultAdminLogin))
+				}).To(HaveField("Login", testutil.AdminLogin))
 			})
 
 			if ytBuilder.WithHTTPSOnlyProxy {
@@ -545,15 +546,15 @@ var _ = Describe("Basic e2e test for Ytsaurus controller", Label("e2e"), func() 
 		}
 
 		DeferCleanup(AttachProgressReporter(func() string {
-			return fmt.Sprintf("YT_PROXY=%s YT_TOKEN=%s", ytProxyAddress, consts.DefaultAdminPassword)
+			return fmt.Sprintf("YT_PROXY=%s YT_TOKEN=%s", ytProxyAddress, testutil.AdminToken)
 		}))
 
 		log.Info("Ytsaurus access",
 			"YT_PROXY", ytProxyAddress,
 			"YT_PROXY HTTPS", ytProxyAddressHTTPS,
-			"YT_TOKEN", consts.DefaultAdminPassword,
-			"login", consts.DefaultAdminLogin,
-			"password", consts.DefaultAdminPassword,
+			"YT_TOKEN", testutil.AdminToken,
+			"login", testutil.AdminLogin,
+			"password", testutil.AdminPassword,
 		)
 
 		checkClusterHealth(ctx, ytClient)
@@ -600,7 +601,7 @@ var _ = Describe("Basic e2e test for Ytsaurus controller", Label("e2e"), func() 
 			Proxy:                    ytProxyAddressHTTPS,
 			RPCProxy:                 ytRPCProxyAddress,
 			CertificateAuthorityData: caBundleCertificates,
-			Token:                    consts.DefaultAdminPassword,
+			Token:                    testutil.AdminToken,
 			DisableProxyDiscovery:    true,
 			Logger:                   ytLogger,
 			HTTPClient:               httpClient,

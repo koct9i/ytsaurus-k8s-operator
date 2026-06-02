@@ -4,15 +4,12 @@ import (
 	"time"
 )
 
-const DefaultAdminLogin = "admin"
-const DefaultAdminPassword = "password"
-
 const RandomTokenPrefix = "ytct-ytop-"
 const RandomTokenBytes = 30
 
-const AdminLoginSecret = "login"
-const AdminPasswordSecret = "password"
-const AdminTokenSecret = "token"
+const AdminLoginSecretKey = "login"
+const AdminPasswordSecretKey = "password"
+const AdminTokenSecretKey = "token"
 
 const DefaultCABundlePath = "/etc/ssl/certs/ca-certificates.crt"
 
