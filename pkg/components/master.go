@@ -500,8 +500,8 @@ func (m *Master) Sync(ctx context.Context, dry bool) (ComponentStatus, error) {
 			ctx,
 			m.ytsaurus,
 			m.ytsaurus.GetCommonSpec().ConfigOverrides,
-			m.ytsaurus.GetResource().Spec.PrimaryMasters.Timbertruck,
-			&m.ytsaurus.GetResource().Spec.PrimaryMasters.InstanceSpec,
+			m.mastersSpec.Timbertruck,
+			&m.mastersSpec.InstanceSpec,
 			m.labeller,
 			m.cfgen,
 		)
