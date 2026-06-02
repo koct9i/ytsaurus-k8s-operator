@@ -15,6 +15,7 @@ spec:
 
   uiImage: ghcr.io/ytsaurus/ui:stable
 
+  # Secret with login, password and token for administrator.
   adminCredentials:
     name: ytadminsec
 
@@ -142,3 +143,14 @@ spec:
     resources:
       limits:
         memory: 100Mi
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ytadminsec
+type: Opaque
+data:
+  login: YWRtaW4=         # admin
+  password: cGFzc3dvcmQ=  # password
+  token: cGFzc3dvcmQ=     # password

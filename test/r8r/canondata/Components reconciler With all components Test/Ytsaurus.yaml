@@ -7,6 +7,8 @@ metadata:
   namespace: ytsaurus-components
   resourceVersion: "18"
 spec:
+  adminCredentials:
+    name: test-ytsaurus-admin
   caBundle:
     name: ytsaurus-dev-ca.crt
   caRootBundle:

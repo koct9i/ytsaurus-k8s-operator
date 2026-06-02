@@ -299,6 +299,9 @@ var _ = Describe("Components reconciler", Label("reconciler"), func() {
 			if ytBuilder.Overrides != nil {
 				Expect(k8sClient.Create(ctx, ytBuilder.Overrides)).To(Succeed())
 			}
+			if ytBuilder.YtsaurusAdminSecret != nil {
+				Expect(k8sClient.Create(ctx, ytBuilder.YtsaurusAdminSecret)).To(Succeed())
+			}
 			Expect(k8sClient.Create(ctx, ytsaurus)).To(Succeed())
 			controllerObjects = append(controllerObjects, ytsaurus)
 		})
@@ -650,6 +653,7 @@ var _ = Describe("Components reconciler", Label("reconciler"), func() {
 
 	Context("With all components", func() {
 		BeforeEach(func() {
+			ytBuilder.WithAdminUser()
 			ytBuilder.WithOverrides()
 			ytBuilder.WithSecondaryMaster()
 			ytBuilder.WithMasterCaches()

@@ -18,7 +18,7 @@
       "type": "object",
       "properties": {
         "adminCredentials": {
-          "description": "LocalObjectReference contains enough information to let you locate the...",
+          "description": "Reference to secret with initial \"login\", \"password\", \"token\" for administrator...",
           "type": "object",
           "properties": {
             "name": {

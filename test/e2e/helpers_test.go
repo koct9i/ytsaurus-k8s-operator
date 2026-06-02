@@ -33,6 +33,7 @@ import (
 	ytv1 "github.com/ytsaurus/ytsaurus-k8s-operator/api/v1"
 
 	"github.com/ytsaurus/ytsaurus-k8s-operator/pkg/consts"
+	"github.com/ytsaurus/ytsaurus-k8s-operator/pkg/testutil"
 
 	"go.ytsaurus.tech/yt/go/guid"
 	"go.ytsaurus.tech/yt/go/ypath"
@@ -531,7 +532,7 @@ func queryClickHouse(ctx context.Context, httpClient *http.Client, ytProxyAddres
 	if err != nil {
 		return "", err
 	}
-	request.Header.Add("Authorization", "OAuth "+consts.DefaultAdminPassword)
+	request.Header.Add("Authorization", "OAuth "+testutil.AdminToken)
 
 	response, err := httpClient.Do(request)
 	if err != nil {

@@ -711,6 +711,11 @@
   name: test-overrides
   namespace: ytsaurus-components
   resourceVersion: "1"
+- creationTimestamp: null
+  generation: 1
+  name: test-ytsaurus-admin
+  namespace: ytsaurus-components
+  resourceVersion: "1"
 - annotations:
     extra-pod-annotation: "true"
     ytsaurus.tech/observed-generation: "1"
