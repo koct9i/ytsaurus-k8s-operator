@@ -75,5 +75,5 @@ func (c *TimbertruckConfig) ToYSON() ([]byte, error) {
 	return yson.MarshalFormat((*timbertruckConfigAlias)(c), yson.FormatPretty)
 }
 
-// timbertruckConfigAlias breaks the MarshalYSON recursion if yson ever detects a ToYSON method.
+// timbertruckConfigAlias avoids recursive marshaling if TimbertruckConfig ever implements custom YSON marshaling (e.g. MarshalYSON).
 type timbertruckConfigAlias TimbertruckConfig
