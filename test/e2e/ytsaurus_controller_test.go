@@ -1484,6 +1484,13 @@ var _ = Describe("Basic e2e test for Ytsaurus controller", Label("e2e"), func() 
 		Context("With timbertruck", Label("timbertruck"), func() {
 			BeforeEach(func() {
 				ytBuilder.WithTimbertruck()
+				ytsaurus.Spec.PrimaryMasters.InstanceSpec.Locations = append(
+					ytsaurus.Spec.PrimaryMasters.InstanceSpec.Locations,
+					ytv1.LocationSpec{
+						LocationType: ytv1.LocationTypeLogs,
+						Path:         "/yt/master-data/logs",
+					},
+				)
 				ytsaurus.Spec.PrimaryMasters.InstanceSpec.StructuredLoggers = append(
 					ytsaurus.Spec.PrimaryMasters.InstanceSpec.StructuredLoggers,
 					ytv1.StructuredLoggerSpec{
