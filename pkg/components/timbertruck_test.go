@@ -5,10 +5,10 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"go.ytsaurus.tech/yt/go/yson"
 	v1 "github.com/ytsaurus/ytsaurus-k8s-operator/api/v1"
 	"github.com/ytsaurus/ytsaurus-k8s-operator/pkg/canonize"
 	"github.com/ytsaurus/ytsaurus-k8s-operator/pkg/ytconfig"
+	"go.ytsaurus.tech/yt/go/yson"
 	"sigs.k8s.io/yaml"
 )
 
