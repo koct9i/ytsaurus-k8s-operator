@@ -331,6 +331,16 @@ func (b *YtsaurusBuilder) WithTimbertruck() {
 	b.Ytsaurus.Spec.PrimaryMasters.Timbertruck = &ytv1.TimbertruckSpec{
 		Image: ptr.To(b.Images.Sidecars),
 	}
+	b.Ytsaurus.Spec.PrimaryMasters.InstanceSpec.StructuredLoggers = append(
+		b.Ytsaurus.Spec.PrimaryMasters.InstanceSpec.StructuredLoggers,
+		ytv1.StructuredLoggerSpec{
+			Category: "Access",
+			BaseLoggerSpec: ytv1.BaseLoggerSpec{
+				Name:   "access",
+				Format: ytv1.LogFormatJson,
+			},
+		},
+	)
 }
 
 func (b *YtsaurusBuilder) WithNativeTransportTLS(serverCert, clientCert string) {
