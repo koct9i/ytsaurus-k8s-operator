@@ -1484,6 +1484,16 @@ var _ = Describe("Basic e2e test for Ytsaurus controller", Label("e2e"), func() 
 		Context("With timbertruck", Label("timbertruck"), func() {
 			BeforeEach(func() {
 				ytBuilder.WithTimbertruck()
+				ytsaurus.Spec.PrimaryMasters.InstanceSpec.StructuredLoggers = append(
+					ytsaurus.Spec.PrimaryMasters.InstanceSpec.StructuredLoggers,
+					ytv1.StructuredLoggerSpec{
+						Category: "Access",
+						BaseLoggerSpec: ytv1.BaseLoggerSpec{
+							Name:   "access",
+							Format: ytv1.LogFormatJson,
+						},
+					},
+				)
 			})
 
 			It("Should not block cluster update", func(ctx context.Context) {
