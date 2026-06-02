@@ -1488,7 +1488,23 @@ var _ = Describe("Basic e2e test for Ytsaurus controller", Label("e2e"), func() 
 					ytsaurus.Spec.PrimaryMasters.InstanceSpec.Locations,
 					ytv1.LocationSpec{
 						LocationType: ytv1.LocationTypeLogs,
-						Path:         "/yt/master-data/logs",
+						Path:         "/yt/logs",
+					},
+				)
+				ytsaurus.Spec.PrimaryMasters.InstanceSpec.Volumes = append(
+					ytsaurus.Spec.PrimaryMasters.InstanceSpec.Volumes,
+					ytv1.Volume{
+						Name: "logs",
+						VolumeSource: ytv1.VolumeSource{
+							EmptyDir: &corev1.EmptyDirVolumeSource{},
+						},
+					},
+				)
+				ytsaurus.Spec.PrimaryMasters.InstanceSpec.VolumeMounts = append(
+					ytsaurus.Spec.PrimaryMasters.InstanceSpec.VolumeMounts,
+					corev1.VolumeMount{
+						Name:      "logs",
+						MountPath: "/yt/logs",
 					},
 				)
 				ytsaurus.Spec.PrimaryMasters.InstanceSpec.StructuredLoggers = append(
