@@ -494,7 +494,24 @@ func (m *Master) Sync(ctx context.Context, dry bool) (ComponentStatus, error) {
 		return ComponentStatusWaitingFor(m.uploaderSecret.Name()), err
 	}
 
-	if m.NeedSync() {
+	needSync := m.NeedSync()
+	if !needSync {
+		needTimbertruckSync, err := timbertruckConfigMapNeedsSync(
+			ctx,
+			m.ytsaurus,
+			m.ytsaurus.GetCommonSpec().ConfigOverrides,
+			m.mastersSpec.Timbertruck,
+			&m.mastersSpec.InstanceSpec,
+			m.labeller,
+			m.cfgen,
+		)
+		if err != nil {
+			return SimpleStatus(SyncStatusUpdating), err
+		}
+		needSync = needTimbertruckSync
+	}
+
+	if needSync {
 		if !dry {
 			err = m.doServerSync(ctx)
 		}
@@ -536,7 +553,7 @@ func (m *Master) doServerSync(ctx context.Context) error {
 			m.uploaderSecret.Name(),
 		)
 	}
-	if err := checkAndAddTimbertruckToPodSpec(m.mastersSpec.Timbertruck, podSpec, &m.mastersSpec.InstanceSpec, m.labeller, m.cfgen); err != nil {
+	if err := checkAndAddTimbertruckToPodSpec(ctx, m.ytsaurus, m.ytsaurus.GetCommonSpec().ConfigOverrides, m.mastersSpec.Timbertruck, podSpec, &m.mastersSpec.InstanceSpec, m.labeller, m.cfgen); err != nil {
 		return err
 	}
 	if err := AddSidecarsToPodSpec(m.mastersSpec.Sidecars, podSpec); err != nil {

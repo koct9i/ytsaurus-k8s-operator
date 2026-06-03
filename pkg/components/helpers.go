@@ -26,8 +26,6 @@ import (
 )
 
 const (
-	timbertruckInitScriptPrefix = "mkdir -p /etc/timbertruck; echo '"
-	timbertruckInitScriptSuffix = "' > /etc/timbertruck/config.yaml; chmod 644 /etc/timbertruck/config.yaml; /usr/bin/timbertruck_os -config /etc/timbertruck/config.yaml"
 	// OnDeleteUpdateModeWarningTimeout is the duration after which a warning is logged
 	// if the component is still waiting for manual pod deletion in OnDelete mode
 	OnDeleteUpdateModeWarningTimeout = 15 * 60 // 15 minutes in seconds

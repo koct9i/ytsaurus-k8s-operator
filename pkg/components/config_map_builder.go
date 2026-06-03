@@ -10,6 +10,7 @@ import (
 	"github.com/BurntSushi/toml"
 	"github.com/google/go-cmp/cmp"
 	"go.ytsaurus.tech/yt/go/yson"
+	"sigs.k8s.io/yaml"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -32,6 +33,7 @@ const (
 	ConfigFormatJson               ConfigFormat = "json"
 	ConfigFormatJsonWithJsPrologue ConfigFormat = "json_with_js_prologue"
 	ConfigFormatToml               ConfigFormat = "toml"
+	ConfigFormatYaml               ConfigFormat = "yaml"
 )
 
 type TextGeneratorFunc func() ([]string, error)
@@ -188,6 +190,16 @@ func (h *ConfigMapBuilder) getConfig(descriptor ConfigGenerator) ([]byte, error)
 			return nil, err
 		}
 		serializedConfig = buf.Bytes()
+	case ConfigFormatYaml:
+		var config any
+		if err := yson.Unmarshal(serializedConfig, &config); err != nil {
+			return nil, err
+		}
+		var err error
+		serializedConfig, err = yaml.Marshal(config)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return serializedConfig, nil

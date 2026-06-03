@@ -1481,6 +1481,104 @@ var _ = Describe("Basic e2e test for Ytsaurus controller", Label("e2e"), func() 
 
 		}) // update queue-agent
 
+		Context("With timbertruck", Label("timbertruck"), func() {
+			BeforeEach(func() {
+				ytBuilder.WithTimbertruck()
+				ytsaurus.Spec.PrimaryMasters.InstanceSpec.Locations = append(
+					ytsaurus.Spec.PrimaryMasters.InstanceSpec.Locations,
+					ytv1.LocationSpec{
+						LocationType: ytv1.LocationTypeLogs,
+						Path:         "/yt/logs",
+					},
+				)
+				ytsaurus.Spec.PrimaryMasters.InstanceSpec.Volumes = append(
+					ytsaurus.Spec.PrimaryMasters.InstanceSpec.Volumes,
+					ytv1.Volume{
+						Name: "logs",
+						VolumeSource: ytv1.VolumeSource{
+							EmptyDir: &corev1.EmptyDirVolumeSource{},
+						},
+					},
+				)
+				ytsaurus.Spec.PrimaryMasters.InstanceSpec.VolumeMounts = append(
+					ytsaurus.Spec.PrimaryMasters.InstanceSpec.VolumeMounts,
+					corev1.VolumeMount{
+						Name:      "logs",
+						MountPath: "/yt/logs",
+					},
+				)
+				ytsaurus.Spec.PrimaryMasters.InstanceSpec.StructuredLoggers = append(
+					ytsaurus.Spec.PrimaryMasters.InstanceSpec.StructuredLoggers,
+					ytv1.StructuredLoggerSpec{
+						Category: "Access",
+						BaseLoggerSpec: ytv1.BaseLoggerSpec{
+							Name:   "access",
+							Format: ytv1.LogFormatJson,
+						},
+					},
+				)
+			})
+
+			It("Should not block cluster update", func(ctx context.Context) {
+				By("Triggering a cluster update")
+				ytsaurus.Spec.UpdatePlan = []ytv1.ComponentUpdateSelector{{Class: consts.ComponentClassEverything}}
+				updateSpecToTriggerAllComponentUpdate(ytsaurus)
+				UpdateObject(ctx, ytsaurus)
+
+				EventuallyYtsaurus(ctx, ytsaurus, reactionTimeout).Should(HaveClusterStateUpdating())
+
+				By("Waiting cluster update completes")
+				EventuallyYtsaurus(ctx, ytsaurus, upgradeTimeout).Should(HaveClusterStateRunning())
+				Expect(ytsaurus).Should(HaveStatusConditionTrue(consts.ConditionTimbertruckPrepared))
+			})
+
+			It("Should mount timbertruck configmap on master pods", func(ctx context.Context) {
+				masterLabeller := generator.GetComponentLabeller(consts.MasterType, "")
+				configMapName := masterLabeller.GetSidecarConfigMapName(consts.TimbertruckContainerName)
+
+				By("Checking timbertruck configmap exists with snake_case keys")
+				var configMap corev1.ConfigMap
+				Expect(k8sClient.Get(ctx, client.ObjectKey{Name: configMapName, Namespace: namespace}, &configMap)).Should(Succeed())
+				Expect(configMap.Data).To(HaveKey("config.yaml"))
+				configYaml := configMap.Data["config.yaml"]
+				Expect(configYaml).To(ContainSubstring("work_dir:"))
+				Expect(configYaml).To(ContainSubstring("json_logs:"))
+				Expect(configYaml).To(ContainSubstring("queue_batch_size:"))
+				Expect(configYaml).NotTo(ContainSubstring("WorkDir:"))
+				Expect(configYaml).NotTo(ContainSubstring("JsonLogs:"))
+
+				By("Checking master statefulset has timbertruck container with configmap mounted")
+				var sts appsv1.StatefulSet
+				Expect(k8sClient.Get(ctx, client.ObjectKey{
+					Name:      masterLabeller.GetServerStatefulSetName(),
+					Namespace: namespace,
+				}, &sts)).Should(Succeed())
+
+				var ttContainer *corev1.Container
+				for i := range sts.Spec.Template.Spec.Containers {
+					c := &sts.Spec.Template.Spec.Containers[i]
+					if c.Name == consts.TimbertruckContainerName {
+						ttContainer = c
+						break
+					}
+				}
+				Expect(ttContainer).NotTo(BeNil(), "timbertruck container must be present")
+				Expect(ttContainer.Command).To(Equal([]string{
+					"/usr/bin/timbertruck_os", "-config", "/etc/timbertruck/config.yaml",
+				}))
+
+				configMounted := false
+				for _, m := range ttContainer.VolumeMounts {
+					if m.MountPath == "/etc/timbertruck" {
+						configMounted = true
+						break
+					}
+				}
+				Expect(configMounted).To(BeTrueBecause("timbertruck container must mount /etc/timbertruck"))
+			})
+
+		}) // update timbertruck
+
 	}) // update
 
 	Context("Remote ytsaurus tests", Label("remote"), func() {

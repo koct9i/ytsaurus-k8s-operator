@@ -4,24 +4,29 @@ import (
 	"fmt"
 	"path"
 
+	"go.ytsaurus.tech/yt/go/yson"
+
 	ytv1 "github.com/ytsaurus/ytsaurus-k8s-operator/api/v1"
 )
 
 type TimbertruckConfig struct {
-	WorkDir  string                     `json:"work_dir"`
-	JsonLogs []TimbertruckJsonLogConfig `json:"json_logs"`
+	WorkDir  string                     `json:"work_dir" yson:"work_dir"`
+	JsonLogs []TimbertruckJsonLogConfig `json:"json_logs" yson:"json_logs"`
 }
 
+const timbertruckQueueBatchSize = 8 * 1024 * 1024 // 8 MiB
+
 type TimbertruckJsonLogConfig struct {
-	Name    string                     `json:"name"`
-	LogFile string                     `json:"log_file"`
-	YTQueue []TimbertruckYTQueueConfig `json:"yt_queue"`
+	Name           string                     `json:"name" yson:"name"`
+	LogFile        string                     `json:"log_file" yson:"log_file"`
+	QueueBatchSize int                        `json:"queue_batch_size" yson:"queue_batch_size"`
+	YTQueue        []TimbertruckYTQueueConfig `json:"yt_queue" yson:"yt_queue"`
 }
 
 type TimbertruckYTQueueConfig struct {
-	Cluster      string `json:"cluster"`
-	QueuePath    string `json:"queue_path"`
-	ProducerPath string `json:"producer_path"`
+	Cluster      string `json:"cluster" yson:"cluster"`
+	QueuePath    string `json:"queue_path" yson:"queue_path"`
+	ProducerPath string `json:"producer_path" yson:"producer_path"`
 }
 
 func NewTimbertruckConfig(structuredLoggers []ytv1.StructuredLoggerSpec, workDir, componentName, logsDirectory, deliveryProxy, logsDeliveryPath string) *TimbertruckConfig {
@@ -42,9 +47,10 @@ func NewTimbertruckConfig(structuredLoggers []ytv1.StructuredLoggerSpec, workDir
 		}
 
 		timbertruckJsonLogConfig := TimbertruckJsonLogConfig{
-			Name:    deliveryName,
-			LogFile: fileName,
-			YTQueue: []TimbertruckYTQueueConfig{},
+			Name:           deliveryName,
+			LogFile:        fileName,
+			QueueBatchSize: timbertruckQueueBatchSize,
+			YTQueue:        []TimbertruckYTQueueConfig{},
 		}
 
 		deliveryPath := fmt.Sprintf("%s/%s", logsDeliveryPath, deliveryName)
@@ -64,3 +70,10 @@ func NewTimbertruckConfig(structuredLoggers []ytv1.StructuredLoggerSpec, workDir
 
 	return timbertruckConfig
 }
+
+func (c *TimbertruckConfig) ToYSON() ([]byte, error) {
+	return yson.MarshalFormat((*timbertruckConfigAlias)(c), yson.FormatPretty)
+}
+
+// timbertruckConfigAlias avoids recursive marshaling if TimbertruckConfig ever implements custom YSON marshaling (e.g. MarshalYSON).
+type timbertruckConfigAlias TimbertruckConfig

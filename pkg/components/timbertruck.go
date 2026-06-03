@@ -15,7 +15,6 @@ import (
 	"go.ytsaurus.tech/yt/go/yt"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/yaml"
 )
 
 type Timbertruck struct {
@@ -111,27 +110,26 @@ func (tt *Timbertruck) initTimbertruckUser(ctx context.Context, deliveryLoggers 
 	return nil
 }
 
-func (tt *Timbertruck) handleUpdatingState(ctx context.Context) (ComponentStatus, error) {
-	var err error
-
-	if tt.ytsaurus.GetUpdateState() == ytv1.UpdateStateWaitingForTimbertruckPrepared {
-		if !tt.ytsaurus.IsUpdateStatusConditionTrue(consts.ConditionTimbertruckPrepared) {
-			err := tt.prepareTimbertruckTables(ctx)
-			if err != nil {
-				return SimpleStatus(SyncStatusUpdating), err
-			}
-
-			tt.ytsaurus.SetUpdateStatusCondition(ctx, metav1.Condition{
-				Type:    consts.ConditionTimbertruckPrepared,
-				Status:  metav1.ConditionTrue,
-				Reason:  "Update",
-				Message: "Timbertruck prepared successfully",
-			})
+func (tt *Timbertruck) handleUpdatingState(ctx context.Context, dry bool) (ComponentStatus, error) {
+	if tt.ytsaurus.GetUpdateState() == ytv1.UpdateStateWaitingForTimbertruckPrepared &&
+		!tt.ytsaurus.IsUpdateStatusConditionTrue(consts.ConditionTimbertruckPrepared) {
+		if dry {
 			return SimpleStatus(SyncStatusUpdating), nil
 		}
+		if err := tt.prepareTimbertruckTables(ctx); err != nil {
+			return SimpleStatus(SyncStatusUpdating), err
+		}
+
+		tt.ytsaurus.SetUpdateStatusCondition(ctx, metav1.Condition{
+			Type:    consts.ConditionTimbertruckPrepared,
+			Status:  metav1.ConditionTrue,
+			Reason:  "Update",
+			Message: "Timbertruck prepared successfully",
+		})
+		return SimpleStatus(SyncStatusUpdating), nil
 	}
 
-	return SimpleStatus(SyncStatusUpdating), err
+	return ComponentStatusReady(), nil
 }
 
 func (tt *Timbertruck) Sync(ctx context.Context, dry bool) (ComponentStatus, error) {
@@ -141,10 +139,7 @@ func (tt *Timbertruck) Sync(ctx context.Context, dry bool) (ComponentStatus, err
 		if tt.ytsaurus.GetUpdateState() == ytv1.UpdateStateImpossibleToStart {
 			return ComponentStatusReady(), err
 		}
-		if dry {
-			return SimpleStatus(SyncStatusUpdating), err
-		}
-		return tt.handleUpdatingState(ctx)
+		return tt.handleUpdatingState(ctx, dry)
 	}
 
 	if tt.timbertruckSecret.NeedSync(consts.TokenSecretKey, "") {
@@ -285,14 +280,6 @@ func (tt *Timbertruck) prepareTimbertruckTables(ctx context.Context) error {
 	return nil
 }
 
-func getTimbertruckInitScript(timbertruckConfig *ytconfig.TimbertruckConfig) (string, error) {
-	configText, err := yaml.Marshal(timbertruckConfig)
-	if err != nil {
-		return "", fmt.Errorf("failed to marshal Timbertruck config: %w", err)
-	}
-	return fmt.Sprintf("%s%s%s", timbertruckInitScriptPrefix, string(configText), timbertruckInitScriptSuffix), nil
-}
-
 func prepareTimbertruckTablesFromConfig(ctx context.Context, ytClient yt.Client, timbertruckConfig *ytconfig.TimbertruckConfig, logsDeliveryPath string) error {
 	for _, jsonLog := range timbertruckConfig.JsonLogs {
 		for _, ytQueue := range jsonLog.YTQueue {
@@ -406,49 +393,117 @@ func getLogsDirectoryPath(timbertruck *ytv1.TimbertruckSpec) string {
 	return consts.DefaultTimbertruckDirectoryPath
 }
 
-func checkAndAddTimbertruckToPodSpec(timbertruck *ytv1.TimbertruckSpec, podSpec *corev1.PodSpec, instanceSpec *ytv1.InstanceSpec, labeler *labeller.Labeller, cfgen *ytconfig.Generator) error {
+// newTimbertruckConfigBuilder returns a ConfigMapBuilder for the timbertruck
+// sidecar config, or nil if timbertruck is not enabled for this component.
+func newTimbertruckConfigBuilder(
+	proxy apiproxy.APIProxy,
+	configOverrides *corev1.LocalObjectReference,
+	timbertruck *ytv1.TimbertruckSpec,
+	instanceSpec *ytv1.InstanceSpec,
+	labeler *labeller.Labeller,
+	cfgen *ytconfig.Generator,
+) (*ConfigMapBuilder, error) {
 	if timbertruck == nil || timbertruck.Image == nil || *timbertruck.Image == "" {
-		return nil
+		return nil, nil
 	}
-
 	if len(instanceSpec.StructuredLoggers) == 0 {
-		return nil
+		return nil, nil
 	}
-
-	logsDeliveryPath := getLogsDirectoryPath(timbertruck)
 
 	logsLocation := ytv1.FindFirstLocation(instanceSpec.Locations, ytv1.LocationTypeLogs)
 	if logsLocation == nil {
-		return fmt.Errorf("you are trying to use Timbertruck, but no logs location is defined in the instance spec")
+		return nil, fmt.Errorf("you are trying to use Timbertruck, but no logs location is defined in the instance spec")
 	}
-	structuredLoggres := instanceSpec.StructuredLoggers
 	logsDirectory := logsLocation.Path
 	componentName := consts.GetServiceKebabCase(labeler.ComponentType)
 	workDir := fmt.Sprintf("%s/%s", logsDirectory, consts.TimbertruckWorkDirName)
 	deliveryProxy := cfgen.GetHTTPProxiesAddress(consts.DefaultHTTPProxyRole)
 
 	timbertruckConfig := ytconfig.NewTimbertruckConfig(
-		structuredLoggres,
+		instanceSpec.StructuredLoggers,
 		workDir,
 		componentName,
 		logsDirectory,
 		deliveryProxy,
-		logsDeliveryPath,
+		getLogsDirectoryPath(timbertruck),
 	)
-
 	if timbertruckConfig == nil {
+		return nil, nil
+	}
+
+	configMapName := labeler.GetSidecarConfigMapName(consts.TimbertruckContainerName)
+	return NewConfigMapBuilder(
+		labeler,
+		proxy,
+		configMapName,
+		configOverrides,
+		ConfigGenerator{
+			FileName:  "config.yaml",
+			Format:    ConfigFormatYaml,
+			Generator: timbertruckConfig.ToYSON,
+		},
+	), nil
+}
+
+// timbertruckConfigMapNeedsSync reports whether the timbertruck configmap
+// content differs from what the operator would generate.
+func timbertruckConfigMapNeedsSync(
+	ctx context.Context,
+	proxy apiproxy.APIProxy,
+	configOverrides *corev1.LocalObjectReference,
+	timbertruck *ytv1.TimbertruckSpec,
+	instanceSpec *ytv1.InstanceSpec,
+	labeler *labeller.Labeller,
+	cfgen *ytconfig.Generator,
+) (bool, error) {
+	builder, err := newTimbertruckConfigBuilder(proxy, configOverrides, timbertruck, instanceSpec, labeler, cfgen)
+	if err != nil || builder == nil {
+		return false, err
+	}
+	if err := builder.Fetch(ctx); err != nil {
+		return false, fmt.Errorf("failed to fetch timbertruck configmap: %w", err)
+	}
+	if !builder.Exists() {
+		return true, nil
+	}
+	status, err := builder.needReload()
+	if err != nil {
+		return false, err
+	}
+	return status.IsNeedUpdate(), nil
+}
+
+func checkAndAddTimbertruckToPodSpec(ctx context.Context, proxy apiproxy.APIProxy, configOverrides *corev1.LocalObjectReference, timbertruck *ytv1.TimbertruckSpec, podSpec *corev1.PodSpec, instanceSpec *ytv1.InstanceSpec, labeler *labeller.Labeller, cfgen *ytconfig.Generator) error {
+	configBuilder, err := newTimbertruckConfigBuilder(proxy, configOverrides, timbertruck, instanceSpec, labeler, cfgen)
+	if err != nil {
+		return err
+	}
+	if configBuilder == nil {
 		return nil
 	}
 
-	timbertruckInitScript, err := getTimbertruckInitScript(timbertruckConfig)
-	if err != nil {
-		return fmt.Errorf("failed to get timbertruck init script: %w", err)
+	if err := configBuilder.Fetch(ctx); err != nil {
+		return fmt.Errorf("failed to fetch timbertruck configmap: %w", err)
 	}
+	if _, err := configBuilder.Build(); err != nil {
+		return fmt.Errorf("failed to build timbertruck configmap: %w", err)
+	}
+	if err := configBuilder.Sync(ctx); err != nil {
+		return fmt.Errorf("failed to sync timbertruck configmap: %w", err)
+	}
+
+	logsLocation := ytv1.FindFirstLocation(instanceSpec.Locations, ytv1.LocationTypeLogs)
+	logsDirectory := logsLocation.Path
+	deliveryProxy := cfgen.GetHTTPProxiesAddress(consts.DefaultHTTPProxyRole)
+	configMapName := configBuilder.GetConfigMapName()
+
+	const configVolumeName = consts.TimbertruckContainerName + "-config"
+	podSpec.Volumes = append(podSpec.Volumes, createConfigVolume(configVolumeName, configMapName, nil))
 
 	podSpec.Containers = append(podSpec.Containers, corev1.Container{
 		Name:    consts.TimbertruckContainerName,
 		Image:   *timbertruck.Image,
-		Command: []string{"/bin/bash", "-c", timbertruckInitScript},
+		Command: []string{"/usr/bin/timbertruck_os", "-config", "/etc/timbertruck/config.yaml"},
 		Env: append([]corev1.EnvVar{
 			{
 				Name: consts.TokenSecretKey,
@@ -468,6 +523,7 @@ func checkAndAddTimbertruckToPodSpec(timbertruck *ytv1.TimbertruckSpec, podSpec 
 		}, getDefaultEnv()...),
 		VolumeMounts: []corev1.VolumeMount{
 			{Name: path.Base(logsDirectory), MountPath: logsDirectory, ReadOnly: false},
+			{Name: configVolumeName, MountPath: "/etc/timbertruck", ReadOnly: true},
 		},
 		ImagePullPolicy: corev1.PullIfNotPresent,
 	})
