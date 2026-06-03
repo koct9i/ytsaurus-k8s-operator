@@ -445,34 +445,6 @@ func newTimbertruckConfigBuilder(
 	), nil
 }
 
-// timbertruckConfigMapNeedsSync reports whether the timbertruck configmap
-// content differs from what the operator would generate.
-func timbertruckConfigMapNeedsSync(
-	ctx context.Context,
-	proxy apiproxy.APIProxy,
-	configOverrides *corev1.LocalObjectReference,
-	timbertruck *ytv1.TimbertruckSpec,
-	instanceSpec *ytv1.InstanceSpec,
-	labeler *labeller.Labeller,
-	cfgen *ytconfig.Generator,
-) (bool, error) {
-	builder, err := newTimbertruckConfigBuilder(proxy, configOverrides, timbertruck, instanceSpec, labeler, cfgen)
-	if err != nil || builder == nil {
-		return false, err
-	}
-	if err := builder.Fetch(ctx); err != nil {
-		return false, fmt.Errorf("failed to fetch timbertruck configmap: %w", err)
-	}
-	if !builder.Exists() {
-		return true, nil
-	}
-	status, err := builder.needReload()
-	if err != nil {
-		return false, err
-	}
-	return status.IsNeedUpdate(), nil
-}
-
 func checkAndAddTimbertruckToPodSpec(ctx context.Context, proxy apiproxy.APIProxy, configOverrides *corev1.LocalObjectReference, timbertruck *ytv1.TimbertruckSpec, podSpec *corev1.PodSpec, instanceSpec *ytv1.InstanceSpec, labeler *labeller.Labeller, cfgen *ytconfig.Generator) error {
 	configBuilder, err := newTimbertruckConfigBuilder(proxy, configOverrides, timbertruck, instanceSpec, labeler, cfgen)
 	if err != nil {
