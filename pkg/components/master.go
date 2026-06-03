@@ -494,7 +494,24 @@ func (m *Master) Sync(ctx context.Context, dry bool) (ComponentStatus, error) {
 		return ComponentStatusWaitingFor(m.uploaderSecret.Name()), err
 	}
 
-	if m.NeedSync() {
+	needSync := m.NeedSync()
+	if !needSync {
+		needTimbertruckSync, err := timbertruckConfigMapNeedsSync(
+			ctx,
+			m.ytsaurus,
+			m.ytsaurus.GetCommonSpec().ConfigOverrides,
+			m.mastersSpec.Timbertruck,
+			&m.mastersSpec.InstanceSpec,
+			m.labeller,
+			m.cfgen,
+		)
+		if err != nil {
+			return SimpleStatus(SyncStatusUpdating), err
+		}
+		needSync = needTimbertruckSync
+	}
+
+	if needSync {
 		if !dry {
 			err = m.doServerSync(ctx)
 		}
