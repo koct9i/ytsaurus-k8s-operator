@@ -1,11 +1,9 @@
 name: Tests
 
 on:
-  push:
-    branches:
-      - main
-
-  pull_request: {}
+  issue_comment:
+    types:
+      - created
 
   workflow_dispatch:
     inputs:
@@ -26,13 +24,25 @@ on:
         default: ""
 
 jobs:
+  gate:
+    runs-on: ubuntu-latest
+    if: |
+      github.event.issue.pull_request &&
+      github.event.comment.body == '/test' && (
+        github.event.comment.author_association == 'MEMBER' ||
+        github.event.comment.author_association == 'OWNER')
+    steps:
+      - run: echo "Test gate passed"
+
   check-unit:
+    needs: gate
     name: Run unit tests
     uses: ./.github/workflows/subflow_run_unit_tests.yaml
     with:
       DEBUG: "${{ inputs.DEBUG }}"
 
   check-e2e:
+    needs: gate
     name: Run e2e tests
     uses: ./.github/workflows/subflow_run_e2e_tests.yaml
     with:
@@ -40,5 +50,6 @@ jobs:
       TEST_YTSAURUS_VERSION: "${{ inputs.TEST_YTSAURUS_VERSION }}"
 
   check-compat:
+    needs: gate
     name: Run compat tests
     uses: ./.github/workflows/subflow_run_compat_tests.yaml
