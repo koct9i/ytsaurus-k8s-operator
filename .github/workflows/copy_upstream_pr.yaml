@@ -1,0 +1,90 @@
+name: "Copy upstream PR"
+
+run-name: "Copy upstream ${{ inputs.upstream_repository }} PR ${{ inputs.upstream_pr_number }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      upstream_repository:
+        description: "Upstream repository in owner/name format"
+        type: string
+        required: true
+        default: "ytsaurus/ytsaurus-k8s-operator"
+      upstream_pr_number:
+        description: "Number of the upstream pull request to copy"
+        type: number
+        required: true
+      sync_main_branch:
+        description: "Sync main branch with upstream"
+        type: boolean
+        required: true
+        default: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: copy-upstream-pr-${{ github.repository }}-${{ inputs.upstream_pr_number }}
+  cancel-in-progress: false
+  queue: max
+
+jobs:
+  copy-upstream-pr:
+    name: Copy upstream PR
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Sync fork main branch
+        if: inputs.sync_main_branch
+        uses: ./.github/workflows/sync_fork_branch.yaml
+        with:
+          upstream_repository: ${{ inputs.upstream_repository }}
+          branch: main
+
+      - name: Checkout upstream
+        uses: actions/checkout@v6
+        with:
+          path: upstream
+          repository: ${{ inputs.upstream_repository }}
+          ref: main
+          fetch-depth: 1
+
+      - name: Copy upstream PR into fork
+        working-directory: upstream
+        env:
+          upstream_repository: ${{ inputs.upstream_repository }}
+          upstream_pr_number: ${{ inputs.upstream_pr_number }}
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          pr_json="$(gh pr view "${upstream_pr_number}" \
+            --json body,headRefName,headRepository,headRepositoryOwner,number,title,url)"
+
+          pr_url="$(jq -r '.url' <<<"${pr_json}")"
+          pr_title="$(jq -r '.title' <<<"${pr_json}")"
+          pr_body="$(jq -r '.body // ""' <<<"${pr_json}")"
+          head_ref="$(jq -r '.headRefName' <<<"${pr_json}")"
+          head_repo="$(jq -r '.headRepository.nameWithOwner // empty' <<<"${pr_json}")"
+          head_owner="$(jq -r '.headRepositoryOwner.login // empty' <<<"${pr_json}")"
+
+          if [ -z "${head_ref}" ] || [ -z "${head_repo}" ] || [ -z "${head_owner}" ]; then
+            echo "::error::Unable to determine the source branch for ${pr_url}."
+            exit 1
+          fi
+
+          if [ "${head_repo}" != "${upstream_repository}" ]; then
+            echo "::error::PR head branch is not from upstream repository."
+            exit 1
+          fi
+
+          gh pr checkout "${upstream_pr_number}"
+
+          printf '%s\n---\nCopied from upstream PR: %s\n' "$pr_body" "$pr_url" | \
+          gh pr create \
+            --repo "${{ github.repository }}" \
+            --title "Copy of upstream PR $upstream_pr_number: ${pr_title}" \
+            --body-file - \
+            --base main
