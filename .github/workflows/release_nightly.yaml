@@ -2,9 +2,6 @@ name: Build nightly release
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
 
 jobs:
   release:
