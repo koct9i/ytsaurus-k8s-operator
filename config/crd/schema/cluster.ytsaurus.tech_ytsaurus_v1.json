@@ -1296,6 +1296,10 @@
                   "enableAnchorProfiling": {
                     "type": "boolean"
                   },
+                  "enableDelivery": {
+                    "description": "EnableDelivery turns on timbertruck delivery of this structured log to the...",
+                    "type": "boolean"
+                  },
                   "format": {
                     "type": "string",
                     "default": "plain_text",
@@ -3639,6 +3643,10 @@
                   "enableAnchorProfiling": {
                     "type": "boolean"
                   },
+                  "enableDelivery": {
+                    "description": "EnableDelivery turns on timbertruck delivery of this structured log to the...",
+                    "type": "boolean"
+                  },
                   "format": {
                     "type": "string",
                     "default": "plain_text",
@@ -5828,6 +5836,10 @@
                     ]
                   },
                   "enableAnchorProfiling": {
+                    "type": "boolean"
+                  },
+                  "enableDelivery": {
+                    "description": "EnableDelivery turns on timbertruck delivery of this structured log to the...",
                     "type": "boolean"
                   },
                   "format": {
@@ -8027,6 +8039,10 @@
                     "enableAnchorProfiling": {
                       "type": "boolean"
                     },
+                    "enableDelivery": {
+                      "description": "EnableDelivery turns on timbertruck delivery of this structured log to the...",
+                      "type": "boolean"
+                    },
                     "format": {
                       "type": "string",
                       "default": "plain_text",
@@ -10218,6 +10234,10 @@
                     ]
                   },
                   "enableAnchorProfiling": {
+                    "type": "boolean"
+                  },
+                  "enableDelivery": {
+                    "description": "EnableDelivery turns on timbertruck delivery of this structured log to the...",
                     "type": "boolean"
                   },
                   "format": {
@@ -12784,6 +12804,10 @@
                     "enableAnchorProfiling": {
                       "type": "boolean"
                     },
+                    "enableDelivery": {
+                      "description": "EnableDelivery turns on timbertruck delivery of this structured log to the...",
+                      "type": "boolean"
+                    },
                     "format": {
                       "type": "string",
                       "default": "plain_text",
@@ -15045,6 +15069,10 @@
                     "enableAnchorProfiling": {
                       "type": "boolean"
                     },
+                    "enableDelivery": {
+                      "description": "EnableDelivery turns on timbertruck delivery of this structured log to the...",
+                      "type": "boolean"
+                    },
                     "format": {
                       "type": "string",
                       "default": "plain_text",
@@ -17287,6 +17315,10 @@
                     "enableAnchorProfiling": {
                       "type": "boolean"
                     },
+                    "enableDelivery": {
+                      "description": "EnableDelivery turns on timbertruck delivery of this structured log to the...",
+                      "type": "boolean"
+                    },
                     "format": {
                       "type": "string",
                       "default": "plain_text",
@@ -19495,6 +19527,10 @@
                     ]
                   },
                   "enableAnchorProfiling": {
+                    "type": "boolean"
+                  },
+                  "enableDelivery": {
+                    "description": "EnableDelivery turns on timbertruck delivery of this structured log to the...",
                     "type": "boolean"
                   },
                   "format": {
@@ -21848,6 +21884,10 @@
                   "enableAnchorProfiling": {
                     "type": "boolean"
                   },
+                  "enableDelivery": {
+                    "description": "EnableDelivery turns on timbertruck delivery of this structured log to the...",
+                    "type": "boolean"
+                  },
                   "format": {
                     "type": "string",
                     "default": "plain_text",
@@ -21923,6 +21963,7 @@
               "format": "int64"
             },
             "timbertruck": {
+              "description": "TimbertruckSpec configures the timbertruck sidecar that delivers structured...",
               "type": "object",
               "properties": {
                 "directoryPath": {
@@ -24042,6 +24083,10 @@
                     ]
                   },
                   "enableAnchorProfiling": {
+                    "type": "boolean"
+                  },
+                  "enableDelivery": {
+                    "description": "EnableDelivery turns on timbertruck delivery of this structured log to the...",
                     "type": "boolean"
                   },
                   "format": {
@@ -26227,6 +26272,10 @@
                     ]
                   },
                   "enableAnchorProfiling": {
+                    "type": "boolean"
+                  },
+                  "enableDelivery": {
+                    "description": "EnableDelivery turns on timbertruck delivery of this structured log to the...",
                     "type": "boolean"
                   },
                   "format": {
@@ -28431,6 +28480,10 @@
                       ]
                     },
                     "enableAnchorProfiling": {
+                      "type": "boolean"
+                    },
+                    "enableDelivery": {
+                      "description": "EnableDelivery turns on timbertruck delivery of this structured log to the...",
                       "type": "boolean"
                     },
                     "format": {
@@ -30662,6 +30715,10 @@
                     ]
                   },
                   "enableAnchorProfiling": {
+                    "type": "boolean"
+                  },
+                  "enableDelivery": {
+                    "description": "EnableDelivery turns on timbertruck delivery of this structured log to the...",
                     "type": "boolean"
                   },
                   "format": {
@@ -32902,6 +32959,10 @@
                     "enableAnchorProfiling": {
                       "type": "boolean"
                     },
+                    "enableDelivery": {
+                      "description": "EnableDelivery turns on timbertruck delivery of this structured log to the...",
+                      "type": "boolean"
+                    },
                     "format": {
                       "type": "string",
                       "default": "plain_text",
@@ -32977,6 +33038,7 @@
                 "format": "int64"
               },
               "timbertruck": {
+                "description": "TimbertruckSpec configures the timbertruck sidecar that delivers structured...",
                 "type": "object",
                 "properties": {
                   "directoryPath": {
@@ -35314,6 +35376,10 @@
                   "enableAnchorProfiling": {
                     "type": "boolean"
                   },
+                  "enableDelivery": {
+                    "description": "EnableDelivery turns on timbertruck delivery of this structured log to the...",
+                    "type": "boolean"
+                  },
                   "format": {
                     "type": "string",
                     "default": "plain_text",
@@ -37508,6 +37574,10 @@
                       ]
                     },
                     "enableAnchorProfiling": {
+                      "type": "boolean"
+                    },
+                    "enableDelivery": {
+                      "description": "EnableDelivery turns on timbertruck delivery of this structured log to the...",
                       "type": "boolean"
                     },
                     "format": {
@@ -39729,6 +39799,10 @@
                     "enableAnchorProfiling": {
                       "type": "boolean"
                     },
+                    "enableDelivery": {
+                      "description": "EnableDelivery turns on timbertruck delivery of this structured log to the...",
+                      "type": "boolean"
+                    },
                     "format": {
                       "type": "string",
                       "default": "plain_text",
@@ -40691,6 +40765,18 @@
                   }
                 }
               }
+            }
+          }
+        },
+        "timbertruck": {
+          "description": "Cluster-wide timbertruck sidecar settings (image, logs delivery path) used by...",
+          "type": "object",
+          "properties": {
+            "directoryPath": {
+              "type": "string"
+            },
+            "image": {
+              "type": "string"
             }
           }
         },
@@ -42485,6 +42571,10 @@
                     ]
                   },
                   "enableAnchorProfiling": {
+                    "type": "boolean"
+                  },
+                  "enableDelivery": {
+                    "description": "EnableDelivery turns on timbertruck delivery of this structured log to the...",
                     "type": "boolean"
                   },
                   "format": {
