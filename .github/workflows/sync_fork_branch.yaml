@@ -1,0 +1,98 @@
+name: "Sync fork branch"
+
+run-name: "Sync fork branch ${{ inputs.branch }} with ${{ inputs.upstream_repository }}"
+
+on:
+  workflow_call:
+    inputs:
+      upstream_repository:
+        description: "Upstream repository in owner/name format"
+        type: string
+        required: true
+        default: "ytsaurus/ytsaurus-k8s-operator"
+      branch:
+        description: "Branch name to sync"
+        type: string
+        required: true
+        default: "main"
+    outputs:
+      upstream_hash:
+        description: "Commit SHA fetched from upstream branch"
+        value: ${{ jobs.sync-branch.outputs.upstream_hash }}
+      fork_hash:
+        description: "Commit SHA pushed to this fork branch"
+        value: ${{ jobs.sync-branch.outputs.fork_hash}}
+
+  workflow_dispatch:
+    inputs:
+      upstream_repository:
+        description: "Upstream repository in owner/name format"
+        type: string
+        required: true
+        default: "ytsaurus/ytsaurus-k8s-operator"
+      branch:
+        description: "Branch name to sync"
+        type: string
+        required: true
+        default: "main"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-fork-branch-${{ github.repository }}
+  cancel-in-progress: false
+  queue: max
+
+env:
+  # https://github.com/actions/checkout?tab=readme-ov-file#push-a-commit-to-a-pr-using-the-built-in-token
+  GIT_COMMITTER_NAME: "github-actions[bot]"
+  GIT_COMMITTER_EMAIL: "41898282+github-actions[bot]@users.noreply.github.com"
+
+jobs:
+  sync-branch:
+    name: Sync fork main with upstream main
+    runs-on: ubuntu-latest
+
+    outputs:
+      upstream_hash: ${{ steps.sync-branch.outputs.upstream_hash }}
+      fork_hash: ${{ steps.sync-branch.outputs.fork_hash }}
+
+    steps:
+
+      # https://github.com/actions/checkout
+      - name: Checkout fork
+        uses: actions/checkout@v6
+        with:
+          path: fork
+          ref: main
+          fetch-depth: 0
+
+      # https://github.com/actions/checkout
+      - name: Checkout upstream
+        uses: actions/checkout@v6
+        with:
+          repository: ${{ inputs.upstream_repository }}
+          path: upstream
+          ref: main
+          fetch-depth: 0
+
+      - name: Sync fork branch with upstream
+        id: sync-branch
+        shell: bash
+        env:
+          branch: ${{ inputs.branch }}
+        working-directory: fork
+        run: |
+          set -euxo pipefail
+
+          git remote add upstream ../upstream
+          git fetch upstream
+
+          git checkout --detach "upstream/${branch}"
+          echo "upstream_hash=$(git rev-parse HEAD)" >> "${GITHUB_OUTPUT}"
+
+          git cherry-pick "${branch}" --not upstream/main
+          echo "fork_hash=$(git rev-parse HEAD)" >> "${GITHUB_OUTPUT}"
+
+          git push --force-with-lease origin "HEAD:${branch}"
