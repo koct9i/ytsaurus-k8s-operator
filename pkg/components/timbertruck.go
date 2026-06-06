@@ -332,6 +332,16 @@ func timbertruckComponentName(l *labeller.Labeller) string {
 	return name
 }
 
+// timbertruckConfigFileName is the per-component file name of the timbertruck sidecar config.
+// It must be unique per component (it includes the full component label, e.g.
+// "yt-master-timbertruck.yaml") so that config overrides, which are keyed by file name, can
+// target a specific component's timbertruck config instead of colliding across all of them.
+// The same name is the configmap data key and the file the sidecar reads (mounted under
+// consts.TimbertruckConfigMountPoint and passed via -config).
+func timbertruckConfigFileName(l *labeller.Labeller) string {
+	return fmt.Sprintf("%s-timbertruck.yaml", l.GetFullComponentLabel())
+}
+
 // timbertruckLoggerSource describes one server component that may deliver structured logs.
 type timbertruckLoggerSource struct {
 	componentTT  *ytv1.TimbertruckSpec
@@ -618,7 +628,7 @@ func buildTimbertruckConfigMap(
 		labeler.GetSidecarConfigMapName(consts.TimbertruckContainerName),
 		configOverrides,
 		ConfigGenerator{
-			FileName:  "config.yaml",
+			FileName:  timbertruckConfigFileName(labeler),
 			Format:    ConfigFormatYaml,
 			Generator: timbertruckConfig.ToYSON,
 		},
@@ -626,14 +636,14 @@ func buildTimbertruckConfigMap(
 }
 
 // addTimbertruckSidecar appends the timbertruck sidecar container and its config volume to podSpec.
-func addTimbertruckSidecar(podSpec *corev1.PodSpec, image, logsDirectory, configMapName, deliveryProxy string) {
+func addTimbertruckSidecar(podSpec *corev1.PodSpec, image, logsDirectory, configMapName, configFileName, deliveryProxy string) {
 	const configVolumeName = consts.TimbertruckContainerName + "-config"
 	podSpec.Volumes = append(podSpec.Volumes, createConfigVolume(configVolumeName, configMapName, nil))
 
 	podSpec.Containers = append(podSpec.Containers, corev1.Container{
 		Name:    consts.TimbertruckContainerName,
 		Image:   image,
-		Command: []string{"/usr/bin/timbertruck_os", "-config", "/etc/timbertruck/config.yaml"},
+		Command: []string{"/usr/bin/timbertruck_os", "-config", path.Join(consts.TimbertruckConfigMountPoint, configFileName)},
 		Env: append([]corev1.EnvVar{
 			{
 				Name: consts.TokenSecretKey,
@@ -653,7 +663,7 @@ func addTimbertruckSidecar(podSpec *corev1.PodSpec, image, logsDirectory, config
 		}, getDefaultEnv()...),
 		VolumeMounts: []corev1.VolumeMount{
 			{Name: path.Base(logsDirectory), MountPath: logsDirectory, ReadOnly: false},
-			{Name: configVolumeName, MountPath: "/etc/timbertruck", ReadOnly: true},
+			{Name: configVolumeName, MountPath: consts.TimbertruckConfigMountPoint, ReadOnly: true},
 		},
 		ImagePullPolicy: corev1.PullIfNotPresent,
 	})
