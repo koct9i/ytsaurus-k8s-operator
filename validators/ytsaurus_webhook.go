@@ -394,7 +394,7 @@ func (r *baseValidator) validateTimbertruckSpec(
 	}
 	if logLocation := ytv1.FindFirstLocation(locations, ytv1.LocationTypeLogs); logLocation == nil {
 		allErrors = append(allErrors, field.Required(parentPath.Child("locations"),
-			"logs location must be configured when timbertruck log delivery is enabled"))
+			"logs location must be configured when timbertruck is enabled"))
 	}
 	return allErrors
 }
