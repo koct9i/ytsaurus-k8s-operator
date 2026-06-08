@@ -214,6 +214,8 @@ spec:
       path: /yt/master-data/master-changelogs
     - locationType: MasterSnapshots
       path: /yt/master-data/master-snapshots
+    - locationType: Logs
+      path: /yt/logs
     loggers:
     - minLogLevel: info
       name: info-stderr
@@ -235,6 +237,11 @@ spec:
         memory: "0"
     runtimeClassName: instance-runtime-class
     setHostnameAsFqdn: true
+    structuredLoggers:
+    - category: Access
+      format: json
+      name: access
+      useTimestampSuffix: false
     timbertruck:
       image: ghcr.io/ytsaurus/sidecars:0.0.1
     tolerations:
@@ -251,6 +258,11 @@ spec:
     volumeMounts:
     - mountPath: /yt/master-data
       name: master-data
+    - mountPath: /yt/logs
+      name: logs
+    volumes:
+    - emptyDir: {}
+      name: logs
   queryTrackers:
     image: ghcr.io/ytsaurus/query-tracker:stable-0.1.2
     instanceCount: 1

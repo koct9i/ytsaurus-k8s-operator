@@ -34,6 +34,7 @@ type TabletNode struct {
 }
 
 func NewTabletNode(
+	clusterCfgen *ytconfig.Generator,
 	cfgen *ytconfig.NodeGenerator,
 	ytsaurus *apiproxy.Ytsaurus,
 	ytsaurusClient internalYtsaurusClient,
@@ -43,6 +44,7 @@ func NewTabletNode(
 	l := cfgen.GetComponentLabeller(consts.TabletNodeType, spec.Name)
 
 	srv := newServer(
+		clusterCfgen,
 		l,
 		ytsaurus,
 		&spec.InstanceSpec,

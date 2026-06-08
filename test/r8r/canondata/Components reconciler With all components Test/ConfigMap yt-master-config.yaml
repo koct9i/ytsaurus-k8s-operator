@@ -86,6 +86,12 @@ data:
         };
         logging={
             writers={
+                access={
+                    type=file;
+                    "file_name"="/yt/logs/master.access.log.json.";
+                    format=json;
+                    "enable_compression"=%true;
+                };
                 "info-stderr"={
                     type=stderr;
                     "file_name"="..";
@@ -100,6 +106,15 @@ data:
                         "info-stderr";
                     ];
                     family="plain_text";
+                };
+                {
+                    "include_categories"=[
+                        Access;
+                    ];
+                    writers=[
+                        access;
+                    ];
+                    family=structured;
                 };
             ];
             "flush_period"=3000;
