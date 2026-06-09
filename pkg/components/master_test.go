@@ -1,78 +1,34 @@
 package components
 
 import (
-	"testing"
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 
 	ytv1 "github.com/ytsaurus/ytsaurus-k8s-operator/api/v1"
 	"github.com/ytsaurus/ytsaurus-k8s-operator/pkg/consts"
 )
 
-func TestAddHydraPersistenceUploaderToPodSpec_UsesSpecDerivedMounts(t *testing.T) {
+var _ = Describe("addHydraPersistenceUploaderToPodSpec", func() {
 	type wantDataMount struct {
 		Name      string
 		MountPath string
-	}
-	tests := []struct {
-		name             string
-		specVolumeMounts []corev1.VolumeMount
-		locations        []ytv1.LocationSpec
-		wantDataMounts   []wantDataMount
-	}{
-		{
-			name: "default spec — master-data at /yt/master-data",
-			specVolumeMounts: []corev1.VolumeMount{
-				{Name: "master-data", MountPath: "/yt/master-data"},
-			},
-			locations: []ytv1.LocationSpec{
-				{LocationType: ytv1.LocationTypeMasterChangelogs, Path: "/yt/master-data/master-changelogs"},
-				{LocationType: ytv1.LocationTypeMasterSnapshots, Path: "/yt/master-data/master-snapshots"},
-			},
-			wantDataMounts: []wantDataMount{
-				{Name: "master-data", MountPath: "/yt/master-data"},
-			},
-		},
-		{
-			name: "custom volume name and path",
-			specVolumeMounts: []corev1.VolumeMount{
-				{Name: "storage", MountPath: "/data/master"},
-			},
-			locations: []ytv1.LocationSpec{
-				{LocationType: ytv1.LocationTypeMasterChangelogs, Path: "/data/master/changelogs"},
-				{LocationType: ytv1.LocationTypeMasterSnapshots, Path: "/data/master/snapshots"},
-			},
-			wantDataMounts: []wantDataMount{
-				{Name: "storage", MountPath: "/data/master"},
-			},
-		},
-		{
-			name: "snapshots and changelogs on different volumes",
-			specVolumeMounts: []corev1.VolumeMount{
-				{Name: "snapshots-vol", MountPath: "/yt/snapshots"},
-				{Name: "changelogs-vol", MountPath: "/yt/changelogs"},
-			},
-			locations: []ytv1.LocationSpec{
-				{LocationType: ytv1.LocationTypeMasterSnapshots, Path: "/yt/snapshots/data"},
-				{LocationType: ytv1.LocationTypeMasterChangelogs, Path: "/yt/changelogs/data"},
-			},
-			wantDataMounts: []wantDataMount{
-				{Name: "snapshots-vol", MountPath: "/yt/snapshots"},
-				{Name: "changelogs-vol", MountPath: "/yt/changelogs"},
-			},
-		},
+		SubPath   string
 	}
 
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
+	DescribeTable("derives sidecar data mounts from the instance spec",
+		func(
+			specVolumeMounts []corev1.VolumeMount,
+			locations []ytv1.LocationSpec,
+			wantDataMounts []wantDataMount,
+		) {
 			instanceSpec := &ytv1.InstanceSpec{
-				VolumeMounts: tc.specVolumeMounts,
-				Locations:    tc.locations,
+				VolumeMounts: specVolumeMounts,
+				Locations:    locations,
 			}
 
-			mainContainerMounts := createVolumeMounts(tc.specVolumeMounts)
+			mainContainerMounts := createVolumeMounts(specVolumeMounts)
 			podSpec := &corev1.PodSpec{
 				Containers: []corev1.Container{
 					{
@@ -89,7 +45,7 @@ func TestAddHydraPersistenceUploaderToPodSpec_UsesSpecDerivedMounts(t *testing.T
 				"robot-hydra-persistence-uploader-secret",
 				instanceSpec,
 			)
-			require.NoError(t, err)
+			Expect(err).NotTo(HaveOccurred())
 
 			var sidecar *corev1.Container
 			for i := range podSpec.Containers {
@@ -98,32 +54,28 @@ func TestAddHydraPersistenceUploaderToPodSpec_UsesSpecDerivedMounts(t *testing.T
 					break
 				}
 			}
-			require.NotNil(t, sidecar, "hydra-persistence-uploader sidecar must be added")
+			Expect(sidecar).NotTo(BeNil(), "hydra-persistence-uploader sidecar must be added")
 
-			assert.Len(t, sidecar.VolumeMounts, 1+len(tc.wantDataMounts)+1)
+			Expect(sidecar.VolumeMounts).To(HaveLen(1 + len(wantDataMounts) + 1))
 
-			for _, want := range tc.wantDataMounts {
-				var got *corev1.VolumeMount
-				for i, vm := range sidecar.VolumeMounts {
-					if vm.Name == want.Name {
-						got = &sidecar.VolumeMounts[i]
-						break
-					}
-				}
-				require.NotNil(t, got, "data volume mount %q must be present", want.Name)
-				assert.Equal(t, want.MountPath, got.MountPath)
-				assert.True(t, got.ReadOnly, "data mount %q must be read-only", want.Name)
+			gotDataMounts := sidecar.VolumeMounts[1 : 1+len(wantDataMounts)]
+			for i, want := range wantDataMounts {
+				got := gotDataMounts[i]
+				Expect(got.Name).To(Equal(want.Name))
+				Expect(got.MountPath).To(Equal(want.MountPath))
+				Expect(got.SubPath).To(Equal(want.SubPath))
+				Expect(got.ReadOnly).To(BeTrueBecause("data mount %q must be read-only", want.MountPath))
 			}
 
 			var hasSharedBinariesVolume bool
 			for _, v := range podSpec.Volumes {
 				if v.Name == "shared-binaries" {
 					hasSharedBinariesVolume = true
-					require.NotNil(t, v.EmptyDir, "shared-binaries must be backed by emptyDir")
+					Expect(v.EmptyDir).NotTo(BeNil(), "shared-binaries must be backed by emptyDir")
 					break
 				}
 			}
-			assert.True(t, hasSharedBinariesVolume)
+			Expect(hasSharedBinariesVolume).To(BeTrueBecause("a shared-binaries volume must be added to the pod"))
 
 			var ytserver *corev1.Container
 			for i := range podSpec.Containers {
@@ -132,9 +84,9 @@ func TestAddHydraPersistenceUploaderToPodSpec_UsesSpecDerivedMounts(t *testing.T
 					break
 				}
 			}
-			require.NotNil(t, ytserver)
-			require.NotNil(t, ytserver.Lifecycle)
-			require.NotNil(t, ytserver.Lifecycle.PostStart)
+			Expect(ytserver).NotTo(BeNil())
+			Expect(ytserver.Lifecycle).NotTo(BeNil())
+			Expect(ytserver.Lifecycle.PostStart).NotTo(BeNil())
 			var hasShared bool
 			for _, vm := range ytserver.VolumeMounts {
 				if vm.Name == "shared-binaries" {
@@ -142,32 +94,72 @@ func TestAddHydraPersistenceUploaderToPodSpec_UsesSpecDerivedMounts(t *testing.T
 					break
 				}
 			}
-			assert.True(t, hasShared)
-		})
-	}
-}
-
-func TestAddHydraPersistenceUploaderToPodSpec_ErrorsOnMissingLocation(t *testing.T) {
-	instanceSpec := &ytv1.InstanceSpec{
-		VolumeMounts: []corev1.VolumeMount{
-			{Name: "master-data", MountPath: "/yt/master-data"},
+			Expect(hasShared).To(BeTrueBecause("ytserver must mount the shared-binaries volume"))
 		},
-		Locations: []ytv1.LocationSpec{
-			{LocationType: ytv1.LocationTypeMasterChangelogs, Path: "/yt/master-data/master-changelogs"},
-		},
-	}
-
-	podSpec := &corev1.PodSpec{
-		Containers: []corev1.Container{{Name: "ytserver"}},
-	}
-
-	err := addHydraPersistenceUploaderToPodSpec(
-		"img", podSpec, "proxy", "secret", instanceSpec,
+		Entry("default spec - master-data at /yt/master-data",
+			[]corev1.VolumeMount{
+				{Name: "master-data", MountPath: "/yt/master-data"},
+			},
+			[]ytv1.LocationSpec{
+				{LocationType: ytv1.LocationTypeMasterChangelogs, Path: "/yt/master-data/master-changelogs"},
+				{LocationType: ytv1.LocationTypeMasterSnapshots, Path: "/yt/master-data/master-snapshots"},
+			},
+			[]wantDataMount{
+				{Name: "master-data", MountPath: "/yt/master-data/master-snapshots", SubPath: "master-snapshots"},
+				{Name: "master-data", MountPath: "/yt/master-data/master-changelogs", SubPath: "master-changelogs"},
+			},
+		),
+		Entry("custom volume name and path",
+			[]corev1.VolumeMount{
+				{Name: "storage", MountPath: "/data/master"},
+			},
+			[]ytv1.LocationSpec{
+				{LocationType: ytv1.LocationTypeMasterChangelogs, Path: "/data/master/changelogs"},
+				{LocationType: ytv1.LocationTypeMasterSnapshots, Path: "/data/master/snapshots"},
+			},
+			[]wantDataMount{
+				{Name: "storage", MountPath: "/data/master/snapshots", SubPath: "snapshots"},
+				{Name: "storage", MountPath: "/data/master/changelogs", SubPath: "changelogs"},
+			},
+		),
+		Entry("snapshots and changelogs on different volumes",
+			[]corev1.VolumeMount{
+				{Name: "snapshots-vol", MountPath: "/yt/snapshots"},
+				{Name: "changelogs-vol", MountPath: "/yt/changelogs"},
+			},
+			[]ytv1.LocationSpec{
+				{LocationType: ytv1.LocationTypeMasterSnapshots, Path: "/yt/snapshots/data"},
+				{LocationType: ytv1.LocationTypeMasterChangelogs, Path: "/yt/changelogs/data"},
+			},
+			[]wantDataMount{
+				{Name: "snapshots-vol", MountPath: "/yt/snapshots/data", SubPath: "data"},
+				{Name: "changelogs-vol", MountPath: "/yt/changelogs/data", SubPath: "data"},
+			},
+		),
 	)
-	require.Error(t, err)
-	assert.Contains(t, err.Error(), "MasterSnapshots")
 
-	for _, c := range podSpec.Containers {
-		assert.NotEqual(t, consts.HydraPersistenceUploaderContainerName, c.Name)
-	}
-}
+	It("errors and adds no sidecar when a required location is missing", func() {
+		instanceSpec := &ytv1.InstanceSpec{
+			VolumeMounts: []corev1.VolumeMount{
+				{Name: "master-data", MountPath: "/yt/master-data"},
+			},
+			Locations: []ytv1.LocationSpec{
+				{LocationType: ytv1.LocationTypeMasterChangelogs, Path: "/yt/master-data/master-changelogs"},
+			},
+		}
+
+		podSpec := &corev1.PodSpec{
+			Containers: []corev1.Container{{Name: "ytserver"}},
+		}
+
+		err := addHydraPersistenceUploaderToPodSpec(
+			"img", podSpec, "proxy", "secret", instanceSpec,
+		)
+		Expect(err).To(HaveOccurred())
+		Expect(err.Error()).To(ContainSubstring("MasterSnapshots"))
+
+		for _, c := range podSpec.Containers {
+			Expect(c.Name).NotTo(Equal(consts.HydraPersistenceUploaderContainerName))
+		}
+	})
+})
