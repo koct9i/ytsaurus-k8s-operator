@@ -3,6 +3,7 @@ package components
 import (
 	"fmt"
 	"path"
+	"strings"
 
 	ytv1 "github.com/ytsaurus/ytsaurus-k8s-operator/api/v1"
 	"github.com/ytsaurus/ytsaurus-k8s-operator/pkg/consts"
@@ -71,6 +72,31 @@ func createVolumeMounts(specVolumeMounts []corev1.VolumeMount) []corev1.VolumeMo
 	volumeMounts = append(volumeMounts, createConfigTemplateVolumeMount())
 	volumeMounts = append(volumeMounts, createConfigVolumeMount())
 	return volumeMounts
+}
+
+func resolveLocationMounts(instanceSpec *ytv1.InstanceSpec, requiredLocations []ytv1.LocationType) ([]corev1.VolumeMount, error) {
+	mounts := make([]corev1.VolumeMount, 0, len(requiredLocations))
+	for _, requiredLocation := range requiredLocations {
+		location := ytv1.FindFirstLocation(instanceSpec.Locations, requiredLocation)
+		if location == nil {
+			return nil, fmt.Errorf("no location of type %q found", requiredLocation)
+		}
+		volumeMount := ytv1.FindVolumeMountForPath(instanceSpec.VolumeMounts, location.Path)
+		if volumeMount == nil {
+			return nil, fmt.Errorf("no volume mount covers location %q (path %q)", requiredLocation, location.Path)
+		}
+		relPath := strings.TrimPrefix(
+			strings.TrimRight(location.Path, "/"),
+			strings.TrimRight(volumeMount.MountPath, "/"),
+		)
+		relPath = strings.TrimPrefix(relPath, "/")
+		mounts = append(mounts, corev1.VolumeMount{
+			Name:      volumeMount.Name,
+			MountPath: location.Path,
+			SubPath:   path.Join(volumeMount.SubPath, relPath),
+		})
+	}
+	return mounts, nil
 }
 
 func createConfigVolume(volumeName string, configMapName string, mode *int32) corev1.Volume {
