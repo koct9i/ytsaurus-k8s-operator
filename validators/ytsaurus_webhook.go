@@ -20,7 +20,6 @@ import (
 	"context"
 	"fmt"
 	"slices"
-	"strings"
 
 	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -151,7 +150,7 @@ func (r *ytsaurusValidator) validateMasterSpec(newYtsaurus, oldYtsaurus *ytv1.Yt
 		}
 	}
 
-	allErrors = append(allErrors, r.validateHydraPersistenceUploaderSpec(mastersSpec.HydraPersistenceUploader, path.Child("hydraPersistenceUploader"))...)
+	allErrors = append(allErrors, r.validateHydraPersistenceUploaderSpec(mastersSpec.HydraPersistenceUploader, mastersSpec.Locations, path)...)
 
 	allErrors = append(allErrors, r.validateTimbertruckSpec(mastersSpec.Timbertruck, mastersSpec.StructuredLoggers, mastersSpec.Locations, path)...)
 
@@ -346,12 +345,23 @@ func (r *ytsaurusValidator) validateDataNodes(newYtsaurus *ytv1.Ytsaurus) field.
 }
 
 func (r *baseValidator) validateHydraPersistenceUploaderSpec(
-	hydraPersistenceUploader *ytv1.HydraPersistenceUploaderSpec, path *field.Path) field.ErrorList {
+	hydraPersistenceUploader *ytv1.HydraPersistenceUploaderSpec, locations []ytv1.LocationSpec, parentPath *field.Path) field.ErrorList {
 	var allErrors field.ErrorList
 
-	if hydraPersistenceUploader != nil && hydraPersistenceUploader.Image == nil {
-		allErrors = append(allErrors, field.Required(path.Child("image"), "hydraPersistenceUploader image is required"))
+	if hydraPersistenceUploader == nil {
+		return allErrors
 	}
+
+	if hydraPersistenceUploader.Image == nil {
+		allErrors = append(allErrors, field.Required(parentPath.Child("hydraPersistenceUploader", "image"), "hydraPersistenceUploader image is required"))
+	}
+
+	allErrors = append(allErrors, r.validateRequiredLocations(
+		locations,
+		[]ytv1.LocationType{ytv1.LocationTypeMasterSnapshots, ytv1.LocationTypeMasterChangelogs},
+		"hydraPersistenceUploader",
+		parentPath,
+	)...)
 
 	return allErrors
 }
@@ -371,8 +381,29 @@ func (r *baseValidator) validateTimbertruckSpec(
 		if len(structuredLoggers) == 0 {
 			allErrors = append(allErrors, field.Required(parentPath.Child("structuredLoggers"), "structuredLoggers must be configured when timbertruck is enabled"))
 		}
-		if logLocation := ytv1.FindFirstLocation(locations, ytv1.LocationTypeLogs); logLocation == nil {
-			allErrors = append(allErrors, field.Required(parentPath.Child("locations"), "logs location must be configured when timbertruck is enabled"))
+		allErrors = append(allErrors, r.validateRequiredLocations(
+			locations,
+			[]ytv1.LocationType{ytv1.LocationTypeLogs},
+			"timbertruck",
+			parentPath,
+		)...)
+	}
+	return allErrors
+}
+
+func (r *baseValidator) validateRequiredLocations(
+	locations []ytv1.LocationSpec,
+	requiredLocations []ytv1.LocationType,
+	componentName string,
+	parentPath *field.Path,
+) field.ErrorList {
+	var allErrors field.ErrorList
+	for _, requiredLocationType := range requiredLocations {
+		if ytv1.FindFirstLocation(locations, requiredLocationType) == nil {
+			allErrors = append(allErrors, field.Required(
+				parentPath.Child("locations"),
+				fmt.Sprintf("%s location must be configured for %s", requiredLocationType, componentName),
+			))
 		}
 	}
 	return allErrors
@@ -613,15 +644,7 @@ func (r *baseValidator) validateInstanceSpec(instanceSpec ytv1.InstanceSpec, com
 
 	if instanceSpec.Locations != nil {
 		for locationIdx, location := range instanceSpec.Locations {
-			inVolumeMount := false
-			for _, volumeMount := range instanceSpec.VolumeMounts {
-				if strings.HasPrefix(location.Path, volumeMount.MountPath) {
-					inVolumeMount = true
-					break
-				}
-			}
-
-			if !inVolumeMount {
+			if ytv1.FindVolumeMountForPath(instanceSpec.VolumeMounts, location.Path) == nil {
 				allErrors = append(allErrors, field.Invalid(path.Child("locations").Index(locationIdx), location,
 					"location path is not in any volume mount"))
 			}
