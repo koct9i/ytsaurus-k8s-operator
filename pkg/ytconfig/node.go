@@ -297,6 +297,10 @@ type TabletNode struct {
 	VersionedChunkMetaCache Cache `yson:"versioned_chunk_meta_cache"`
 }
 
+type CellarNode struct {
+	DeduceProfilingTagFromBundleName *bool `yson:"deduce_profiling_tag_from_bundle_name,omitempty"`
+}
+
 type NodeServer struct {
 	CommonServer
 	Flavors        []NodeFlavor   `yson:"flavors"`
@@ -323,7 +327,8 @@ type ExecNodeServer struct {
 type TabletNodeServer struct {
 	NodeServer
 	// TabletNode `yson:"tablet_node"`
-	CachingObjectService Cache `yson:"caching_object_service"`
+	CellarNode           *CellarNode `yson:"cellar_node,omitempty"`
+	CachingObjectService Cache       `yson:"caching_object_service"`
 }
 
 func findVolumeMountForPath(locationPath string, spec ytv1.InstanceSpec) *corev1.VolumeMount {
