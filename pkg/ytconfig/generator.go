@@ -43,6 +43,10 @@ type NodeGenerator struct {
 
 	discoveryInstanceCount int32
 	dataNodesInstanceCount int32
+
+	// Number of bundle controller instances on the cluster. Nil means the
+	// information is not available (e.g. for remote node generators).
+	bundleControllerInstanceCount *int32
 }
 
 type Generator struct {
@@ -66,6 +70,11 @@ func NewLocalNodeGenerator(
 	var dataNodesInstanceCount int32
 	for _, dataNodes := range ytsaurus.Spec.DataNodes {
 		dataNodesInstanceCount += dataNodes.InstanceCount
+	}
+
+	var bundleControllerInstanceCount int32
+	if spec := ytsaurus.Spec.BundleController; spec != nil {
+		bundleControllerInstanceCount = spec.InstanceCount
 	}
 
 	primaryMaster := masterCellInfo{
@@ -102,14 +111,15 @@ func NewLocalNodeGenerator(
 			Annotations:   ytsaurus.Spec.ExtraPodAnnotations,
 			UseShortNames: ytsaurus.Spec.UseShortNames,
 		},
-		commonSpec:             &ytsaurus.Spec.CommonSpec,
-		clusterFeatures:        ptr.Deref(ytsaurus.Spec.ClusterFeatures, ytv1.ClusterFeatures{}),
-		primaryMaster:          primaryMaster,
-		secondaryMasters:       secondaryMasters,
-		masterCache:            masterCache,
-		discoveryInstanceCount: ytsaurus.Spec.Discovery.InstanceCount,
-		cypressProxiesSpec:     ytsaurus.Spec.CypressProxies,
-		dataNodesInstanceCount: dataNodesInstanceCount,
+		commonSpec:                    &ytsaurus.Spec.CommonSpec,
+		clusterFeatures:               ptr.Deref(ytsaurus.Spec.ClusterFeatures, ytv1.ClusterFeatures{}),
+		primaryMaster:                 primaryMaster,
+		secondaryMasters:              secondaryMasters,
+		masterCache:                   masterCache,
+		discoveryInstanceCount:        ytsaurus.Spec.Discovery.InstanceCount,
+		cypressProxiesSpec:            ytsaurus.Spec.CypressProxies,
+		dataNodesInstanceCount:        dataNodesInstanceCount,
+		bundleControllerInstanceCount: ptr.To(bundleControllerInstanceCount),
 	}
 }
 
@@ -1004,6 +1014,14 @@ func (g *NodeGenerator) getTabletNodeConfigImpl(spec *ytv1.TabletNodesSpec) (Tab
 	c, err := getTabletNodeServerCarcass(spec)
 	if err != nil {
 		return c, err
+	}
+	// Suppress "Conflicting profiling tags" alert which occurs when tablet cells
+	// of different bundles share a node. That might happen if there is no bundle
+	// controller.
+	if count := g.bundleControllerInstanceCount; count != nil && *count == 0 {
+		c.CellarNode = &CellarNode{
+			DeduceProfilingTagFromBundleName: ptr.To(false),
+		}
 	}
 	g.fillCommonService(&c.CommonServer, &spec.InstanceSpec)
 	g.fillBusServer(&c.CommonServer, spec.NativeTransport)

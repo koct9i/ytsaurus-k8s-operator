@@ -478,6 +478,43 @@ func TestGetTabletNodeWithoutYtsaurusConfig(t *testing.T) {
 	canonize.Assert(t, cfg)
 }
 
+func TestGetTabletNodeConfigDeduceProfilingTagFromBundleName(t *testing.T) {
+	tabletNodeSpec := getTabletNodeSpec()
+
+	t.Run("with bundle controller", func(t *testing.T) {
+		ytsaurus := withBundleController(getYtsaurus())
+		g := NewGenerator(ytsaurus, testClusterDomain)
+		c, err := g.getTabletNodeConfigImpl(&tabletNodeSpec)
+		require.NoError(t, err)
+		// Bundle controller present: option must not be set.
+		require.Nil(t, c.CellarNode)
+	})
+
+	t.Run("without bundle controller", func(t *testing.T) {
+		ytsaurus := getYtsaurus()
+		ytsaurus.Spec.BundleController = nil
+		g := NewGenerator(ytsaurus, testClusterDomain)
+		c, err := g.getTabletNodeConfigImpl(&tabletNodeSpec)
+		require.NoError(t, err)
+		require.NotNil(t, c.CellarNode)
+		require.NotNil(t, c.CellarNode.DeduceProfilingTagFromBundleName)
+		require.False(t, *c.CellarNode.DeduceProfilingTagFromBundleName)
+	})
+
+	t.Run("zero instance count bundle controller", func(t *testing.T) {
+		ytsaurus := getYtsaurus()
+		ytsaurus.Spec.BundleController = &ytv1.BundleControllerSpec{
+			InstanceSpec: ytv1.InstanceSpec{InstanceCount: 0},
+		}
+		g := NewGenerator(ytsaurus, testClusterDomain)
+		c, err := g.getTabletNodeConfigImpl(&tabletNodeSpec)
+		require.NoError(t, err)
+		require.NotNil(t, c.CellarNode)
+		require.NotNil(t, c.CellarNode.DeduceProfilingTagFromBundleName)
+		require.False(t, *c.CellarNode.DeduceProfilingTagFromBundleName)
+	})
+}
+
 func TestGetOffshoreDataGatewaysWithoutYtsaurusConfig(t *testing.T) {
 	g := NewRemoteNodeGenerator(
 		getRemoteYtsaurus(),
