@@ -123,10 +123,6 @@ func ChooseJobProxyLoggingPath(spec *ytv1.InstanceSpec) string {
 	return "/var/log/job-proxy"
 }
 
-// JobProxyLogSymlinksPath is the directory where the job-proxy log manager keeps
-// per-job symlinks to the latest logs in "per_job_directory" mode. It lives under the
-// canonical log directory and is intentionally outside the JobProxyLogs locations, which
-// are traversed for retention cleanup and must not contain the symlink tree.
 const JobProxyLogSymlinksPath = "/var/log/job-proxy-logs"
 
 func newLoggingBuilder(location *ytv1.LocationSpec, componentName string) loggingBuilder {

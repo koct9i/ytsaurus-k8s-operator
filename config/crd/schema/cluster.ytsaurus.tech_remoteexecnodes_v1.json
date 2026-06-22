@@ -1173,9 +1173,19 @@
           "type": "string"
         },
         "jobProxyLogManager": {
-          "description": "JobProxyLogManagerSpec configures how the exec node lays out and manages...",
           "type": "object",
           "properties": {
+            "directoryTraversalConcurrency": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "jobProxyLogSymlinksPath": {
+              "type": "string"
+            },
+            "logsStoragePeriodMilliseconds": {
+              "type": "integer",
+              "format": "int64"
+            },
             "mode": {
               "description": "JobProxyLoggingMode describes how the exec node stores job-proxy logs.",
               "type": "string",

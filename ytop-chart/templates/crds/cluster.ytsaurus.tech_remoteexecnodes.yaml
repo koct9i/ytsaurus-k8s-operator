@@ -1052,9 +1052,15 @@ spec:
                 description: Default docker image for user jobs.
                 type: string
               jobProxyLogManager:
-                description: JobProxyLogManagerSpec configures how the exec node lays
-                  out and manages...
                 properties:
+                  directoryTraversalConcurrency:
+                    minimum: 0
+                    type: integer
+                  jobProxyLogSymlinksPath:
+                    type: string
+                  logsStoragePeriodMilliseconds:
+                    format: int64
+                    type: integer
                   mode:
                     default: simple
                     description: JobProxyLoggingMode describes how the exec node stores

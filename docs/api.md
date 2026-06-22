@@ -1230,10 +1230,7 @@ _Appears in:_
 
 
 
-JobProxyLogManagerSpec configures how the exec node lays out and manages job-proxy logs.
-It complements JobProxyLoggers, which configures the logging rules/writers themselves.
-Fine-grained tuning (sharding, retention period, traversal concurrency) is left to
-config overrides; this spec only exposes the user-facing logging layout.
+
 
 
 
@@ -1244,6 +1241,9 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `mode` _[JobProxyLoggingMode](#jobproxyloggingmode)_ |  | simple | Enum: [simple per_job_directory] <br /> |
+| `logsStoragePeriodMilliseconds` _integer_ |  |  |  |
+| `directoryTraversalConcurrency` _integer_ |  |  | Minimum: 0 <br /> |
+| `jobProxyLogSymlinksPath` _string_ |  |  |  |
 
 
 #### JobProxyLoggingMode
@@ -1260,8 +1260,8 @@ _Appears in:_
 
 | Field | Description |
 | --- | --- |
-| `simple` | JobProxyLoggingModeSimple keeps job-proxy logs of all jobs together in a single<br />shared directory (derived from the Logs location). This is the default and the<br />only mode supported by YTsaurus < 26.1.<br /> |
-| `per_job_directory` | JobProxyLoggingModePerJobDirectory makes the exec node store each job's job-proxy<br />logs in its own directory and manage their retention. Logs are placed into the<br />JobProxyLogs locations. Available in YTsaurus >= 26.1.<br /> |
+| `simple` |  |
+| `per_job_directory` |  |
 
 
 #### JobRuntimeSpec
@@ -1389,7 +1389,7 @@ _Appears in:_
 | `MasterChangelogs` |  |
 | `MasterSnapshots` |  |
 | `ImageCache` |  |
-| `JobProxyLogs` | LocationTypeJobProxyLogs holds per-job job-proxy logs when JobProxyLogManager<br />runs in the "per_job_directory" mode. May be specified several times to spread<br />logs across several disks.<br /> |
+| `JobProxyLogs` |  |
 
 
 #### LogCompression

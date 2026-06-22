@@ -256,6 +256,7 @@
             "flush_period"=3000;
         };
         "job_proxy_log_manager"={
+            directory="/mnt/disk1/logs";
             locations=[
                 {
                     path="/mnt/disk1/logs";

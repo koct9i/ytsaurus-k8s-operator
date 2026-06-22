@@ -233,16 +233,20 @@ const (
 type JobProxyLoggingMode string
 
 const (
-	JobProxyLoggingModeSimple JobProxyLoggingMode = "simple"
-	// JobProxyLoggingModePerJobDirectory makes the exec node store each job's job-proxy
-	// logs in its own directory and manage their retention. Logs are placed into the
-	// JobProxyLogs locations. Available in YTsaurus >= 26.1.
+	JobProxyLoggingModeSimple          JobProxyLoggingMode = "simple"
 	JobProxyLoggingModePerJobDirectory JobProxyLoggingMode = "per_job_directory"
 )
 
 type JobProxyLogManagerSpec struct {
 	//+kubebuilder:default:=simple
 	Mode JobProxyLoggingMode `json:"mode,omitempty"`
+
+	LogsStoragePeriodMilliseconds *int64 `json:"logsStoragePeriodMilliseconds,omitempty"`
+
+	//+kubebuilder:validation:Minimum=0
+	DirectoryTraversalConcurrency *int `json:"directoryTraversalConcurrency,omitempty"`
+
+	JobProxyLogSymlinksPath *string `json:"jobProxyLogSymlinksPath,omitempty"`
 }
 
 // LogWriterType string describes types of possible log writers.

@@ -265,16 +265,13 @@ type JobProxyLogManagerLocation struct {
 }
 
 type JobProxyLogManager struct {
-	// Directory holds all job-proxy logs together. Used in "simple" mode.
-	Directory string `yson:"directory,omitempty"`
-	// Locations spread per-job log directories across disks. Used in "per_job_directory" mode.
-	Locations []JobProxyLogManagerLocation `yson:"locations,omitempty"`
-	// JobProxyLogSymlinksPath holds per-job symlinks to the latest logs. Used in "per_job_directory" mode.
-	JobProxyLogSymlinksPath       string        `yson:"job_proxy_log_symlinks_path,omitempty"`
-	ShardingKeyLength             int           `yson:"sharding_key_length"`
-	LogsStoragePeriod             yson.Duration `yson:"logs_storage_period"`
-	DirectoryTraversalConcurrency int           `yson:"directory_traversal_concurrency"`
-	LogDump                       LogDump       `yson:"log_dump"`
+	Directory                     string                       `yson:"directory,omitempty"`
+	Locations                     []JobProxyLogManagerLocation `yson:"locations,omitempty"`
+	JobProxyLogSymlinksPath       string                       `yson:"job_proxy_log_symlinks_path,omitempty"`
+	ShardingKeyLength             int                          `yson:"sharding_key_length"`
+	LogsStoragePeriod             yson.Duration                `yson:"logs_storage_period"`
+	DirectoryTraversalConcurrency int                          `yson:"directory_traversal_concurrency"`
+	LogDump                       LogDump                      `yson:"log_dump"`
 }
 
 type ExecNode struct {
@@ -764,31 +761,46 @@ func getExecNodeServerCarcass(spec *ytv1.ExecNodesSpec, commonSpec *ytv1.CommonS
 	c.ExecNode.JobProxy.JobProxyAuthenticationManager.RequireAuthentication = true
 	c.ExecNode.JobProxy.JobProxyAuthenticationManager.CypressTokenAuthenticator.Secure = true
 
-	// Configure JobProxyLogManager. Sharding, retention period and traversal concurrency
-	// are operator-managed defaults; advanced tuning is expected via config overrides.
+	jobProxyLogDirectory := ChooseJobProxyLoggingPath(&spec.InstanceSpec)
+	logsStoragePeriod := yson.Duration(7 * 24 * time.Hour)
+	directoryTraversalConcurrency := 4
+	jobProxyLogSymlinksPath := JobProxyLogSymlinksPath
+	if spec.JobProxyLogManager != nil {
+		if spec.JobProxyLogManager.LogsStoragePeriodMilliseconds != nil {
+			logsStoragePeriod = yson.Duration(time.Duration(*spec.JobProxyLogManager.LogsStoragePeriodMilliseconds) * time.Millisecond)
+		}
+		if spec.JobProxyLogManager.DirectoryTraversalConcurrency != nil {
+			directoryTraversalConcurrency = *spec.JobProxyLogManager.DirectoryTraversalConcurrency
+		}
+		if spec.JobProxyLogManager.JobProxyLogSymlinksPath != nil {
+			jobProxyLogSymlinksPath = *spec.JobProxyLogManager.JobProxyLogSymlinksPath
+		}
+	}
 	c.ExecNode.JobProxyLogManager = JobProxyLogManager{
 		ShardingKeyLength:             2,
-		LogsStoragePeriod:             yson.Duration(7 * 24 * time.Hour), // 1 week
-		DirectoryTraversalConcurrency: 4,
+		LogsStoragePeriod:             logsStoragePeriod,
+		DirectoryTraversalConcurrency: directoryTraversalConcurrency,
 		LogDump: LogDump{
-			BufferSize:    1024 * 1024, // 1MB
+			BufferSize:    1024 * 1024,
 			LogWriterName: "debug",
 		},
 	}
 	if jobProxyLoggingMode == ytv1.JobProxyLoggingModePerJobDirectory {
-		// Each job gets its own log directory under one of the JobProxyLogs locations,
-		// with per-job symlinks gathered under a separate canonical directory.
-		c.ExecNode.JobProxyLogManager.JobProxyLogSymlinksPath = JobProxyLogSymlinksPath
+		// multi-location mode accessible >= 26.1
+		c.ExecNode.JobProxyLogManager.JobProxyLogSymlinksPath = jobProxyLogSymlinksPath
 		for _, location := range ytv1.FindAllLocations(spec.Locations, ytv1.LocationTypeJobProxyLogs) {
 			c.ExecNode.JobProxyLogManager.Locations = append(
 				c.ExecNode.JobProxyLogManager.Locations,
 				JobProxyLogManagerLocation{Path: location.Path},
 			)
 		}
-	} else {
-		// "simple" mode keeps all job-proxy logs in a single shared directory.
-		c.ExecNode.JobProxyLogManager.Directory = ChooseJobProxyLoggingPath(&spec.InstanceSpec)
+
+		// COMPAT(epsilond1): Remove after e2e uses >= 26.1
+		if len(c.ExecNode.JobProxyLogManager.Locations) > 0 {
+			jobProxyLogDirectory = c.ExecNode.JobProxyLogManager.Locations[0].Path
+		}
 	}
+	c.ExecNode.JobProxyLogManager.Directory = jobProxyLogDirectory
 
 	// TODO(khlebnikov): Drop legacy fields depending on ytsaurus version.
 	c.ExecNode.JobController.ResourceLimitsLegacy = &c.JobResourceManager.ResourceLimits

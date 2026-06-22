@@ -310,6 +310,7 @@ data:
             "forward_all_environment_variables"=%true;
             "use_artifact_binds"=%true;
             "job_proxy_log_manager"={
+                directory="/yt/node-data/job-proxy-logs";
                 locations=[
                     {
                         path="/yt/node-data/job-proxy-logs";
