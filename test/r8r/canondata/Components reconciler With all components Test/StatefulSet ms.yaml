@@ -116,6 +116,8 @@ spec:
         volumeMounts:
         - mountPath: /yt/master-data
           name: master-data
+        - mountPath: /yt/logs
+          name: logs
         - mountPath: /config_template
           name: config-template
           readOnly: true
@@ -135,6 +137,40 @@ spec:
           readOnly: true
         - mountPath: /shared-binaries
           name: shared-binaries
+      - command:
+        - /usr/bin/timbertruck_os
+        - -config
+        - /etc/timbertruck/yt-master-timbertruck.yaml
+        env:
+        - name: YT_TOKEN
+          valueFrom:
+            secretKeyRef:
+              key: YT_TOKEN
+              name: robot-timbertruck-secret
+        - name: YT_PROXY
+          value: https://http-proxies-lb.ytsaurus-components.svc.cluster.local
+        - name: K8S_POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: K8S_POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: K8S_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        image: ghcr.io/ytsaurus/sidecars:0.0.1
+        imagePullPolicy: IfNotPresent
+        name: timbertruck
+        resources: {}
+        volumeMounts:
+        - mountPath: /yt/logs
+          name: logs
+        - mountPath: /etc/timbertruck
+          name: timbertruck-config
+          readOnly: true
       - command:
         - /usr/bin/hydra_persistence_uploader
         env:
@@ -185,7 +221,7 @@ spec:
         - bash
         - -xc
         - 'echo ''Init locations''; mkdir -p /yt/master-data/master-changelogs; mkdir
-          -p /yt/master-data/master-snapshots; '
+          -p /yt/master-data/master-snapshots; mkdir -p /yt/logs; '
         env:
         - name: K8S_POD_NAME
           valueFrom:
@@ -211,6 +247,8 @@ spec:
         volumeMounts:
         - mountPath: /yt/master-data
           name: master-data
+        - mountPath: /yt/logs
+          name: logs
         - mountPath: /config_template
           name: config-template
           readOnly: true
@@ -256,6 +294,8 @@ spec:
         volumeMounts:
         - mountPath: /yt/master-data
           name: master-data
+        - mountPath: /yt/logs
+          name: logs
         - mountPath: /config_template
           name: config-template
           readOnly: true
@@ -271,6 +311,8 @@ spec:
       tolerations:
       - key: instance-toleration
       volumes:
+      - emptyDir: {}
+        name: logs
       - configMap:
           name: yt-master-config
         name: config-template
@@ -293,6 +335,9 @@ spec:
       - name: bus-client-secret
         secret:
           secretName: native-client-cert
+      - configMap:
+          name: yt-master-timbertruck-config
+        name: timbertruck-config
       - emptyDir: {}
         name: shared-binaries
   updateStrategy: {}

@@ -26,6 +26,7 @@ func NewDiscovery(cfgen *ytconfig.Generator, ytsaurus *apiproxy.Ytsaurus, yc int
 	resource := ytsaurus.GetResource()
 
 	srv := newServer(
+		cfgen,
 		l,
 		ytsaurus,
 		&resource.Spec.Discovery.InstanceSpec,
