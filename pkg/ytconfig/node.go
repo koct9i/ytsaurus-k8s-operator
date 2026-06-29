@@ -640,7 +640,6 @@ func fillJobEnvironment(execNode *ExecNode, spec *ytv1.ExecNodesSpec, commonSpec
 }
 
 func buildJobProxyLogManager(spec *ytv1.ExecNodesSpec, jobProxyLoggingMode ytv1.JobProxyLoggingMode) JobProxyLogManager {
-	jobProxyLogDirectory := ChooseJobProxyLoggingPath(&spec.InstanceSpec)
 	logsStoragePeriod := yson.Duration(7 * 24 * time.Hour)
 	directoryTraversalConcurrency := 4
 	jobProxyLogSymlinksPath := JobProxyLogSymlinksPath
@@ -664,22 +663,26 @@ func buildJobProxyLogManager(spec *ytv1.ExecNodesSpec, jobProxyLoggingMode ytv1.
 			LogWriterName: "debug",
 		},
 	}
-	if jobProxyLoggingMode == ytv1.JobProxyLoggingModePerJobDirectory {
+
+	if jobProxyLoggingMode != ytv1.JobProxyLoggingModePerJobDirectory {
+		return logManager
+	}
+
+	for _, location := range ytv1.FindAllLocations(spec.Locations, ytv1.LocationTypeJobProxyLogs) {
+		logManager.Locations = append(
+			logManager.Locations,
+			JobProxyLogManagerLocation{Path: location.Path},
+		)
+	}
+
+	if len(logManager.Locations) > 0 {
 		// multi-location mode accessible >= 26.1
 		logManager.JobProxyLogSymlinksPath = jobProxyLogSymlinksPath
-		for _, location := range ytv1.FindAllLocations(spec.Locations, ytv1.LocationTypeJobProxyLogs) {
-			logManager.Locations = append(
-				logManager.Locations,
-				JobProxyLogManagerLocation{Path: location.Path},
-			)
-		}
-
 		// COMPAT(epsilond1): Remove after e2e uses >= 26.1
-		if len(logManager.Locations) > 0 {
-			jobProxyLogDirectory = logManager.Locations[0].Path
-		}
+		logManager.Directory = logManager.Locations[0].Path
+	} else {
+		logManager.Directory = ChooseJobProxyLoggingPath(&spec.InstanceSpec)
 	}
-	logManager.Directory = jobProxyLogDirectory
 	return logManager
 }
 

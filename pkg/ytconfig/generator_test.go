@@ -222,6 +222,21 @@ func TestGetExecNodeConfigJobProxyModePerJobDirectory(t *testing.T) {
 	canonize.Assert(t, cfg)
 }
 
+func TestGetExecNodeConfigJobProxyModePerJobDirectoryLegacy(t *testing.T) {
+	// COMPAT(epsilond1): This test covers per_job_directory
+	// without multi-locations mode. It needs for ytserver < 26.1
+	ytsaurus := getYtsaurusWithoutNodes()
+	g := NewLocalNodeGenerator(ytsaurus, ytsaurus.Name, testClusterDomain)
+	spec := getExecNodeSpec(nil)
+	spec.JobProxyLogManager = &ytv1.JobProxyLogManagerSpec{
+		Mode: ytv1.JobProxyLoggingModePerJobDirectory,
+	}
+	canonize.AssertStruct(t, "exec-node-per-job-directory-legacy", spec)
+	cfg, err := g.GetExecNodeConfig(spec)
+	require.NoError(t, err)
+	canonize.Assert(t, cfg)
+}
+
 func TestGetExecNodeConfigJobProxyModeSimple(t *testing.T) {
 	ytsaurus := getYtsaurusWithoutNodes()
 	g := NewLocalNodeGenerator(ytsaurus, ytsaurus.Name, testClusterDomain)
