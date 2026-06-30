@@ -10527,6 +10527,25 @@ spec:
                             default is 5 per CPU.
                           type: integer
                       type: object
+                    jobProxyLogManager:
+                      properties:
+                        directoryTraversalConcurrency:
+                          minimum: 0
+                          type: integer
+                        jobProxyLogSymlinksPath:
+                          type: string
+                        logsStoragePeriodMilliseconds:
+                          format: int64
+                          type: integer
+                        mode:
+                          default: simple
+                          description: JobProxyLoggingMode describes how the exec
+                            node stores job-proxy logs.
+                          enum:
+                          - simple
+                          - per_job_directory
+                          type: string
+                      type: object
                     jobProxyLoggers:
                       items:
                         properties:

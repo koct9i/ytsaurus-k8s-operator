@@ -123,6 +123,8 @@ func ChooseJobProxyLoggingPath(spec *ytv1.InstanceSpec) string {
 	return "/var/log/job-proxy"
 }
 
+const JobProxyLogSymlinksPath = "/var/log/job-proxy-logs"
+
 func newLoggingBuilder(location *ytv1.LocationSpec, componentName string) loggingBuilder {
 	loggingDirectory := ChooseLoggingPath(location)
 

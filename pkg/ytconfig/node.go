@@ -260,12 +260,18 @@ type LogDump struct {
 	LogWriterName string `yson:"log_writer_name"`
 }
 
+type JobProxyLogManagerLocation struct {
+	Path string `yson:"path"`
+}
+
 type JobProxyLogManager struct {
-	Directory                     string        `yson:"directory"`
-	ShardingKeyLength             int           `yson:"sharding_key_length"`
-	LogsStoragePeriod             yson.Duration `yson:"logs_storage_period"`
-	DirectoryTraversalConcurrency int           `yson:"directory_traversal_concurrency"`
-	LogDump                       LogDump       `yson:"log_dump"`
+	Directory                     string                       `yson:"directory,omitempty"`
+	Locations                     []JobProxyLogManagerLocation `yson:"locations,omitempty"`
+	JobProxyLogSymlinksPath       string                       `yson:"job_proxy_log_symlinks_path,omitempty"`
+	ShardingKeyLength             int                          `yson:"sharding_key_length"`
+	LogsStoragePeriod             yson.Duration                `yson:"logs_storage_period"`
+	DirectoryTraversalConcurrency int                          `yson:"directory_traversal_concurrency"`
+	LogDump                       LogDump                      `yson:"log_dump"`
 }
 
 type ExecNode struct {
@@ -280,8 +286,8 @@ type ExecNode struct {
 	ForwardAllEnvironmentVariablesLegacy *bool    `yson:"forward_all_environment_variables,omitempty"`
 
 	// NOTE: Non-legacy "use_artifact_binds" moved into dynamic config.
-	UseArtifactBindsLegacy *bool              `yson:"use_artifact_binds,omitempty"`
-	JobProxyLogManager     JobProxyLogManager `yson:"job_proxy_log_manager"`
+	UseArtifactBindsLegacy *bool               `yson:"use_artifact_binds,omitempty"`
+	JobProxyLogManager     *JobProxyLogManager `yson:"job_proxy_log_manager,omitempty"`
 }
 
 type Cache struct {
@@ -633,6 +639,49 @@ func fillJobEnvironment(execNode *ExecNode, spec *ytv1.ExecNodesSpec, commonSpec
 	return nil
 }
 
+func buildJobProxyLogManager(spec *ytv1.ExecNodesSpec) JobProxyLogManager {
+	logsStoragePeriod := yson.Duration(7 * 24 * time.Hour)
+	directoryTraversalConcurrency := 4
+	jobProxyLogSymlinksPath := JobProxyLogSymlinksPath
+	if spec.JobProxyLogManager != nil {
+		if spec.JobProxyLogManager.LogsStoragePeriodMilliseconds != nil {
+			logsStoragePeriod = yson.Duration(time.Duration(*spec.JobProxyLogManager.LogsStoragePeriodMilliseconds) * time.Millisecond)
+		}
+		if spec.JobProxyLogManager.DirectoryTraversalConcurrency != nil {
+			directoryTraversalConcurrency = *spec.JobProxyLogManager.DirectoryTraversalConcurrency
+		}
+		if spec.JobProxyLogManager.JobProxyLogSymlinksPath != nil {
+			jobProxyLogSymlinksPath = *spec.JobProxyLogManager.JobProxyLogSymlinksPath
+		}
+	}
+	logManager := JobProxyLogManager{
+		ShardingKeyLength:             2,
+		LogsStoragePeriod:             logsStoragePeriod,
+		DirectoryTraversalConcurrency: directoryTraversalConcurrency,
+		LogDump: LogDump{
+			BufferSize:    1024 * 1024,
+			LogWriterName: "debug",
+		},
+	}
+
+	for _, location := range ytv1.FindAllLocations(spec.Locations, ytv1.LocationTypeJobProxyLogs) {
+		logManager.Locations = append(
+			logManager.Locations,
+			JobProxyLogManagerLocation{Path: location.Path},
+		)
+	}
+
+	if len(logManager.Locations) > 0 {
+		// multi-location mode accessible >= 26.1
+		logManager.JobProxyLogSymlinksPath = jobProxyLogSymlinksPath
+		// COMPAT(epsilond1): Remove after e2e uses >= 26.1
+		logManager.Directory = logManager.Locations[0].Path
+	} else {
+		logManager.Directory = ChooseJobProxyLoggingPath(&spec.InstanceSpec)
+	}
+	return logManager
+}
+
 func getExecNodeServerCarcass(spec *ytv1.ExecNodesSpec, commonSpec *ytv1.CommonSpec) (ExecNodeServer, error) {
 	var c ExecNodeServer
 	fillClusterNodeServerCarcass(&c.NodeServer, NodeFlavorExec, spec.ClusterNodesSpec, &spec.InstanceSpec)
@@ -734,29 +783,30 @@ func getExecNodeServerCarcass(spec *ytv1.ExecNodesSpec, commonSpec *ytv1.CommonS
 			jobProxyLoggingBuilder.addLogger(loggerSpec)
 		}
 	} else {
-		for _, defaultLoggerSpec := range []ytv1.TextLoggerSpec{defaultInfoLoggerSpec(), defaultStderrLoggerSpec()} {
+		for _, defaultLoggerSpec := range []ytv1.TextLoggerSpec{defaultInfoLoggerSpec(), defaultDebugLoggerSpec(), defaultStderrLoggerSpec()} {
 			jobProxyLoggingBuilder.addLogger(defaultLoggerSpec)
 		}
 	}
 	jobProxyLoggingBuilder.logging.FlushPeriod = 3000
 	jobProxyLogging := jobProxyLoggingBuilder.logging
+
+	jobProxyLoggingMode := ytv1.JobProxyLoggingModeSimple
+	if spec.JobProxyLogManager != nil && spec.JobProxyLogManager.Mode != "" {
+		jobProxyLoggingMode = spec.JobProxyLogManager.Mode
+	}
+
 	c.ExecNode.JobProxy.JobProxyLogging = JobProxyLogging{
 		Logging:            jobProxyLogging,
 		LogManagerTemplate: jobProxyLogging,
-		Mode:               "simple",
+		Mode:               string(jobProxyLoggingMode),
 	}
 
 	c.ExecNode.JobProxy.JobProxyAuthenticationManager.RequireAuthentication = true
 	c.ExecNode.JobProxy.JobProxyAuthenticationManager.CypressTokenAuthenticator.Secure = true
 
-	// Configure JobProxyLogManager
-	c.ExecNode.JobProxyLogManager.Directory = ChooseJobProxyLoggingPath(&spec.InstanceSpec)
-	c.ExecNode.JobProxyLogManager.ShardingKeyLength = 2
-	c.ExecNode.JobProxyLogManager.LogsStoragePeriod = yson.Duration(7 * 24 * time.Hour) // 1 week
-	c.ExecNode.JobProxyLogManager.DirectoryTraversalConcurrency = 4
-	c.ExecNode.JobProxyLogManager.LogDump = LogDump{
-		BufferSize:    1024 * 1024, // 1MB
-		LogWriterName: "debug",
+	if jobProxyLoggingMode == ytv1.JobProxyLoggingModePerJobDirectory {
+		logManager := buildJobProxyLogManager(spec)
+		c.ExecNode.JobProxyLogManager = &logManager
 	}
 
 	// TODO(khlebnikov): Drop legacy fields depending on ytsaurus version.

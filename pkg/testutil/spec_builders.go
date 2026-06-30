@@ -688,6 +688,10 @@ func (b *YtsaurusBuilder) CreateExecNodeSpec() ytv1.ExecNodesSpec {
 					LocationType: ytv1.LocationTypeSlots,
 					Path:         "/yt/node-data/slots",
 				},
+				{
+					LocationType: ytv1.LocationTypeJobProxyLogs,
+					Path:         "/yt/node-data/job-proxy-logs",
+				},
 			},
 			VolumeClaimTemplates: []ytv1.EmbeddedPersistentVolumeClaim{
 				b.CreateVolumeClaim("node-data", execNodeVolumeSize),
@@ -700,6 +704,9 @@ func (b *YtsaurusBuilder) CreateExecNodeSpec() ytv1.ExecNodesSpec {
 			},
 		},
 		JobResources: execNodeJobResources.DeepCopy(),
+		JobProxyLogManager: &ytv1.JobProxyLogManagerSpec{
+			Mode: ytv1.JobProxyLoggingModePerJobDirectory,
+		},
 	}
 }
 

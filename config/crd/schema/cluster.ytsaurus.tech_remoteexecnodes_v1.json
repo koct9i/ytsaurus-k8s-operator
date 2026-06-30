@@ -1172,6 +1172,31 @@
           "description": "Default docker image for user jobs.",
           "type": "string"
         },
+        "jobProxyLogManager": {
+          "type": "object",
+          "properties": {
+            "directoryTraversalConcurrency": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "jobProxyLogSymlinksPath": {
+              "type": "string"
+            },
+            "logsStoragePeriodMilliseconds": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "mode": {
+              "description": "JobProxyLoggingMode describes how the exec node stores job-proxy logs.",
+              "type": "string",
+              "default": "simple",
+              "enum": [
+                "simple",
+                "per_job_directory"
+              ]
+            }
+          }
+        },
         "jobProxyLoggers": {
           "type": "array",
           "items": {
