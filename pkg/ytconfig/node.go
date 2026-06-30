@@ -286,8 +286,8 @@ type ExecNode struct {
 	ForwardAllEnvironmentVariablesLegacy *bool    `yson:"forward_all_environment_variables,omitempty"`
 
 	// NOTE: Non-legacy "use_artifact_binds" moved into dynamic config.
-	UseArtifactBindsLegacy *bool              `yson:"use_artifact_binds,omitempty"`
-	JobProxyLogManager     JobProxyLogManager `yson:"job_proxy_log_manager"`
+	UseArtifactBindsLegacy *bool               `yson:"use_artifact_binds,omitempty"`
+	JobProxyLogManager     *JobProxyLogManager `yson:"job_proxy_log_manager,omitempty"`
 }
 
 type Cache struct {
@@ -639,7 +639,7 @@ func fillJobEnvironment(execNode *ExecNode, spec *ytv1.ExecNodesSpec, commonSpec
 	return nil
 }
 
-func buildJobProxyLogManager(spec *ytv1.ExecNodesSpec, jobProxyLoggingMode ytv1.JobProxyLoggingMode) JobProxyLogManager {
+func buildJobProxyLogManager(spec *ytv1.ExecNodesSpec) JobProxyLogManager {
 	logsStoragePeriod := yson.Duration(7 * 24 * time.Hour)
 	directoryTraversalConcurrency := 4
 	jobProxyLogSymlinksPath := JobProxyLogSymlinksPath
@@ -662,10 +662,6 @@ func buildJobProxyLogManager(spec *ytv1.ExecNodesSpec, jobProxyLoggingMode ytv1.
 			BufferSize:    1024 * 1024,
 			LogWriterName: "debug",
 		},
-	}
-
-	if jobProxyLoggingMode != ytv1.JobProxyLoggingModePerJobDirectory {
-		return logManager
 	}
 
 	for _, location := range ytv1.FindAllLocations(spec.Locations, ytv1.LocationTypeJobProxyLogs) {
@@ -808,7 +804,10 @@ func getExecNodeServerCarcass(spec *ytv1.ExecNodesSpec, commonSpec *ytv1.CommonS
 	c.ExecNode.JobProxy.JobProxyAuthenticationManager.RequireAuthentication = true
 	c.ExecNode.JobProxy.JobProxyAuthenticationManager.CypressTokenAuthenticator.Secure = true
 
-	c.ExecNode.JobProxyLogManager = buildJobProxyLogManager(spec, jobProxyLoggingMode)
+	if jobProxyLoggingMode == ytv1.JobProxyLoggingModePerJobDirectory {
+		logManager := buildJobProxyLogManager(spec)
+		c.ExecNode.JobProxyLogManager = &logManager
+	}
 
 	// TODO(khlebnikov): Drop legacy fields depending on ytsaurus version.
 	c.ExecNode.JobController.ResourceLimitsLegacy = &c.JobResourceManager.ResourceLimits
