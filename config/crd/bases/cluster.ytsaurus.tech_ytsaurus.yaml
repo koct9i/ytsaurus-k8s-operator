@@ -10525,7 +10525,8 @@ spec:
                     jobProxyLogManager:
                       properties:
                         directoryTraversalConcurrency:
-                          minimum: 0
+                          maximum: 8
+                          minimum: 1
                           type: integer
                         jobProxyLogSymlinksPath:
                           type: string

@@ -639,7 +639,7 @@ func fillJobEnvironment(execNode *ExecNode, spec *ytv1.ExecNodesSpec, commonSpec
 	return nil
 }
 
-func buildJobProxyLogManager(spec *ytv1.ExecNodesSpec) JobProxyLogManager {
+func buildJobProxyLogManager(spec *ytv1.ExecNodesSpec, mode ytv1.JobProxyLoggingMode) JobProxyLogManager {
 	logsStoragePeriod := yson.Duration(7 * 24 * time.Hour)
 	directoryTraversalConcurrency := 4
 	jobProxyLogSymlinksPath := JobProxyLogSymlinksPath
@@ -664,11 +664,13 @@ func buildJobProxyLogManager(spec *ytv1.ExecNodesSpec) JobProxyLogManager {
 		},
 	}
 
-	for _, location := range ytv1.FindAllLocations(spec.Locations, ytv1.LocationTypeJobProxyLogs) {
-		logManager.Locations = append(
-			logManager.Locations,
-			JobProxyLogManagerLocation{Path: location.Path},
-		)
+	if mode == ytv1.JobProxyLoggingModePerJobDirectory {
+		for _, location := range ytv1.FindAllLocations(spec.Locations, ytv1.LocationTypeJobProxyLogs) {
+			logManager.Locations = append(
+				logManager.Locations,
+				JobProxyLogManagerLocation{Path: location.Path},
+			)
+		}
 	}
 
 	if len(logManager.Locations) > 0 {
@@ -804,10 +806,8 @@ func getExecNodeServerCarcass(spec *ytv1.ExecNodesSpec, commonSpec *ytv1.CommonS
 	c.ExecNode.JobProxy.JobProxyAuthenticationManager.RequireAuthentication = true
 	c.ExecNode.JobProxy.JobProxyAuthenticationManager.CypressTokenAuthenticator.Secure = true
 
-	if jobProxyLoggingMode == ytv1.JobProxyLoggingModePerJobDirectory {
-		logManager := buildJobProxyLogManager(spec)
-		c.ExecNode.JobProxyLogManager = &logManager
-	}
+	logManager := buildJobProxyLogManager(spec, jobProxyLoggingMode)
+	c.ExecNode.JobProxyLogManager = &logManager
 
 	// TODO(khlebnikov): Drop legacy fields depending on ytsaurus version.
 	c.ExecNode.JobController.ResourceLimitsLegacy = &c.JobResourceManager.ResourceLimits

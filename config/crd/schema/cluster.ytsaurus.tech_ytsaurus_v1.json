@@ -12200,7 +12200,8 @@
                 "properties": {
                   "directoryTraversalConcurrency": {
                     "type": "integer",
-                    "minimum": 0
+                    "maximum": 8,
+                    "minimum": 1
                   },
                   "jobProxyLogSymlinksPath": {
                     "type": "string"

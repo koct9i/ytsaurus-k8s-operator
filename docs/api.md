@@ -1242,7 +1242,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `mode` _[JobProxyLoggingMode](#jobproxyloggingmode)_ |  | simple | Enum: [simple per_job_directory] <br /> |
 | `logsStoragePeriodMilliseconds` _integer_ |  |  |  |
-| `directoryTraversalConcurrency` _integer_ |  |  | Minimum: 0 <br /> |
+| `directoryTraversalConcurrency` _integer_ |  |  | Maximum: 8 <br />Minimum: 1 <br /> |
 | `jobProxyLogSymlinksPath` _string_ |  |  |  |
 
 

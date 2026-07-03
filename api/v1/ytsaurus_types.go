@@ -243,7 +243,8 @@ type JobProxyLogManagerSpec struct {
 
 	LogsStoragePeriodMilliseconds *int64 `json:"logsStoragePeriodMilliseconds,omitempty"`
 
-	//+kubebuilder:validation:Minimum=0
+	//+kubebuilder:validation:Minimum=1
+	//+kubebuilder:validation:Maximum=8
 	DirectoryTraversalConcurrency *int `json:"directoryTraversalConcurrency,omitempty"`
 
 	JobProxyLogSymlinksPath *string `json:"jobProxyLogSymlinksPath,omitempty"`
