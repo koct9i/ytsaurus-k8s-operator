@@ -104,24 +104,9 @@ data:
                     };
                 ];
                 "job_environment"={
-                    type=cri;
+                    type=simple;
                     "start_uid"=19500;
-                    "cri_executor"={
-                        "retry_backoff_time"=1000;
-                        "retry_attempts"=120;
-                        "retry_timeout"=120000;
-                        "runtime_endpoint"="unix:///yt/node-data/image-cache/containerd.sock";
-                        "image_endpoint"="unix:///yt/node-data/image-cache/containerd.sock";
-                        namespace=yt;
-                        "base_cgroup"="/yt";
-                    };
-                    "cri_image_cache"={
-                        capacity=5368709120;
-                    };
-                    "job_proxy_image"="mirror.gcr.io/library/python:3.12-slim";
-                    "use_job_proxy_from_image"=%false;
                 };
-                "do_not_set_user_id"=%true;
                 "enable_tmpfs"=%false;
             };
             "gpu_manager"={
@@ -152,6 +137,12 @@ data:
                 };
                 "job_proxy_logging"={
                     writers={
+                        debug={
+                            type=file;
+                            "file_name"="job-proxy.debug.log";
+                            format="plain_text";
+                            "enable_system_messages"=%true;
+                        };
                         info={
                             type=file;
                             "file_name"="job-proxy.info.log";
@@ -179,10 +170,23 @@ data:
                             ];
                             family="plain_text";
                         };
+                        {
+                            "min_level"=debug;
+                            writers=[
+                                debug;
+                            ];
+                            family="plain_text";
+                        };
                     ];
                     "flush_period"=3000;
                     "log_manager_template"={
                         writers={
+                            debug={
+                                type=file;
+                                "file_name"="job-proxy.debug.log";
+                                format="plain_text";
+                                "enable_system_messages"=%true;
+                            };
                             info={
                                 type=file;
                                 "file_name"="job-proxy.info.log";
@@ -210,12 +214,18 @@ data:
                                 ];
                                 family="plain_text";
                             };
+                            {
+                                "min_level"=debug;
+                                writers=[
+                                    debug;
+                                ];
+                                family="plain_text";
+                            };
                         ];
                         "flush_period"=3000;
                     };
-                    mode=simple;
+                    mode="per_job_directory";
                 };
-                "forward_all_environment_variables"=%true;
             };
             "job_proxy_authentication_manager"={
                 "cypress_cookie_manager"={
@@ -229,6 +239,12 @@ data:
             };
             "job_proxy_logging"={
                 writers={
+                    debug={
+                        type=file;
+                        "file_name"="job-proxy.debug.log";
+                        format="plain_text";
+                        "enable_system_messages"=%true;
+                    };
                     info={
                         type=file;
                         "file_name"="job-proxy.info.log";
@@ -256,14 +272,24 @@ data:
                         ];
                         family="plain_text";
                     };
+                    {
+                        "min_level"=debug;
+                        writers=[
+                            debug;
+                        ];
+                        family="plain_text";
+                    };
                 ];
                 "flush_period"=3000;
             };
-            "do_not_set_user_id"=%true;
-            "forward_all_environment_variables"=%true;
-            "use_artifact_binds"=%true;
             "job_proxy_log_manager"={
-                directory="/var/log/job-proxy";
+                directory="/yt/node-data/job-proxy-logs";
+                locations=[
+                    {
+                        path="/yt/node-data/job-proxy-logs";
+                    };
+                ];
+                "job_proxy_log_symlinks_path"="/var/log/job-proxy-logs";
                 "sharding_key_length"=2;
                 "logs_storage_period"=604800000;
                 "directory_traversal_concurrency"=4;
@@ -316,7 +342,6 @@ kind: ConfigMap
 metadata:
   annotations:
     ytsaurus.tech/config-hash: <censored>
-    ytsaurus.tech/config-overrides-version: "1"
     ytsaurus.tech/observed-generation: "1"
   creationTimestamp: null
   generation: 1

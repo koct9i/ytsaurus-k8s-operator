@@ -8,8 +8,6 @@ metadata:
   resourceVersion: "15"
 spec:
   clusterFeatures: {}
-  configOverrides:
-    name: test-overrides
   coreImage: ghcr.io/ytsaurus/ytsaurus:stable-25.2.2
   discovery:
     instanceCount: 1
@@ -29,9 +27,8 @@ spec:
   ephemeralCluster: true
   execNodes:
   - instanceCount: 1
-    jobEnvironment:
-      cri:
-        apiRetryTimeoutSeconds: 120
+    jobProxyLogManager:
+      mode: per_job_directory
     jobResources:
       limits:
         cpu: "4"
@@ -44,8 +41,8 @@ spec:
       path: /yt/node-data/chunk-cache
     - locationType: Slots
       path: /yt/node-data/slots
-    - locationType: ImageCache
-      path: /yt/node-data/image-cache
+    - locationType: JobProxyLogs
+      path: /yt/node-data/job-proxy-logs
     loggers:
     - minLogLevel: info
       name: info-stderr

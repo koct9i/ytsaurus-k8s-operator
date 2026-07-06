@@ -639,51 +639,6 @@ func fillJobEnvironment(execNode *ExecNode, spec *ytv1.ExecNodesSpec, commonSpec
 	return nil
 }
 
-func buildJobProxyLogManager(spec *ytv1.ExecNodesSpec, mode ytv1.JobProxyLoggingMode) JobProxyLogManager {
-	logsStoragePeriod := yson.Duration(7 * 24 * time.Hour)
-	directoryTraversalConcurrency := 4
-	jobProxyLogSymlinksPath := JobProxyLogSymlinksPath
-	if spec.JobProxyLogManager != nil {
-		if spec.JobProxyLogManager.LogsStoragePeriodMilliseconds != nil {
-			logsStoragePeriod = yson.Duration(time.Duration(*spec.JobProxyLogManager.LogsStoragePeriodMilliseconds) * time.Millisecond)
-		}
-		if spec.JobProxyLogManager.DirectoryTraversalConcurrency != nil {
-			directoryTraversalConcurrency = *spec.JobProxyLogManager.DirectoryTraversalConcurrency
-		}
-		if spec.JobProxyLogManager.JobProxyLogSymlinksPath != nil {
-			jobProxyLogSymlinksPath = *spec.JobProxyLogManager.JobProxyLogSymlinksPath
-		}
-	}
-	logManager := JobProxyLogManager{
-		ShardingKeyLength:             2,
-		LogsStoragePeriod:             logsStoragePeriod,
-		DirectoryTraversalConcurrency: directoryTraversalConcurrency,
-		LogDump: LogDump{
-			BufferSize:    1024 * 1024,
-			LogWriterName: "debug",
-		},
-	}
-
-	if mode == ytv1.JobProxyLoggingModePerJobDirectory {
-		for _, location := range ytv1.FindAllLocations(spec.Locations, ytv1.LocationTypeJobProxyLogs) {
-			logManager.Locations = append(
-				logManager.Locations,
-				JobProxyLogManagerLocation{Path: location.Path},
-			)
-		}
-	}
-
-	if len(logManager.Locations) > 0 {
-		// multi-location mode accessible >= 26.1
-		logManager.JobProxyLogSymlinksPath = jobProxyLogSymlinksPath
-		// COMPAT(epsilond1): Remove after e2e uses >= 26.1
-		logManager.Directory = logManager.Locations[0].Path
-	} else {
-		logManager.Directory = ChooseJobProxyLoggingPath(&spec.InstanceSpec)
-	}
-	return logManager
-}
-
 func getExecNodeServerCarcass(spec *ytv1.ExecNodesSpec, commonSpec *ytv1.CommonSpec) (ExecNodeServer, error) {
 	var c ExecNodeServer
 	fillClusterNodeServerCarcass(&c.NodeServer, NodeFlavorExec, spec.ClusterNodesSpec, &spec.InstanceSpec)
@@ -779,40 +734,19 @@ func getExecNodeServerCarcass(spec *ytv1.ExecNodesSpec, commonSpec *ytv1.CommonS
 
 	c.Logging = getExecNodeLogging(spec)
 
-	jobProxyLoggingBuilder := newJobProxyLoggingBuilder()
-	if len(spec.JobProxyLoggers) > 0 {
-		for _, loggerSpec := range spec.JobProxyLoggers {
-			jobProxyLoggingBuilder.addLogger(loggerSpec)
-		}
-	} else {
-		for _, defaultLoggerSpec := range []ytv1.TextLoggerSpec{defaultInfoLoggerSpec(), defaultDebugLoggerSpec(), defaultStderrLoggerSpec()} {
-			jobProxyLoggingBuilder.addLogger(defaultLoggerSpec)
-		}
-	}
-	jobProxyLoggingBuilder.logging.FlushPeriod = 3000
-	jobProxyLogging := jobProxyLoggingBuilder.logging
-
-	jobProxyLoggingMode := ytv1.JobProxyLoggingModeSimple
-	if spec.JobProxyLogManager != nil && spec.JobProxyLogManager.Mode != "" {
-		jobProxyLoggingMode = spec.JobProxyLogManager.Mode
-	}
-
-	c.ExecNode.JobProxy.JobProxyLogging = JobProxyLogging{
-		Logging:            jobProxyLogging,
-		LogManagerTemplate: jobProxyLogging,
-		Mode:               string(jobProxyLoggingMode),
-	}
+	jobProxyLoggingBuilder := newJobProxyLoggingBuilder(spec)
+	c.ExecNode.JobProxy.JobProxyLogging = jobProxyLoggingBuilder.buildJobProxyLogging()
 
 	c.ExecNode.JobProxy.JobProxyAuthenticationManager.RequireAuthentication = true
 	c.ExecNode.JobProxy.JobProxyAuthenticationManager.CypressTokenAuthenticator.Secure = true
 
-	logManager := buildJobProxyLogManager(spec, jobProxyLoggingMode)
+	logManager := jobProxyLoggingBuilder.buildJobProxyLogManager()
 	c.ExecNode.JobProxyLogManager = &logManager
 
 	// TODO(khlebnikov): Drop legacy fields depending on ytsaurus version.
 	c.ExecNode.JobController.ResourceLimitsLegacy = &c.JobResourceManager.ResourceLimits
 	c.ExecNode.JobController.GpuManagerLegacy = &c.ExecNode.GpuManager
-	c.ExecNode.JobProxyLoggingLegacy = &jobProxyLogging
+	c.ExecNode.JobProxyLoggingLegacy = &jobProxyLoggingBuilder.logging
 	c.ExecNode.JobProxyAuthenticationManagerLegacy = &c.ExecNode.JobProxy.JobProxyAuthenticationManager
 	c.ExecNode.DoNotSetUserIdLegacy = c.ExecNode.SlotManager.DoNotSetUserId
 	c.ExecNode.ForwardAllEnvironmentVariablesLegacy = c.ExecNode.JobProxy.ForwardAllEnvironmentVariables

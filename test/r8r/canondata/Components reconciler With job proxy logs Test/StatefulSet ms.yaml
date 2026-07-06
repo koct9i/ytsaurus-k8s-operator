@@ -7,20 +7,20 @@ metadata:
   creationTimestamp: null
   generation: 1
   labels:
-    app.kubernetes.io/component: yt-exec-node
+    app.kubernetes.io/component: yt-master
     app.kubernetes.io/managed-by: ytsaurus-k8s-operator
-    app.kubernetes.io/name: yt-exec-node
-    app.kubernetes.io/part-of: yt-rmt
-    yt_component: rmt-yt-exec-node
-    ytsaurus.tech/cluster-name: rmt
-  name: end-rmt
+    app.kubernetes.io/name: yt-master
+    app.kubernetes.io/part-of: yt-test-ytsaurus
+    yt_component: test-ytsaurus-yt-master
+    ytsaurus.tech/cluster-name: test-ytsaurus
+  name: ms
   namespace: ytsaurus-components
   ownerReferences:
   - apiVersion: cluster.ytsaurus.tech/v1
     blockOwnerDeletion: true
     controller: true
-    kind: RemoteExecNodes
-    name: rmt
+    kind: Ytsaurus
+    name: test-ytsaurus
     uid: ""
   resourceVersion: "1"
 spec:
@@ -28,26 +28,28 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      yt_component: rmt-yt-exec-node
-  serviceName: exec-nodes-rmt
+      yt_component: test-ytsaurus-yt-master
+  serviceName: masters
   template:
     metadata:
       annotations:
         ytsaurus.tech/config-hash: <censored>
       creationTimestamp: null
       labels:
-        app.kubernetes.io/component: yt-exec-node
+        app.kubernetes.io/component: yt-master
         app.kubernetes.io/managed-by: ytsaurus-k8s-operator
-        app.kubernetes.io/name: yt-exec-node
-        app.kubernetes.io/part-of: yt-rmt
-        yt_component: rmt-yt-exec-node
-        ytsaurus.tech/cluster-name: rmt
+        app.kubernetes.io/name: yt-master
+        app.kubernetes.io/part-of: yt-test-ytsaurus
+        yt_component: test-ytsaurus-yt-master
+        ytsaurus.tech/cell-id: 65726e65-ad6b7562-10259-79747361
+        ytsaurus.tech/cell-tag: "1"
+        ytsaurus.tech/cluster-name: test-ytsaurus
     spec:
       containers:
       - command:
-        - /usr/bin/ytserver-node
+        - /usr/bin/ytserver-master
         - --config
-        - /config/ytserver-exec-node.yson
+        - /config/ytserver-master.yson
         env:
         - name: K8S_POD_NAME
           valueFrom:
@@ -61,13 +63,15 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
+        - name: YT_DRIVER_CONFIG_PATH
+          value: /config_template/client.yson
         image: ghcr.io/ytsaurus/ytsaurus:stable-25.2.2
         name: ytserver
         ports:
-        - containerPort: 10029
+        - containerPort: 10010
           name: metrics
           protocol: TCP
-        - containerPort: 9029
+        - containerPort: 9010
           name: rpc
           protocol: TCP
         readinessProbe:
@@ -76,16 +80,14 @@ spec:
             port: metrics
         resources:
           limits:
-            cpu: "5"
-            memory: 10Gi
+            cpu: "1"
+            memory: 2Gi
           requests:
             cpu: "0"
             memory: "0"
-        securityContext:
-          privileged: false
         volumeMounts:
-        - mountPath: /yt/node-data
-          name: node-data
+        - mountPath: /yt/master-data
+          name: master-data
         - mountPath: /config_template
           name: config-template
           readOnly: true
@@ -96,7 +98,8 @@ spec:
       - command:
         - bash
         - -xc
-        - 'echo ''Init locations''; mkdir -p /yt/node-data/chunk-cache; mkdir -p /yt/node-data/slots; '
+        - 'echo ''Init locations''; mkdir -p /yt/master-data/master-changelogs; mkdir
+          -p /yt/master-data/master-snapshots; '
         env:
         - name: K8S_POD_NAME
           valueFrom:
@@ -113,11 +116,9 @@ spec:
         image: ghcr.io/ytsaurus/ytsaurus:stable-25.2.2
         name: prepare-locations
         resources: {}
-        securityContext:
-          privileged: false
         volumeMounts:
-        - mountPath: /yt/node-data
-          name: node-data
+        - mountPath: /yt/master-data
+          name: master-data
         - mountPath: /config_template
           name: config-template
           readOnly: true
@@ -126,15 +127,15 @@ spec:
       - command:
         - bash
         - -xc
-        - 'echo ''Postprocess config ytserver-exec-node.yson'';echo ''cp /config_template/ytserver-exec-node.yson
-          /config/ytserver-exec-node.yson; sed -i -s "s/{K8S_POD_NAME}/${K8S_POD_NAME}/g"
-          /config/ytserver-exec-node.yson; sed -i -s "s/{K8S_POD_NAMESPACE}/${K8S_POD_NAMESPACE}/g"
-          /config/ytserver-exec-node.yson; sed -i -s "s/{K8S_NODE_NAME}/${K8S_NODE_NAME}/g"
-          /config/ytserver-exec-node.yson; sed -i -s "s/{POD_FQDN}/$(hostname -f)/g"
-          /config/ytserver-exec-node.yson; sed -i -s "s/{POD_SHORT_HOSTNAME}/$(hostname
-          -s)/g" /config/ytserver-exec-node.yson; '' > /config/postprocess-config.sh;
+        - 'echo ''Postprocess config ytserver-master.yson'';echo ''cp /config_template/ytserver-master.yson
+          /config/ytserver-master.yson; sed -i -s "s/{K8S_POD_NAME}/${K8S_POD_NAME}/g"
+          /config/ytserver-master.yson; sed -i -s "s/{K8S_POD_NAMESPACE}/${K8S_POD_NAMESPACE}/g"
+          /config/ytserver-master.yson; sed -i -s "s/{K8S_NODE_NAME}/${K8S_NODE_NAME}/g"
+          /config/ytserver-master.yson; sed -i -s "s/{POD_FQDN}/$(hostname -f)/g"
+          /config/ytserver-master.yson; sed -i -s "s/{POD_SHORT_HOSTNAME}/$(hostname
+          -s)/g" /config/ytserver-master.yson; '' > /config/postprocess-config.sh;
           chmod +x ''/config/postprocess-config.sh''; source /config/postprocess-config.sh;
-          cat /config/ytserver-exec-node.yson; '
+          cat /config/ytserver-master.yson; '
         env:
         - name: K8S_POD_NAME
           valueFrom:
@@ -151,11 +152,9 @@ spec:
         image: ghcr.io/ytsaurus/ytsaurus:stable-25.2.2
         name: postprocess-config
         resources: {}
-        securityContext:
-          privileged: false
         volumeMounts:
-        - mountPath: /yt/node-data
-          name: node-data
+        - mountPath: /yt/master-data
+          name: master-data
         - mountPath: /config_template
           name: config-template
           readOnly: true
@@ -164,7 +163,7 @@ spec:
       setHostnameAsFQDN: true
       volumes:
       - configMap:
-          name: yt-exec-node-config
+          name: yt-master-config
         name: config-template
       - emptyDir: {}
         name: config
@@ -172,7 +171,7 @@ spec:
   volumeClaimTemplates:
   - metadata:
       creationTimestamp: null
-      name: node-data
+      name: master-data
     spec:
       accessModes:
       - ReadWriteOnce

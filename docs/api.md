@@ -1240,10 +1240,10 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `mode` _[JobProxyLoggingMode](#jobproxyloggingmode)_ |  | simple | Enum: [simple per_job_directory] <br /> |
-| `logsStoragePeriodMilliseconds` _integer_ |  |  |  |
-| `directoryTraversalConcurrency` _integer_ |  |  | Maximum: 8 <br />Minimum: 1 <br /> |
-| `jobProxyLogSymlinksPath` _string_ |  |  |  |
+| `mode` _[JobProxyLoggingMode](#jobproxyloggingmode)_ | How the exec node stores job proxy logs. | simple | Enum: [simple per_job_directory] <br /> |
+| `logsStoragePeriodMilliseconds` _integer_ | TTL for logs of finished jobs: job logs are removed when they become<br />older than this period. |  |  |
+| `directoryTraversalConcurrency` _integer_ | How many directories are checked at the same time during logs cleanup. |  | Maximum: 8 <br />Minimum: 1 <br /> |
+| `jobProxyLogSymlinksPath` _string_ | Directory with symlinks to job log directories on all locations. |  |  |
 
 
 #### JobProxyLoggingMode
@@ -1260,8 +1260,8 @@ _Appears in:_
 
 | Field | Description |
 | --- | --- |
-| `simple` |  |
-| `per_job_directory` |  |
+| `simple` | All jobs write logs into common log files in the exec node log directory.<br /> |
+| `per_job_directory` | Each job writes logs into its own directory `<location>/<shard>/<job-id>`.<br />Locations here are exec node locations with type JobProxyLogs.<br />Requires YTsaurus >= 26.1.<br /> |
 
 
 #### JobRuntimeSpec

@@ -12199,19 +12199,22 @@
                 "type": "object",
                 "properties": {
                   "directoryTraversalConcurrency": {
+                    "description": "How many directories are checked at the same time during logs cleanup.",
                     "type": "integer",
                     "maximum": 8,
                     "minimum": 1
                   },
                   "jobProxyLogSymlinksPath": {
+                    "description": "Directory with symlinks to job log directories on all locations.",
                     "type": "string"
                   },
                   "logsStoragePeriodMilliseconds": {
+                    "description": "TTL for logs of finished jobs: job logs are removed when they become\nolder than...",
                     "type": "integer",
                     "format": "int64"
                   },
                   "mode": {
-                    "description": "JobProxyLoggingMode describes how the exec node stores job-proxy logs.",
+                    "description": "How the exec node stores job proxy logs.",
                     "type": "string",
                     "default": "simple",
                     "enum": [
