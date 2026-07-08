@@ -703,6 +703,19 @@ func (b *YtsaurusBuilder) CreateExecNodeSpec() ytv1.ExecNodesSpec {
 	}
 }
 
+func (b *YtsaurusBuilder) WithJobProxyLogs() {
+	for i := range b.Ytsaurus.Spec.ExecNodes {
+		node := &b.Ytsaurus.Spec.ExecNodes[i]
+		node.Locations = append(node.Locations, ytv1.LocationSpec{
+			LocationType: ytv1.LocationTypeJobProxyLogs,
+			Path:         "/yt/node-data/job-proxy-logs",
+		})
+		node.JobProxyLogManager = &ytv1.JobProxyLogManagerSpec{
+			Mode: ytv1.JobProxyLoggingModePerJobDirectory,
+		}
+	}
+}
+
 func (b *YtsaurusBuilder) SetupCRIJobEnvironment(node *ytv1.ExecNodesSpec) {
 	node.Locations = append(node.Locations, ytv1.LocationSpec{
 		LocationType: ytv1.LocationTypeImageCache,

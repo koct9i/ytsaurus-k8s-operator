@@ -260,12 +260,18 @@ type LogDump struct {
 	LogWriterName string `yson:"log_writer_name"`
 }
 
+type JobProxyLogManagerLocation struct {
+	Path string `yson:"path"`
+}
+
 type JobProxyLogManager struct {
-	Directory                     string        `yson:"directory"`
-	ShardingKeyLength             int           `yson:"sharding_key_length"`
-	LogsStoragePeriod             yson.Duration `yson:"logs_storage_period"`
-	DirectoryTraversalConcurrency int           `yson:"directory_traversal_concurrency"`
-	LogDump                       LogDump       `yson:"log_dump"`
+	Directory                     string                       `yson:"directory,omitempty"`
+	Locations                     []JobProxyLogManagerLocation `yson:"locations,omitempty"`
+	JobProxyLogSymlinksPath       string                       `yson:"job_proxy_log_symlinks_path,omitempty"`
+	ShardingKeyLength             int                          `yson:"sharding_key_length"`
+	LogsStoragePeriod             yson.Duration                `yson:"logs_storage_period"`
+	DirectoryTraversalConcurrency int                          `yson:"directory_traversal_concurrency"`
+	LogDump                       LogDump                      `yson:"log_dump"`
 }
 
 type ExecNode struct {
@@ -280,8 +286,8 @@ type ExecNode struct {
 	ForwardAllEnvironmentVariablesLegacy *bool    `yson:"forward_all_environment_variables,omitempty"`
 
 	// NOTE: Non-legacy "use_artifact_binds" moved into dynamic config.
-	UseArtifactBindsLegacy *bool              `yson:"use_artifact_binds,omitempty"`
-	JobProxyLogManager     JobProxyLogManager `yson:"job_proxy_log_manager"`
+	UseArtifactBindsLegacy *bool               `yson:"use_artifact_binds,omitempty"`
+	JobProxyLogManager     *JobProxyLogManager `yson:"job_proxy_log_manager,omitempty"`
 }
 
 type Cache struct {
@@ -733,41 +739,19 @@ func getExecNodeServerCarcass(spec *ytv1.ExecNodesSpec, commonSpec *ytv1.CommonS
 
 	c.Logging = getExecNodeLogging(spec)
 
-	jobProxyLoggingBuilder := newJobProxyLoggingBuilder()
-	if len(spec.JobProxyLoggers) > 0 {
-		for _, loggerSpec := range spec.JobProxyLoggers {
-			jobProxyLoggingBuilder.addLogger(loggerSpec)
-		}
-	} else {
-		for _, defaultLoggerSpec := range []ytv1.TextLoggerSpec{defaultInfoLoggerSpec(), defaultStderrLoggerSpec()} {
-			jobProxyLoggingBuilder.addLogger(defaultLoggerSpec)
-		}
-	}
-	jobProxyLoggingBuilder.logging.FlushPeriod = 3000
-	jobProxyLogging := jobProxyLoggingBuilder.logging
-	c.ExecNode.JobProxy.JobProxyLogging = JobProxyLogging{
-		Logging:            jobProxyLogging,
-		LogManagerTemplate: jobProxyLogging,
-		Mode:               "simple",
-	}
+	jobProxyLoggingBuilder := newJobProxyLoggingBuilder(spec)
+	c.ExecNode.JobProxy.JobProxyLogging = jobProxyLoggingBuilder.buildJobProxyLogging()
 
 	c.ExecNode.JobProxy.JobProxyAuthenticationManager.RequireAuthentication = true
 	c.ExecNode.JobProxy.JobProxyAuthenticationManager.CypressTokenAuthenticator.Secure = true
 
-	// Configure JobProxyLogManager
-	c.ExecNode.JobProxyLogManager.Directory = ChooseJobProxyLoggingPath(&spec.InstanceSpec)
-	c.ExecNode.JobProxyLogManager.ShardingKeyLength = 2
-	c.ExecNode.JobProxyLogManager.LogsStoragePeriod = yson.Duration(7 * 24 * time.Hour) // 1 week
-	c.ExecNode.JobProxyLogManager.DirectoryTraversalConcurrency = 4
-	c.ExecNode.JobProxyLogManager.LogDump = LogDump{
-		BufferSize:    1024 * 1024, // 1MB
-		LogWriterName: "debug",
-	}
+	logManager := jobProxyLoggingBuilder.buildJobProxyLogManager()
+	c.ExecNode.JobProxyLogManager = &logManager
 
 	// TODO(khlebnikov): Drop legacy fields depending on ytsaurus version.
 	c.ExecNode.JobController.ResourceLimitsLegacy = &c.JobResourceManager.ResourceLimits
 	c.ExecNode.JobController.GpuManagerLegacy = &c.ExecNode.GpuManager
-	c.ExecNode.JobProxyLoggingLegacy = &jobProxyLogging
+	c.ExecNode.JobProxyLoggingLegacy = &jobProxyLoggingBuilder.logging
 	c.ExecNode.JobProxyAuthenticationManagerLegacy = &c.ExecNode.JobProxy.JobProxyAuthenticationManager
 	c.ExecNode.DoNotSetUserIdLegacy = c.ExecNode.SlotManager.DoNotSetUserId
 	c.ExecNode.ForwardAllEnvironmentVariablesLegacy = c.ExecNode.JobProxy.ForwardAllEnvironmentVariables

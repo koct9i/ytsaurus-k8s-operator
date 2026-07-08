@@ -764,6 +764,14 @@ var _ = Describe("Components reconciler", Label("reconciler"), func() {
 		})
 	})
 
+	Context("With job proxy logs", func() {
+		BeforeEach(func() {
+			ytBuilder.WithExecNodes()
+			ytBuilder.WithJobProxyLogs()
+		})
+		It("Test", func(ctx context.Context) {})
+	})
+
 	Context("With CRI job environment", func() {
 		BeforeEach(func() {
 			ytBuilder.WithExecNodes()

@@ -205,6 +205,51 @@ func TestGetExecNodeConfig(t *testing.T) {
 	}
 }
 
+func TestGetExecNodeConfigJobProxyModePerJobDirectory(t *testing.T) {
+	ytsaurus := getYtsaurusWithoutNodes()
+	g := NewLocalNodeGenerator(ytsaurus, ytsaurus.Name, testClusterDomain)
+	spec := getExecNodeSpec(nil)
+	spec.Locations = append(spec.Locations,
+		ytv1.LocationSpec{LocationType: ytv1.LocationTypeJobProxyLogs, Path: "/mnt/disk1/logs"},
+		ytv1.LocationSpec{LocationType: ytv1.LocationTypeJobProxyLogs, Path: "/mnt/disk2/logs"},
+	)
+	spec.JobProxyLogManager = &ytv1.JobProxyLogManagerSpec{
+		Mode: ytv1.JobProxyLoggingModePerJobDirectory,
+	}
+	canonize.AssertStruct(t, "exec-node-per-job-directory", spec)
+	cfg, err := g.GetExecNodeConfig(spec)
+	require.NoError(t, err)
+	canonize.Assert(t, cfg)
+}
+
+func TestGetExecNodeConfigJobProxyModePerJobDirectoryLegacy(t *testing.T) {
+	// COMPAT(epsilond1): This test covers per_job_directory
+	// without multi-locations mode. It needs for ytserver < 26.1
+	ytsaurus := getYtsaurusWithoutNodes()
+	g := NewLocalNodeGenerator(ytsaurus, ytsaurus.Name, testClusterDomain)
+	spec := getExecNodeSpec(nil)
+	spec.JobProxyLogManager = &ytv1.JobProxyLogManagerSpec{
+		Mode: ytv1.JobProxyLoggingModePerJobDirectory,
+	}
+	canonize.AssertStruct(t, "exec-node-per-job-directory-legacy", spec)
+	cfg, err := g.GetExecNodeConfig(spec)
+	require.NoError(t, err)
+	canonize.Assert(t, cfg)
+}
+
+func TestGetExecNodeConfigJobProxyModeSimple(t *testing.T) {
+	ytsaurus := getYtsaurusWithoutNodes()
+	g := NewLocalNodeGenerator(ytsaurus, ytsaurus.Name, testClusterDomain)
+	spec := getExecNodeSpec(nil)
+	spec.JobProxyLogManager = &ytv1.JobProxyLogManagerSpec{
+		Mode: ytv1.JobProxyLoggingModeSimple,
+	}
+	canonize.AssertStruct(t, "exec-node-simple", spec)
+	cfg, err := g.GetExecNodeConfig(spec)
+	require.NoError(t, err)
+	canonize.Assert(t, cfg)
+}
+
 func TestGetExecNodeConfigWithCri(t *testing.T) {
 	ytsaurus := getYtsaurusWithoutNodes()
 	canonize.AssertStruct(t, "ytsaurus", ytsaurus)

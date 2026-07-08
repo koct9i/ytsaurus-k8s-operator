@@ -3,7 +3,9 @@ package ytconfig
 import (
 	"fmt"
 	"path"
+	"time"
 
+	"go.ytsaurus.tech/yt/go/yson"
 	"k8s.io/utils/ptr"
 
 	ytv1 "github.com/ytsaurus/ytsaurus-k8s-operator/api/v1"
@@ -123,6 +125,8 @@ func ChooseJobProxyLoggingPath(spec *ytv1.InstanceSpec) string {
 	return "/var/log/job-proxy"
 }
 
+const JobProxyLogSymlinksPath = "/var/log/job-proxy-logs"
+
 func newLoggingBuilder(location *ytv1.LocationSpec, componentName string) loggingBuilder {
 	loggingDirectory := ChooseLoggingPath(location)
 
@@ -136,17 +140,98 @@ func newLoggingBuilder(location *ytv1.LocationSpec, componentName string) loggin
 	}
 }
 
-func newJobProxyLoggingBuilder() loggingBuilder {
-	return loggingBuilder{
-		loggingDirectory: "",
-		componentName:    "job-proxy",
-		logging: Logging{
-			Rules:   make([]LoggingRule, 0),
-			Writers: make(map[string]LoggingWriter),
+type jobProxyLoggingBuilder struct {
+	loggingBuilder
+	spec *ytv1.ExecNodesSpec
+}
+
+func newJobProxyLoggingBuilder(spec *ytv1.ExecNodesSpec) jobProxyLoggingBuilder {
+	builder := jobProxyLoggingBuilder{
+		loggingBuilder: loggingBuilder{
+			componentName: "job-proxy",
+			logging: Logging{
+				Rules:   make([]LoggingRule, 0),
+				Writers: make(map[string]LoggingWriter),
+			},
 		},
+		spec: spec,
+	}
+	if len(spec.JobProxyLoggers) > 0 {
+		for _, loggerSpec := range spec.JobProxyLoggers {
+			builder.addLogger(loggerSpec)
+		}
+	} else {
+		defaultLoggerSpecs := []ytv1.TextLoggerSpec{defaultInfoLoggerSpec(), defaultStderrLoggerSpec()}
+		if builder.getMode() == ytv1.JobProxyLoggingModePerJobDirectory {
+			defaultLoggerSpecs = append(defaultLoggerSpecs, defaultDebugLoggerSpec())
+		}
+		for _, defaultLoggerSpec := range defaultLoggerSpecs {
+			builder.addLogger(defaultLoggerSpec)
+		}
+	}
+	builder.logging.FlushPeriod = 3000
+	return builder
+}
+
+func (builder *jobProxyLoggingBuilder) getMode() ytv1.JobProxyLoggingMode {
+	if builder.spec.JobProxyLogManager != nil && builder.spec.JobProxyLogManager.Mode != "" {
+		return builder.spec.JobProxyLogManager.Mode
+	}
+	return ytv1.JobProxyLoggingModeSimple
+}
+
+func (builder *jobProxyLoggingBuilder) buildJobProxyLogging() JobProxyLogging {
+	return JobProxyLogging{
+		Logging:            builder.logging,
+		LogManagerTemplate: builder.logging,
+		Mode:               string(builder.getMode()),
 	}
 }
 
+func (builder *jobProxyLoggingBuilder) buildJobProxyLogManager() JobProxyLogManager {
+	logsStoragePeriod := yson.Duration(7 * 24 * time.Hour)
+	directoryTraversalConcurrency := 4
+	jobProxyLogSymlinksPath := JobProxyLogSymlinksPath
+	if builder.spec.JobProxyLogManager != nil {
+		if builder.spec.JobProxyLogManager.LogsStoragePeriodMilliseconds != nil {
+			logsStoragePeriod = yson.Duration(time.Duration(*builder.spec.JobProxyLogManager.LogsStoragePeriodMilliseconds) * time.Millisecond)
+		}
+		if builder.spec.JobProxyLogManager.DirectoryTraversalConcurrency != nil {
+			directoryTraversalConcurrency = *builder.spec.JobProxyLogManager.DirectoryTraversalConcurrency
+		}
+		if builder.spec.JobProxyLogManager.JobProxyLogSymlinksPath != nil {
+			jobProxyLogSymlinksPath = *builder.spec.JobProxyLogManager.JobProxyLogSymlinksPath
+		}
+	}
+	logManager := JobProxyLogManager{
+		ShardingKeyLength:             2,
+		LogsStoragePeriod:             logsStoragePeriod,
+		DirectoryTraversalConcurrency: directoryTraversalConcurrency,
+		LogDump: LogDump{
+			BufferSize:    1024 * 1024,
+			LogWriterName: "debug",
+		},
+	}
+
+	if builder.getMode() == ytv1.JobProxyLoggingModePerJobDirectory {
+		for _, location := range ytv1.FindAllLocations(builder.spec.Locations, ytv1.LocationTypeJobProxyLogs) {
+			logManager.Locations = append(
+				logManager.Locations,
+				JobProxyLogManagerLocation{Path: location.Path},
+			)
+		}
+	}
+
+	if len(logManager.Locations) > 0 {
+		// multi-location mode accessible >= 26.1
+		logManager.JobProxyLogSymlinksPath = jobProxyLogSymlinksPath
+		// COMPAT(epsilond1): Remove after e2e uses >= 26.1
+		logManager.Directory = logManager.Locations[0].Path
+	} else {
+		logManager.Directory = ChooseJobProxyLoggingPath(&builder.spec.InstanceSpec)
+	}
+	return logManager
+}
 func createBaseLoggingRule(spec ytv1.BaseLoggerSpec) LoggingRule {
 	return LoggingRule{
 		MinLevel: spec.MinLogLevel,

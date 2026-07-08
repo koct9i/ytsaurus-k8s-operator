@@ -194,6 +194,7 @@ const (
 	LocationTypeMasterChangelogs LocationType = "MasterChangelogs"
 	LocationTypeMasterSnapshots  LocationType = "MasterSnapshots"
 	LocationTypeImageCache       LocationType = "ImageCache"
+	LocationTypeJobProxyLogs     LocationType = "JobProxyLogs"
 )
 
 type LocationSpec struct {
@@ -226,6 +227,37 @@ const (
 	LogLevelWarning LogLevel = "warning"
 	LogLevelError   LogLevel = "error"
 )
+
+// JobProxyLoggingMode describes how the exec node stores job-proxy logs.
+// +kubebuilder:validation:Enum=simple;per_job_directory
+type JobProxyLoggingMode string
+
+const (
+	// All jobs write logs into common log files in the exec node log directory.
+	JobProxyLoggingModeSimple JobProxyLoggingMode = "simple"
+	// Each job writes logs into its own directory `<location>/<shard>/<job-id>`.
+	// Locations here are exec node locations with type JobProxyLogs.
+	// Requires YTsaurus >= 26.1.
+	JobProxyLoggingModePerJobDirectory JobProxyLoggingMode = "per_job_directory"
+)
+
+type JobProxyLogManagerSpec struct {
+	// How the exec node stores job proxy logs.
+	//+kubebuilder:default:=simple
+	Mode JobProxyLoggingMode `json:"mode,omitempty"`
+
+	// TTL for logs of finished jobs: job logs are removed when they become
+	// older than this period.
+	LogsStoragePeriodMilliseconds *int64 `json:"logsStoragePeriodMilliseconds,omitempty"`
+
+	// How many directories are checked at the same time during logs cleanup.
+	//+kubebuilder:validation:Minimum=1
+	//+kubebuilder:validation:Maximum=8
+	DirectoryTraversalConcurrency *int `json:"directoryTraversalConcurrency,omitempty"`
+
+	// Directory with symlinks to job log directories on all locations.
+	JobProxyLogSymlinksPath *string `json:"jobProxyLogSymlinksPath,omitempty"`
+}
 
 // LogWriterType string describes types of possible log writers.
 // +enum
@@ -692,6 +724,8 @@ type ExecNodesSpec struct {
 	//+optional
 	GPUManager      *GPUManagerSpec  `json:"gpuManager,omitempty"`
 	JobProxyLoggers []TextLoggerSpec `json:"jobProxyLoggers,omitempty"`
+	//+optional
+	JobProxyLogManager *JobProxyLogManagerSpec `json:"jobProxyLogManager,omitempty"`
 	// Resources dedicated for running jobs. Capacity is defined by requests, or limits for zero requests. Default: same limits as exec node with zero requests.
 	//+optional
 	JobResources *corev1.ResourceRequirements `json:"jobResources,omitempty"`

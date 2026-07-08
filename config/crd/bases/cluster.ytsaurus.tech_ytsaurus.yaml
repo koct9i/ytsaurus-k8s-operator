@@ -10522,6 +10522,32 @@ spec:
                             default is 5 per CPU.
                           type: integer
                       type: object
+                    jobProxyLogManager:
+                      properties:
+                        directoryTraversalConcurrency:
+                          description: How many directories are checked at the same
+                            time during logs cleanup.
+                          maximum: 8
+                          minimum: 1
+                          type: integer
+                        jobProxyLogSymlinksPath:
+                          description: Directory with symlinks to job log directories
+                            on all locations.
+                          type: string
+                        logsStoragePeriodMilliseconds:
+                          description: |-
+                            TTL for logs of finished jobs: job logs are removed when they become
+                            older than...
+                          format: int64
+                          type: integer
+                        mode:
+                          default: simple
+                          description: How the exec node stores job proxy logs.
+                          enum:
+                          - simple
+                          - per_job_directory
+                          type: string
+                      type: object
                     jobProxyLoggers:
                       items:
                         properties:
