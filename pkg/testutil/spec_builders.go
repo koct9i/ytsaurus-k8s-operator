@@ -179,6 +179,7 @@ var (
 	masterVolumeSize   = resource.MustParse("5Gi")
 	dataNodeVolumeSize = resource.MustParse("10Gi")
 	execNodeVolumeSize = resource.MustParse("5Gi")
+	logsVolumeSize     = resource.MustParse("1Gi")
 
 	defaultNodeResources = corev1.ResourceRequirements{
 		Requests: corev1.ResourceList{
@@ -229,6 +230,8 @@ type YtsaurusBuilder struct {
 	ImagePullSecret *corev1.LocalObjectReference
 
 	YtsaurusAdminSecret *corev1.Secret
+
+	DebugLogging bool
 }
 
 func (b *YtsaurusBuilder) CreateVolumeClaim(name string, size resource.Quantity) ytv1.EmbeddedPersistentVolumeClaim {
@@ -248,7 +251,7 @@ func (b *YtsaurusBuilder) CreateVolumeClaim(name string, size resource.Quantity)
 }
 
 func (b *YtsaurusBuilder) CreateLoggersSpec() []ytv1.TextLoggerSpec {
-	return []ytv1.TextLoggerSpec{
+	loggers := []ytv1.TextLoggerSpec{
 		{
 			BaseLoggerSpec: ytv1.BaseLoggerSpec{
 				MinLogLevel: ytv1.LogLevelInfo,
@@ -256,6 +259,94 @@ func (b *YtsaurusBuilder) CreateLoggersSpec() []ytv1.TextLoggerSpec {
 			},
 			WriterType: ytv1.LogWriterTypeStderr,
 		},
+	}
+	if b.DebugLogging {
+		loggers = append([]ytv1.TextLoggerSpec{
+			{
+				BaseLoggerSpec: ytv1.BaseLoggerSpec{
+					MinLogLevel: ytv1.LogLevelDebug,
+					Name:        "debug",
+					Compression: ytv1.LogCompressionZstd,
+					RotationPolicy: &ytv1.LogRotationPolicy{
+						MaxTotalSizeToKeep: ptr.To(logsVolumeSize),
+					},
+				},
+				WriterType: ytv1.LogWriterTypeFile,
+				CategoriesFilter: &ytv1.CategoriesFilter{
+					Type:   ytv1.CategoriesFilterTypeExclude,
+					Values: []string{"Bus", "Concurrency"},
+				},
+			},
+		}, loggers...)
+	}
+	return loggers
+}
+
+func (b *YtsaurusBuilder) addLogsVolume(spec *ytv1.InstanceSpec, name string) {
+	path := fmt.Sprintf("/yt/%s", name)
+	spec.Locations = append(spec.Locations, ytv1.LocationSpec{LocationType: ytv1.LocationTypeLogs, Path: path})
+	spec.VolumeMounts = append(spec.VolumeMounts, corev1.VolumeMount{Name: name, MountPath: path})
+	spec.VolumeClaimTemplates = append(spec.VolumeClaimTemplates, b.CreateVolumeClaim(name, logsVolumeSize))
+}
+
+func (b *YtsaurusBuilder) addLogsVolumeIfDebugLogging(spec *ytv1.InstanceSpec, name string) {
+	if b.DebugLogging {
+		b.addLogsVolume(spec, name)
+	}
+}
+
+func (b *YtsaurusBuilder) WithDebugLogging() {
+	b.DebugLogging = true
+	if b.Ytsaurus == nil {
+		return
+	}
+	b.Ytsaurus.Spec.Discovery.InstanceSpec.Loggers = b.CreateLoggersSpec()
+	b.addLogsVolume(&b.Ytsaurus.Spec.Discovery.InstanceSpec, "discovery-logs")
+	b.Ytsaurus.Spec.PrimaryMasters.InstanceSpec.Loggers = b.CreateLoggersSpec()
+	b.addLogsVolume(&b.Ytsaurus.Spec.PrimaryMasters.InstanceSpec, "master-logs")
+	if b.Ytsaurus.Spec.MasterCaches != nil {
+		b.Ytsaurus.Spec.MasterCaches.InstanceSpec.Loggers = b.CreateLoggersSpec()
+		b.addLogsVolume(&b.Ytsaurus.Spec.MasterCaches.InstanceSpec, "master-cache-logs")
+	}
+	for i := range b.Ytsaurus.Spec.HTTPProxies {
+		b.Ytsaurus.Spec.HTTPProxies[i].InstanceSpec.Loggers = b.CreateLoggersSpec()
+		b.addLogsVolume(&b.Ytsaurus.Spec.HTTPProxies[i].InstanceSpec, "http-proxy-logs")
+	}
+	for i := range b.Ytsaurus.Spec.RPCProxies {
+		b.Ytsaurus.Spec.RPCProxies[i].InstanceSpec.Loggers = b.CreateLoggersSpec()
+		b.addLogsVolume(&b.Ytsaurus.Spec.RPCProxies[i].InstanceSpec, "rpc-proxy-logs")
+	}
+	for i := range b.Ytsaurus.Spec.DataNodes {
+		b.Ytsaurus.Spec.DataNodes[i].InstanceSpec.Loggers = b.CreateLoggersSpec()
+		b.addLogsVolume(&b.Ytsaurus.Spec.DataNodes[i].InstanceSpec, "data-node-logs")
+	}
+	for i := range b.Ytsaurus.Spec.ExecNodes {
+		b.Ytsaurus.Spec.ExecNodes[i].InstanceSpec.Loggers = b.CreateLoggersSpec()
+		b.addLogsVolume(&b.Ytsaurus.Spec.ExecNodes[i].InstanceSpec, "exec-node-logs")
+	}
+	for i := range b.Ytsaurus.Spec.TabletNodes {
+		b.Ytsaurus.Spec.TabletNodes[i].InstanceSpec.Loggers = b.CreateLoggersSpec()
+		b.addLogsVolume(&b.Ytsaurus.Spec.TabletNodes[i].InstanceSpec, "tablet-node-logs")
+	}
+	if b.Ytsaurus.Spec.Schedulers != nil {
+		b.Ytsaurus.Spec.Schedulers.InstanceSpec.Loggers = b.CreateLoggersSpec()
+		b.addLogsVolume(&b.Ytsaurus.Spec.Schedulers.InstanceSpec, "scheduler-logs")
+	}
+	if b.Ytsaurus.Spec.ControllerAgents != nil {
+		b.Ytsaurus.Spec.ControllerAgents.InstanceSpec.Loggers = b.CreateLoggersSpec()
+		b.addLogsVolume(&b.Ytsaurus.Spec.ControllerAgents.InstanceSpec, "controller-agent-logs")
+	}
+	if b.Ytsaurus.Spec.QueryTrackers != nil {
+		b.Ytsaurus.Spec.QueryTrackers.InstanceSpec.Loggers = b.CreateLoggersSpec()
+		b.addLogsVolume(&b.Ytsaurus.Spec.QueryTrackers.InstanceSpec, "query-tracker-logs")
+	}
+	if b.Ytsaurus.Spec.YQLAgents != nil {
+		b.Ytsaurus.Spec.YQLAgents.InstanceSpec.Loggers = b.CreateLoggersSpec()
+		b.addLogsVolume(&b.Ytsaurus.Spec.YQLAgents.InstanceSpec, "yql-agent-logs")
+	}
+	if b.Ytsaurus.Spec.QueueAgents != nil {
+		b.Ytsaurus.Spec.QueueAgents.InstanceSpec.Loggers = b.CreateLoggersSpec()
+		b.addLogsVolume(&b.Ytsaurus.Spec.QueueAgents.InstanceSpec, "queue-agent-logs")
 	}
 }
 
@@ -444,6 +535,7 @@ func (b *YtsaurusBuilder) WithMasterCaches() {
 			Loggers:               b.CreateLoggersSpec(),
 		},
 	}
+	b.addLogsVolumeIfDebugLogging(&b.Ytsaurus.Spec.MasterCaches.InstanceSpec, "master-cache-logs")
 }
 
 func (b *YtsaurusBuilder) WithAllClusterFeatures() {
@@ -543,6 +635,7 @@ func (b *YtsaurusBuilder) WithScheduler() {
 			Loggers:               b.CreateLoggersSpec(),
 		},
 	}
+	b.addLogsVolumeIfDebugLogging(&b.Ytsaurus.Spec.Schedulers.InstanceSpec, "scheduler-logs")
 }
 
 func (b *YtsaurusBuilder) WithControllerAgents() {
@@ -554,6 +647,7 @@ func (b *YtsaurusBuilder) WithControllerAgents() {
 			Loggers:               b.CreateLoggersSpec(),
 		},
 	}
+	b.addLogsVolumeIfDebugLogging(&b.Ytsaurus.Spec.ControllerAgents.InstanceSpec, "controller-agent-logs")
 }
 
 func (b *YtsaurusBuilder) WithBootstrap() {
@@ -583,6 +677,7 @@ func (b *YtsaurusBuilder) WithQueryTracker() {
 			Loggers:               b.CreateLoggersSpec(),
 		},
 	}
+	b.addLogsVolumeIfDebugLogging(&b.Ytsaurus.Spec.QueryTrackers.InstanceSpec, "query-tracker-logs")
 }
 
 func (b *YtsaurusBuilder) WithYqlAgent() {
@@ -595,6 +690,7 @@ func (b *YtsaurusBuilder) WithYqlAgent() {
 			Loggers:               b.CreateLoggersSpec(),
 		},
 	}
+	b.addLogsVolumeIfDebugLogging(&b.Ytsaurus.Spec.YQLAgents.InstanceSpec, "yql-agent-logs")
 }
 
 func (b *YtsaurusBuilder) WithYqlAgentDQ() {
@@ -623,6 +719,7 @@ func (b *YtsaurusBuilder) WithQueueAgent() {
 			Loggers:               b.CreateLoggersSpec(),
 		},
 	}
+	b.addLogsVolumeIfDebugLogging(&b.Ytsaurus.Spec.QueueAgents.InstanceSpec, "queue-agent-logs")
 }
 
 func (b *YtsaurusBuilder) WithRPCProxies() {
@@ -634,7 +731,7 @@ func (b *YtsaurusBuilder) WithRPCProxies() {
 }
 
 func (b *YtsaurusBuilder) CreateHTTPProxiesSpec() ytv1.HTTPProxiesSpec {
-	return ytv1.HTTPProxiesSpec{
+	spec := ytv1.HTTPProxiesSpec{
 		ServiceType: "NodePort",
 		InstanceSpec: ytv1.InstanceSpec{
 			InstanceCount:         1,
@@ -644,11 +741,13 @@ func (b *YtsaurusBuilder) CreateHTTPProxiesSpec() ytv1.HTTPProxiesSpec {
 		},
 		HttpNodePort: getPortFromEnv("E2E_HTTP_PROXY_INTERNAL_PORT"),
 	}
+	b.addLogsVolumeIfDebugLogging(&spec.InstanceSpec, "http-proxy-logs")
+	return spec
 }
 
 func (b *YtsaurusBuilder) CreateRPCProxiesSpec() ytv1.RPCProxiesSpec {
 	stype := corev1.ServiceTypeNodePort
-	return ytv1.RPCProxiesSpec{
+	spec := ytv1.RPCProxiesSpec{
 		ServiceType: &stype,
 		InstanceSpec: ytv1.InstanceSpec{
 			InstanceCount:         1,
@@ -658,6 +757,8 @@ func (b *YtsaurusBuilder) CreateRPCProxiesSpec() ytv1.RPCProxiesSpec {
 		},
 		NodePort: getPortFromEnv("E2E_RPC_PROXY_INTERNAL_PORT"),
 	}
+	b.addLogsVolumeIfDebugLogging(&spec.InstanceSpec, "rpc-proxy-logs")
+	return spec
 }
 
 func getPortFromEnv(envvar string) *int32 {
@@ -673,7 +774,7 @@ func getPortFromEnv(envvar string) *int32 {
 }
 
 func (b *YtsaurusBuilder) CreateExecNodeSpec() ytv1.ExecNodesSpec {
-	return ytv1.ExecNodesSpec{
+	spec := ytv1.ExecNodesSpec{
 		InstanceSpec: ytv1.InstanceSpec{
 			InstanceCount:         1,
 			MinReadyInstanceCount: b.MinReadyInstanceCount,
@@ -701,6 +802,8 @@ func (b *YtsaurusBuilder) CreateExecNodeSpec() ytv1.ExecNodesSpec {
 		},
 		JobResources: execNodeJobResources.DeepCopy(),
 	}
+	b.addLogsVolumeIfDebugLogging(&spec.InstanceSpec, "exec-node-logs")
+	return spec
 }
 
 func (b *YtsaurusBuilder) WithJobProxyLogs() {
@@ -757,7 +860,7 @@ func (b *YtsaurusBuilder) WithMetaxContainerRuntime() {
 }
 
 func (b *YtsaurusBuilder) CreateDataNodeInstanceSpec(instanceCount int32) ytv1.InstanceSpec {
-	return ytv1.InstanceSpec{
+	spec := ytv1.InstanceSpec{
 		InstanceCount:         instanceCount,
 		MinReadyInstanceCount: b.MinReadyInstanceCount,
 		Resources:             *dataNodeResources.DeepCopy(),
@@ -778,24 +881,30 @@ func (b *YtsaurusBuilder) CreateDataNodeInstanceSpec(instanceCount int32) ytv1.I
 			},
 		},
 	}
+	b.addLogsVolumeIfDebugLogging(&spec, "data-node-logs")
+	return spec
 }
 
 func (b *YtsaurusBuilder) CreateTabletNodeSpec(instanceCount int32) ytv1.InstanceSpec {
-	return ytv1.InstanceSpec{
+	spec := ytv1.InstanceSpec{
 		InstanceCount:         instanceCount,
 		MinReadyInstanceCount: b.MinReadyInstanceCount,
 		Resources:             *tabletNodeResources.DeepCopy(),
 		Loggers:               b.CreateLoggersSpec(),
 	}
+	b.addLogsVolumeIfDebugLogging(&spec, "tablet-node-logs")
+	return spec
 }
 
 func (b *YtsaurusBuilder) CreateOffshoreInstanceSpec(instanceCount int32) ytv1.InstanceSpec {
-	return ytv1.InstanceSpec{
+	spec := ytv1.InstanceSpec{
 		InstanceCount:         instanceCount,
 		MinReadyInstanceCount: b.MinReadyInstanceCount,
 		Resources:             *defaultNodeResources.DeepCopy(),
 		Loggers:               b.CreateLoggersSpec(),
 	}
+	b.addLogsVolumeIfDebugLogging(&spec, "offshore-data-gateway-logs")
+	return spec
 }
 
 func (b *YtsaurusBuilder) WithStrawberryController() {

@@ -318,6 +318,7 @@ var _ = Describe("Basic e2e test for Ytsaurus controller", Label("e2e"), func() 
 			Namespace: namespace,
 		}
 		ytBuilder.CreateMinimal()
+		ytBuilder.WithDebugLogging()
 		ytBuilder.WithAdminUser()
 		ytsaurus = ytBuilder.Ytsaurus
 
