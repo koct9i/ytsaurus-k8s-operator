@@ -9,6 +9,61 @@ import (
 	ytv1 "github.com/ytsaurus/ytsaurus-k8s-operator/api/v1"
 )
 
+var _ = Describe("FindVolumeMountForPath", func() {
+	DescribeTable("returns the last volume mount covering the path",
+		func(volumeMounts []corev1.VolumeMount, path string, wantName string) {
+			got := FindVolumeMountForPath(volumeMounts, path)
+			if wantName == "" {
+				Expect(got).To(BeNil())
+			} else {
+				Expect(got).NotTo(BeNil())
+				Expect(got.Name).To(Equal(wantName))
+			}
+		},
+		Entry("path equals the mount path",
+			[]corev1.VolumeMount{{Name: "data", MountPath: "/yt/data"}},
+			"/yt/data", "data",
+		),
+		Entry("path is a sub-directory of the mount path",
+			[]corev1.VolumeMount{{Name: "data", MountPath: "/yt/data"}},
+			"/yt/data/snapshots", "data",
+		),
+		Entry("sibling path sharing a string prefix does not match",
+			[]corev1.VolumeMount{{Name: "data", MountPath: "/yt/master-data"}},
+			"/yt/master-data2", "",
+		),
+		Entry("no mount covers the path",
+			[]corev1.VolumeMount{{Name: "data", MountPath: "/yt/data"}},
+			"/yt/logs", "",
+		),
+		Entry("mount path with trailing slash does not match (no normalization)",
+			[]corev1.VolumeMount{{Name: "data", MountPath: "/yt/data/"}},
+			"/yt/data/snapshots", "",
+		),
+		Entry("last mount wins over an earlier mount of the same path",
+			[]corev1.VolumeMount{
+				{Name: "first", MountPath: "/yt/data"},
+				{Name: "second", MountPath: "/yt/data"},
+			},
+			"/yt/data/snapshots", "second",
+		),
+		Entry("last mount wins even when an earlier mount is more specific",
+			[]corev1.VolumeMount{
+				{Name: "nested", MountPath: "/yt/data/snapshots"},
+				{Name: "root", MountPath: "/yt"},
+			},
+			"/yt/data/snapshots", "root",
+		),
+		Entry("nested mount mounted later wins over its parent",
+			[]corev1.VolumeMount{
+				{Name: "root", MountPath: "/yt"},
+				{Name: "nested", MountPath: "/yt/data"},
+			},
+			"/yt/data/snapshots", "nested",
+		),
+	)
+})
+
 var _ = Describe("resolveLocationMounts", func() {
 	type wantMount struct {
 		Name      string
@@ -59,26 +114,6 @@ var _ = Describe("resolveLocationMounts", func() {
 				{Name: "logs", MountPath: "/yt/logs", SubPath: ""},
 			},
 		),
-		Entry("trailing slash on mount path",
-			[]corev1.VolumeMount{{Name: "master-data", MountPath: "/yt/master-data/"}},
-			[]ytv1.LocationSpec{
-				{LocationType: ytv1.LocationTypeMasterSnapshots, Path: "/yt/master-data/snapshots"},
-			},
-			[]ytv1.LocationType{ytv1.LocationTypeMasterSnapshots},
-			[]wantMount{
-				{Name: "master-data", MountPath: "/yt/master-data/snapshots", SubPath: "snapshots"},
-			},
-		),
-		Entry("trailing slash on mount path, location is volume root",
-			[]corev1.VolumeMount{{Name: "logs", MountPath: "/yt/logs/"}},
-			[]ytv1.LocationSpec{
-				{LocationType: ytv1.LocationTypeLogs, Path: "/yt/logs"},
-			},
-			[]ytv1.LocationType{ytv1.LocationTypeLogs},
-			[]wantMount{
-				{Name: "logs", MountPath: "/yt/logs", SubPath: ""},
-			},
-		),
 		Entry("trailing slash on location path",
 			[]corev1.VolumeMount{{Name: "master-data", MountPath: "/yt/master-data"}},
 			[]ytv1.LocationSpec{
@@ -111,18 +146,6 @@ var _ = Describe("resolveLocationMounts", func() {
 			[]ytv1.LocationType{ytv1.LocationTypeMasterSnapshots},
 			[]wantMount{
 				{Name: "storage", MountPath: "/yt/master-data", SubPath: "cluster-a"},
-			},
-		),
-		Entry("sub-path plus trailing slash on mount path",
-			[]corev1.VolumeMount{
-				{Name: "storage", MountPath: "/yt/master-data/", SubPath: "cluster-a"},
-			},
-			[]ytv1.LocationSpec{
-				{LocationType: ytv1.LocationTypeMasterChangelogs, Path: "/yt/master-data/changelogs"},
-			},
-			[]ytv1.LocationType{ytv1.LocationTypeMasterChangelogs},
-			[]wantMount{
-				{Name: "storage", MountPath: "/yt/master-data/changelogs", SubPath: "cluster-a/changelogs"},
 			},
 		),
 		Entry("multiple locations on different volumes preserve order",

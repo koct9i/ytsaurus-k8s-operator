@@ -337,6 +337,36 @@ var _ = Describe("Test for Ytsaurus webhooks", func() {
 			Expect(k8sClient.Create(ctx, ytsaurus)).Should(MatchError(ContainSubstring("location path is not in any volume mount")))
 		})
 
+		It("Should not accept a volume mount that duplicates a previous mount path", func() {
+			ytsaurus.Spec.PrimaryMasters.VolumeMounts = append(ytsaurus.Spec.PrimaryMasters.VolumeMounts,
+				corev1.VolumeMount{Name: "duplicate", MountPath: ytsaurus.Spec.PrimaryMasters.VolumeMounts[0].MountPath},
+			)
+
+			Expect(k8sClient.Create(ctx, ytsaurus)).Should(MatchError(
+				ContainSubstring("volume mount completely covers previous volume mount"),
+			))
+		})
+
+		It("Should not accept a volume mount that covers a previous nested mount", func() {
+			ytsaurus.Spec.PrimaryMasters.VolumeMounts = append(ytsaurus.Spec.PrimaryMasters.VolumeMounts,
+				corev1.VolumeMount{Name: "cover", MountPath: "/yt"},
+			)
+
+			Expect(k8sClient.Create(ctx, ytsaurus)).Should(MatchError(
+				ContainSubstring("volume mount completely covers previous volume mount"),
+			))
+		})
+
+		It("Should accept a nested volume mount that comes after its parent", func() {
+			parentPath := ytsaurus.Spec.PrimaryMasters.VolumeMounts[0].MountPath
+			ytsaurus.Spec.PrimaryMasters.VolumeMounts = append(ytsaurus.Spec.PrimaryMasters.VolumeMounts,
+				corev1.VolumeMount{Name: "nested", MountPath: parentPath + "/nested"},
+			)
+
+			Expect(k8sClient.Create(ctx, ytsaurus)).Should(Succeed())
+			Expect(k8sClient.Delete(ctx, ytsaurus)).Should(Succeed())
+		})
+
 		It("Should not accept non-empty primaryMaster/hostAddresses with HostNetwork=false", func() {
 			ytsaurus.Spec.HostNetwork = ptr.To(false)
 			ytsaurus.Spec.PrimaryMasters.HostAddresses = []string{"test.yt.address"}
@@ -427,9 +457,6 @@ var _ = Describe("Test for Ytsaurus webhooks", func() {
 			ytsaurus.Spec.PrimaryMasters.Locations = append(ytsaurus.Spec.PrimaryMasters.Locations,
 				ytv1.LocationSpec{LocationType: ytv1.LocationTypeMasterSnapshots, Path: "/yt/master-data/snapshots"},
 				ytv1.LocationSpec{LocationType: ytv1.LocationTypeMasterChangelogs, Path: "/yt/master-data/changelogs"},
-			)
-			ytsaurus.Spec.PrimaryMasters.VolumeMounts = append(ytsaurus.Spec.PrimaryMasters.VolumeMounts,
-				corev1.VolumeMount{Name: "master-data", MountPath: "/yt/master-data"},
 			)
 
 			Expect(k8sClient.Create(ctx, ytsaurus)).Should(Succeed())
