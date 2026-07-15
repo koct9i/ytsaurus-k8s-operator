@@ -131,6 +131,14 @@ func (m *Master) IsPrimary() bool {
 	return m.labeller.InstanceGroup == ""
 }
 
+func (m *Master) IsMulticell() bool {
+	return !m.IsPrimary() || len(m.secondaryMasters) > 0
+}
+
+func (m *Master) GetRoles() []ytv1.MasterCellRole {
+	return ytv1.GetMasterCellRoles(m.mastersSpec.Roles, m.IsPrimary(), m.IsMulticell())
+}
+
 func (m *Master) GetCypressPath() ypath.Path {
 	if m.IsPrimary() {
 		return consts.PrimaryMastersPath
@@ -525,9 +533,19 @@ func (m *Master) Sync(ctx context.Context, dry bool) (ComponentStatus, error) {
 func (m *Master) doServerSync(ctx context.Context) error {
 	statefulSet := m.server.buildStatefulSet()
 
+	stsMeta := &statefulSet.ObjectMeta
 	podMeta := &statefulSet.Spec.Template.ObjectMeta
-	metav1.SetMetaDataLabel(podMeta, consts.YTCellTagLabelName, m.labeller.GetCellName(m.mastersSpec.CellTag))
-	metav1.SetMetaDataLabel(podMeta, consts.YTCellIDLabelName, m.cfgen.GetCellID(m.mastersSpec.CellTag))
+	cellTag := m.labeller.GetCellName(m.mastersSpec.CellTag)
+	cellID := m.cfgen.GetCellID(m.mastersSpec.CellTag)
+	metav1.SetMetaDataLabel(stsMeta, consts.YTCellTagLabelName, cellTag)
+	metav1.SetMetaDataLabel(stsMeta, consts.YTCellIDLabelName, cellID)
+	metav1.SetMetaDataLabel(podMeta, consts.YTCellTagLabelName, cellTag)
+	metav1.SetMetaDataLabel(podMeta, consts.YTCellIDLabelName, cellID)
+	for _, role := range m.GetRoles() {
+		roleLabel := m.labeller.GetCellRoleLabelName(role)
+		metav1.SetMetaDataLabel(stsMeta, roleLabel, "")
+		metav1.SetMetaDataLabel(podMeta, roleLabel, "")
+	}
 
 	podSpec := &statefulSet.Spec.Template.Spec
 	podSpec.Containers[0].Env = append(podSpec.Containers[0].Env, getNativeClientConfigEnv()...)
