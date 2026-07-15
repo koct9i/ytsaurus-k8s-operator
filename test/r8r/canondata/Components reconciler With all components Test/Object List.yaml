@@ -395,7 +395,7 @@
     kind: Ytsaurus
     name: test-ytsaurus
     uid: ""
-  resourceVersion: "1"
+  resourceVersion: "2"
 - annotations:
     extra-pod-annotation: "true"
     ytsaurus.tech/observed-generation: "1"
@@ -416,7 +416,7 @@
     kind: Ytsaurus
     name: test-ytsaurus
     uid: ""
-  resourceVersion: "1"
+  resourceVersion: "2"
 - annotations:
     extra-pod-annotation: "true"
     ytsaurus.tech/instance-hash: <censored>
@@ -442,7 +442,7 @@
     kind: Ytsaurus
     name: test-ytsaurus
     uid: ""
-  resourceVersion: "1"
+  resourceVersion: "2"
 - annotations:
     extra-pod-annotation: "true"
     ytsaurus.tech/instance-hash: <censored>
@@ -468,7 +468,7 @@
     kind: Ytsaurus
     name: test-ytsaurus
     uid: ""
-  resourceVersion: "1"
+  resourceVersion: "2"
 - annotations:
     extra-pod-annotation: "true"
     ytsaurus.tech/instance-hash: <censored>
@@ -1110,7 +1110,7 @@
     kind: Ytsaurus
     name: test-ytsaurus
     uid: ""
-  resourceVersion: "1"
+  resourceVersion: "2"
 - annotations:
     extra-pod-annotation: "true"
     ytsaurus.tech/config-hash: <censored>
@@ -1222,7 +1222,7 @@
     kind: Ytsaurus
     name: test-ytsaurus
     uid: ""
-  resourceVersion: "1"
+  resourceVersion: "2"
 - annotations:
     ytsaurus.tech/observed-generation: "1"
   generation: 1
@@ -1243,7 +1243,7 @@
     kind: Ytsaurus
     name: test-ytsaurus
     uid: ""
-  resourceVersion: "1"
+  resourceVersion: "2"
 - annotations:
     extra-pod-annotation: "true"
     ytsaurus.tech/config-hash: <censored>
