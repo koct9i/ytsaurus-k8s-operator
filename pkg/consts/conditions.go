@@ -20,8 +20,11 @@ const (
 
 // Both status and update conditions
 const (
-	ConditionTimbertruckPrepared = "TimbertruckPrepared"
-	ConditionCypressPatchApplied = "CypressPatchApplied"
+	ConditionTimbertruckPrepared     = "TimbertruckPrepared"
+	ConditionCypressPatchApplied     = "CypressPatchApplied"
+	ConditionMasterCellsRegistration = "MasterCellsRegistration"
+	ConditionMasterCellsSettlement   = "MasterCellsSettlement"
+	ConditionMasterCellsCompletion   = "MasterCellsCompletion"
 )
 
 // Component status conditions suffixes
@@ -29,6 +32,7 @@ const (
 	ConditionReady            = "Ready"
 	ConditionInitJobCompleted = "InitJobCompleted"
 	ConditionQuorumCheck      = "-QuorumCheck"
+	ConditionCellSettled      = "-Settled"
 )
 
 // Component update phase condition suffixes
@@ -67,6 +71,8 @@ const (
 const (
 	PhaseCellRolesInitialization = "CellRolesInitialization"
 	PhaseClusterInitialization   = "ClusterInitialization"
+	PhaseClusterReconfiguration  = "ClusterReconfiguration"
+	PhaseCellRegistration        = "CellRegistration"
 )
 
 // Conditions below are for migration from imaginary chunks to real chunks for 24.2
