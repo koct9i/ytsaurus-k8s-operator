@@ -489,6 +489,28 @@ func (m *Master) Sync(ctx context.Context, dry bool) (ComponentStatus, error) {
 		return ComponentStatusWaitingFor(m.uploaderSecret.Name()), err
 	}
 
+	if status, err := m.ServerSync(ctx, dry); !status.IsReady() || err != nil {
+		return status, err
+	}
+
+	if status, err := m.ArePodsReady(ctx); !status.IsReady() || err != nil {
+		return status, err
+	}
+
+	for _, secondaryMaster := range m.secondaryMasters {
+		if status := secondaryMaster.GetStatus(); !status.IsRunning() {
+			return status.Blocker(), nil
+		}
+	}
+
+	if m.ytsaurus.IsInitializing() && m.IsPrimary() {
+		return m.runInitPhaseJobs(ctx, dry)
+	}
+
+	return ComponentStatusReady(), nil
+}
+
+func (m *Master) ServerSync(ctx context.Context, dry bool) (ComponentStatus, error) {
 	needSync := m.NeedSync()
 	if !needSync {
 		needTimbertruckSync, err := timbertruckConfigMapNeedsSync(
@@ -507,24 +529,11 @@ func (m *Master) Sync(ctx context.Context, dry bool) (ComponentStatus, error) {
 	}
 
 	if needSync {
+		var err error
 		if !dry {
 			err = m.doServerSync(ctx)
 		}
 		return ComponentStatusWaitingFor("components"), err
-	}
-
-	if status, err := m.ArePodsReady(ctx); !status.IsReady() || err != nil {
-		return status, err
-	}
-
-	for _, secondaryMaster := range m.secondaryMasters {
-		if status := secondaryMaster.GetStatus(); !status.IsRunning() {
-			return status.Blocker(), nil
-		}
-	}
-
-	if m.ytsaurus.IsInitializing() && m.IsPrimary() {
-		return m.runInitPhaseJobs(ctx, dry)
 	}
 
 	return ComponentStatusReady(), nil
