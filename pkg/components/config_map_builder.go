@@ -50,6 +50,14 @@ type ConfigGenerator struct {
 	Generator ConfigGeneratorFunc
 }
 
+func YsonConfigGenerator(fileName string, generator ConfigGeneratorFunc) ConfigGenerator {
+	return ConfigGenerator{
+		FileName:  fileName,
+		Format:    ConfigFormatYson,
+		Generator: generator,
+	}
+}
+
 type ConfigMapBuilder struct {
 	labeller *labeller.Labeller
 	apiProxy apiproxy.APIProxy

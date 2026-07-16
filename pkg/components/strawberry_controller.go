@@ -95,34 +95,13 @@ func NewStrawberryController(
 		resource.Spec.StrawberryController.NodeSelector,
 	)
 
-	return &StrawberryController{
+	controller := &StrawberryController{
 		microserviceComponent: microserviceComponent{
 			component:    newComponent(l, ytsaurus),
 			microservice: microservice,
 		},
 
 		cfgen: cfgen,
-		initUserAndUrlJob: NewInitJobForYtsaurus(
-			l,
-			ytsaurus,
-			"user",
-			consts.ClientConfigFileName,
-			cfgen.GetNativeClientConfig,
-			&ytv1.InstanceSpec{
-				PodSpec: resource.Spec.StrawberryController.PodSpec,
-			},
-		),
-		initChytClusterJob: NewInitJobForYtsaurus(
-			l,
-			ytsaurus,
-			"cluster",
-			ChytInitClusterJobConfigFileName,
-			cfgen.GetStrawberryInitClusterConfig,
-			&ytv1.InstanceSpec{
-				PodSpec: resource.Spec.StrawberryController.PodSpec,
-				Image:   ptr.To(image),
-			},
-		),
 		secret: resources.NewStringSecret(
 			l.GetSecretName(),
 			l,
@@ -137,6 +116,26 @@ func NewStrawberryController(
 		scheduler:       scheduler,
 		dataNodes:       dataNodes,
 	}
+	controller.initUserAndUrlJob = NewInitJobForYtsaurus(
+		l,
+		ytsaurus,
+		"user",
+		&ytv1.InstanceSpec{PodSpec: resource.Spec.StrawberryController.PodSpec},
+		YsonConfigGenerator(consts.ClientConfigFileName, cfgen.GetNativeClientConfig),
+		InitJobScriptStringGenerator(consts.InitJobScriptFileName, controller.createInitUserAndUrlScript),
+	)
+	controller.initChytClusterJob = NewInitJobForYtsaurus(
+		l,
+		ytsaurus,
+		"cluster",
+		&ytv1.InstanceSpec{
+			PodSpec: resource.Spec.StrawberryController.PodSpec,
+			Image:   ptr.To(image),
+		},
+		YsonConfigGenerator(ChytInitClusterJobConfigFileName, cfgen.GetStrawberryInitClusterConfig),
+		InitJobScriptGenerator(consts.InitJobScriptFileName, func() ([]string, error) { return []string{controller.createInitChytClusterScript()}, nil }),
+	)
+	return controller
 }
 
 func (c *StrawberryController) Fetch(ctx context.Context) error {
@@ -203,7 +202,6 @@ func (c *StrawberryController) getEnvSource() []corev1.EnvFromSource {
 }
 
 func (c *StrawberryController) prepareInitChytClusterJob() {
-	c.initChytClusterJob.SetInitScript(c.createInitChytClusterScript())
 
 	job := c.initChytClusterJob.Build()
 	container := &job.Spec.Template.Spec.Containers[0]
@@ -310,9 +308,6 @@ func (c *StrawberryController) Sync(ctx context.Context, dry bool) (ComponentSta
 		return ComponentStatusWaitingFor(c.secret.Name()), err
 	}
 
-	if !dry {
-		c.initUserAndUrlJob.SetInitScript(c.createInitUserAndUrlScript())
-	}
 	status, err := c.initUserAndUrlJob.Sync(ctx, dry)
 	if err != nil || status.SyncStatus != SyncStatusReady {
 		return status, err
