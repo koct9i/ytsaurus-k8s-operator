@@ -57,25 +57,28 @@ func NewYQLAgent(cfgen *ytconfig.Generator, ytsaurus *apiproxy.Ytsaurus, yc inte
 		execSecret = resources.NewStringSecret(l.GetSidecarSecretName("exec"), l, ytsaurus)
 	}
 
-	return &YqlAgent{
+	yqlAgent := &YqlAgent{
 		serverComponent: newLocalServerComponent(l, ytsaurus, srv),
 		cfgen:           cfgen,
 		master:          master,
 		ytsaurusClient:  yc,
-		initEnvironment: NewInitJobForYtsaurus(
-			l,
-			ytsaurus,
-			"yql-agent-environment",
-			consts.ClientConfigFileName,
-			cfgen.GetNativeClientConfig,
-			&resource.Spec.YQLAgents.InstanceSpec,
-		),
 		secret: resources.NewStringSecret(
 			l.GetSecretName(),
 			l,
 			ytsaurus),
 		execSecret: execSecret,
 	}
+	yqlAgent.initEnvironment = NewInitJobForYtsaurus(
+		l,
+		ytsaurus,
+		"yql-agent-environment",
+		consts.ClientConfigFileName,
+		cfgen.GetNativeClientConfig,
+		&resource.Spec.YQLAgents.InstanceSpec,
+		initJobScriptGenerator(consts.InitJobYQLAgentInitScriptFileName, yqlAgent.createInitScript()),
+		initJobScriptGenerator(consts.InitJobYQLAgentUpdateScriptFileName, yqlAgent.createUpdateScript()),
+	)
+	return yqlAgent
 }
 
 func (yqla *YqlAgent) GetFullName() string {
@@ -189,7 +192,7 @@ func (yqla *YqlAgent) Sync(ctx context.Context, dry bool) (ComponentStatus, erro
 				return *status, err
 			}
 		case ytv1.UpdateStateWaitingForYqlaUpdate:
-			return yqla.initEnvironment.RunUpdateScript(ctx, dry, yqla.ytsaurus, updateState, yqla.createUpdateScript(), nil)
+			return yqla.initEnvironment.RunUpdateScript(ctx, dry, yqla.ytsaurus, updateState, consts.InitJobYQLAgentUpdateScriptFileName, nil)
 		default:
 			return ComponentStatusReady(), nil
 		}
@@ -222,7 +225,7 @@ func (yqla *YqlAgent) Sync(ctx context.Context, dry bool) (ComponentStatus, erro
 	}
 
 	if yqla.ytsaurus.IsReadyForInitJobs() && !yqla.initEnvironment.IsCompleted() {
-		if status, err := yqla.initEnvironment.RunScript(ctx, dry, "YQLAgentInit", yqla.createInitScript(), nil); err != nil || !status.IsReady() {
+		if status, err := yqla.initEnvironment.RunScript(ctx, dry, "YQLAgentInit", consts.InitJobYQLAgentInitScriptFileName, nil); err != nil || !status.IsReady() {
 			return status, err
 		}
 	}

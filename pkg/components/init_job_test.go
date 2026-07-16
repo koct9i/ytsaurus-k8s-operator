@@ -20,6 +20,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	batchv1 "k8s.io/api/batch/v1"
+	corev1 "k8s.io/api/core/v1"
 
 	ytv1 "github.com/ytsaurus/ytsaurus-k8s-operator/api/v1"
 
@@ -145,6 +146,36 @@ var _ = Describe("InitJob", func() {
 				consts.InitJobScriptFileName,
 			)
 			Expect(cmData).To(Equal(scriptAfter))
+		})
+
+		It("should keep scripts for different reasons under different names", func(ctx context.Context) {
+			job := newTestJob(ytsaurus)
+			firstScript := func() ([]string, error) {
+				return []string{scriptBefore}, nil
+			}
+			secondScript := func() ([]string, error) {
+				return []string{scriptAfter}, nil
+			}
+			job.configs.AddGenerator("first-reason.sh", ConfigFormatText, initJobScriptGenerator("first-reason.sh", firstScript).Generator)
+			job.configs.AddGenerator("second-reason.sh", ConfigFormatText, initJobScriptGenerator("second-reason.sh", secondScript).Generator)
+
+			syncStatus, err := job.RunScript(ctx, false, "FirstReason", "first-reason.sh", nil)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(syncStatus.IsReady()).To(BeFalse())
+			syncJobUntilReady(job)
+
+			syncStatus, err = job.RunScript(ctx, false, "SecondReason", "second-reason.sh", nil)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(syncStatus.IsReady()).To(BeFalse())
+			syncJobUntilReady(job)
+
+			cm := corev1.ConfigMap{}
+			Expect(ytsaurus.Client().Get(ctx, client.ObjectKey{
+				Name:      "yt-master-init-job-dummy-config",
+				Namespace: namespace,
+			}, &cm)).To(Succeed())
+			Expect(cm.Data).To(HaveKeyWithValue("first-reason.sh", scriptBefore))
+			Expect(cm.Data).To(HaveKeyWithValue("second-reason.sh", scriptAfter))
 		})
 	})
 })

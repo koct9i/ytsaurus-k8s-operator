@@ -78,20 +78,23 @@ func NewScheduler(
 			cfgen.GetNativeClientConfig,
 			&resource.Spec.Schedulers.InstanceSpec,
 		),
-		initOpArchiveJob: NewInitJobForYtsaurus(
-			l,
-			ytsaurus,
-			"op-archive",
-			consts.ClientConfigFileName,
-			cfgen.GetNativeClientConfig,
-			&resource.Spec.Schedulers.InstanceSpec,
-		),
+		initOpArchiveJob: nil,
 		secret: resources.NewStringSecret(
 			l.GetSecretName(),
 			l,
 			ytsaurus),
 	}
 
+	scheduler.initOpArchiveJob = NewInitJobForYtsaurus(
+		l,
+		ytsaurus,
+		"op-archive",
+		consts.ClientConfigFileName,
+		cfgen.GetNativeClientConfig,
+		&resource.Spec.Schedulers.InstanceSpec,
+		initJobScriptGenerator(consts.InitJobOperationsArchiveScriptFileName, scheduler.scriptInitOperationsArchive),
+		initJobScriptGenerator(consts.InitJobOperationsArchiveUpdateScriptFileName, scheduler.scriptInitOperationsArchive),
+	)
 	scheduler.initOpArchiveJob.envFrom = []corev1.EnvFromSource{scheduler.secret.GetEnvSource()}
 
 	return &scheduler
@@ -119,7 +122,7 @@ func (s *Scheduler) Sync(ctx context.Context, dry bool) (ComponentStatus, error)
 				return *status, err
 			}
 		case ytv1.UpdateStateWaitingForOpArchiveUpdate:
-			return s.initOpArchiveJob.RunUpdateScript(ctx, dry, s.ytsaurus, updateState, s.scriptInitOperationsArchive, nil)
+			return s.initOpArchiveJob.RunUpdateScript(ctx, dry, s.ytsaurus, updateState, consts.InitJobOperationsArchiveUpdateScriptFileName, nil)
 		default:
 			return ComponentStatusReady(), nil
 		}
@@ -181,7 +184,7 @@ func (s *Scheduler) initOpArchive(ctx context.Context, dry bool) (ComponentStatu
 		}
 	}
 
-	return s.initOpArchiveJob.RunScript(ctx, dry, "InitOperationsArchive", s.scriptInitOperationsArchive, nil)
+	return s.initOpArchiveJob.RunScript(ctx, dry, "InitOperationsArchive", consts.InitJobOperationsArchiveScriptFileName, nil)
 }
 
 func (s *Scheduler) createInitUserScript() string {

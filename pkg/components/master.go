@@ -98,33 +98,35 @@ func NewMaster(
 		buildMasterOptions(mastersSpec)...,
 	)
 
-	var initJob *InitJob
+	var uploaderSecret *resources.StringSecret
+	if mastersSpec.HydraPersistenceUploader != nil {
+		uploaderSecret = resources.NewStringSecret(buildUserCredentialsSecretname(consts.HydraPersistenceUploaderUserName), l, ytsaurus)
+	}
+
+	master := &Master{
+		serverComponent:  newLocalServerComponent(l, ytsaurus, srv),
+		mastersSpec:      mastersSpec,
+		cfgen:            cfgen,
+		uploaderSecret:   uploaderSecret,
+		secondaryMasters: secondaryMasters,
+	}
 
 	// Only for primary master.
 	if l.InstanceGroup == "" {
-		initJob = NewInitJobForYtsaurus(
+		master.initJob = NewInitJobForYtsaurus(
 			l,
 			ytsaurus,
 			"default",
 			consts.ClientConfigFileName,
 			cfgen.GetNativeClientConfig,
 			&mastersSpec.InstanceSpec,
+			initJobScriptGenerator(consts.InitJobClusterInitializationScriptFileName, master.scriptInitialization),
+			initJobScriptGenerator(consts.InitJobMasterExitReadOnlyScriptFileName, master.scriptExitReadOnly),
+			initJobScriptGenerator(consts.InitJobSidecarsInitializeScriptFileName, master.scriptInitialization),
 		)
 	}
 
-	var uploaderSecret *resources.StringSecret
-	if mastersSpec.HydraPersistenceUploader != nil {
-		uploaderSecret = resources.NewStringSecret(buildUserCredentialsSecretname(consts.HydraPersistenceUploaderUserName), l, ytsaurus)
-	}
-
-	return &Master{
-		serverComponent:  newLocalServerComponent(l, ytsaurus, srv),
-		mastersSpec:      mastersSpec,
-		cfgen:            cfgen,
-		initJob:          initJob,
-		uploaderSecret:   uploaderSecret,
-		secondaryMasters: secondaryMasters,
-	}
+	return master
 }
 
 func (m *Master) IsPrimary() bool {
@@ -445,9 +447,9 @@ func (m *Master) Sync(ctx context.Context, dry bool) (ComponentStatus, error) {
 		if m.IsPrimary() {
 			switch updateState {
 			case ytv1.UpdateStateWaitingForMasterExitReadOnly:
-				return m.initJob.RunUpdateScript(ctx, dry, m.ytsaurus, updateState, m.scriptExitReadOnly, nil)
+				return m.initJob.RunUpdateScript(ctx, dry, m.ytsaurus, updateState, consts.InitJobMasterExitReadOnlyScriptFileName, nil)
 			case ytv1.UpdateStateWaitingForSidecarsInitialize:
-				return m.initJob.RunUpdateScript(ctx, dry, m.ytsaurus, updateState, m.scriptInitialization, nil)
+				return m.initJob.RunUpdateScript(ctx, dry, m.ytsaurus, updateState, consts.InitJobSidecarsInitializeScriptFileName, nil)
 			}
 		}
 
@@ -590,7 +592,7 @@ func (m *Master) getHostAddressLabel() string {
 }
 
 func (m *Master) runInitPhaseJobs(ctx context.Context, dry bool) (ComponentStatus, error) {
-	return m.initJob.RunScript(ctx, dry, "ClusterInitialization", m.scriptInitialization, nil)
+	return m.initJob.RunScript(ctx, dry, "ClusterInitialization", consts.InitJobClusterInitializationScriptFileName, nil)
 }
 
 func addHydraPersistenceUploaderToPodSpec(hydraImage string, podSpec *corev1.PodSpec, proxy string, secretKey string) {
