@@ -8,9 +8,10 @@ import (
 	"reflect"
 
 	"github.com/BurntSushi/toml"
-	"github.com/google/go-cmp/cmp"
 	"go.ytsaurus.tech/yt/go/yson"
 	"sigs.k8s.io/yaml"
+
+	"github.com/pmezard/go-difflib/difflib"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -232,14 +233,24 @@ func (h *ConfigMapBuilder) needReload() (ComponentStatus, error) {
 			return ComponentStatusBlocked("Config %s generation error: %v", descriptor.FileName, err), err
 		}
 		curConfig := h.getCurrentConfigValue(descriptor.FileName)
-		if !cmp.Equal(curConfig, newConfig) {
+		if !bytes.Equal(curConfig, newConfig) {
 			if curConfig == nil {
 				h.apiProxy.RecordNormal(
 					"Reconciliation",
 					fmt.Sprintf("Config %s needs creation", descriptor.FileName))
 				return ComponentStatusNeedUpdate("Config %s needs creation", descriptor.FileName), nil
 			} else {
-				configsDiff := cmp.Diff(string(curConfig), string(newConfig))
+				diff := difflib.UnifiedDiff{
+					A:        difflib.SplitLines(string(curConfig)),
+					B:        difflib.SplitLines(string(newConfig)),
+					FromFile: "old/" + descriptor.FileName,
+					ToFile:   "new/" + descriptor.FileName,
+					Context:  3,
+				}
+				configsDiff, err := difflib.GetUnifiedDiffString(diff)
+				if err != nil {
+					return ComponentStatusBlocked("Config %s diff generation error: %v", descriptor.FileName, err), err
+				}
 				h.apiProxy.RecordNormal(
 					"Reconciliation",
 					fmt.Sprintf("Config %s needs reload. Diff: %s", descriptor.FileName, configsDiff))
