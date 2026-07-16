@@ -92,7 +92,7 @@ func NewUI(cfgen *ytconfig.Generator, ytsaurus *apiproxy.Ytsaurus, master Compon
 			PodSpec: resource.Spec.UI.PodSpec,
 		},
 		YsonConfigGenerator(consts.ClientConfigFileName, cfgen.GetNativeClientConfig),
-		InitJobScriptStringGenerator(consts.InitJobScriptFileName, ui.createInitScript),
+		InitJobScriptGenerator(ui.createInitScript),
 	)
 	return ui
 }

@@ -45,12 +45,12 @@ func NewSpyt(cfgen *ytconfig.NodeGenerator, spyt *apiproxy.Spyt, ytsaurus *ytv1.
 	spytComponent.initUser = NewInitJob(
 		l, spyt, "user", &ytsaurus.Spec.CommonSpec, &ytsaurus.Spec.PodSpec, &ytv1.InstanceSpec{},
 		YsonConfigGenerator(consts.ClientConfigFileName, cfgen.GetNativeClientConfig),
-		InitJobScriptGenerator(consts.InitJobScriptFileName, func() ([]string, error) { return []string{spytComponent.createInitUserScript()}, nil }),
+		InitJobScriptGenerator(spytComponent.createInitUserScript),
 	)
 	spytComponent.initEnvironment = NewInitJob(
 		l, spyt, "spyt-environment", &ytsaurus.Spec.CommonSpec, &ytsaurus.Spec.PodSpec, &ytv1.InstanceSpec{Image: &spyt.GetResource().Spec.Image},
 		YsonConfigGenerator(consts.ClientConfigFileName, cfgen.GetNativeClientConfig),
-		InitJobScriptGenerator(consts.InitJobScriptFileName, func() ([]string, error) { return []string{spytComponent.createInitScript()}, nil }),
+		InitJobScriptGenerator(spytComponent.createInitScript),
 	)
 	return spytComponent
 }

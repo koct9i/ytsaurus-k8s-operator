@@ -153,8 +153,8 @@ var _ = Describe("InitJob", func() {
 			secondScript := func() ([]string, error) {
 				return []string{scriptAfter}, nil
 			}
-			job.configs.AddGenerator("first-reason.sh", ConfigFormatText, InitJobScriptGenerator("first-reason.sh", firstScript).Generator)
-			job.configs.AddGenerator("second-reason.sh", ConfigFormatText, InitJobScriptGenerator("second-reason.sh", secondScript).Generator)
+			job.configs.AddGenerator("first-reason.sh", ConfigFormatText, InitJobNamedScriptGenerator("first-reason.sh", firstScript).Generator)
+			job.configs.AddGenerator("second-reason.sh", ConfigFormatText, InitJobNamedScriptGenerator("second-reason.sh", secondScript).Generator)
 
 			syncStatus, err := job.RunScript(ctx, false, "FirstReason", "first-reason.sh", nil)
 			Expect(err).NotTo(HaveOccurred())

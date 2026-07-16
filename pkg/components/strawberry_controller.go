@@ -122,7 +122,7 @@ func NewStrawberryController(
 		"user",
 		&ytv1.InstanceSpec{PodSpec: resource.Spec.StrawberryController.PodSpec},
 		YsonConfigGenerator(consts.ClientConfigFileName, cfgen.GetNativeClientConfig),
-		InitJobScriptStringGenerator(consts.InitJobScriptFileName, controller.createInitUserAndUrlScript),
+		InitJobScriptGenerator(controller.createInitUserAndUrlScript),
 	)
 	controller.initChytClusterJob = NewInitJobForYtsaurus(
 		l,
@@ -133,7 +133,7 @@ func NewStrawberryController(
 			Image:   ptr.To(image),
 		},
 		YsonConfigGenerator(ChytInitClusterJobConfigFileName, cfgen.GetStrawberryInitClusterConfig),
-		InitJobScriptGenerator(consts.InitJobScriptFileName, func() ([]string, error) { return []string{controller.createInitChytClusterScript()}, nil }),
+		InitJobScriptGenerator(controller.createInitChytClusterScript),
 	)
 	return controller
 }

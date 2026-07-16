@@ -75,7 +75,7 @@ func NewQueryTracker(
 		"qt-state",
 		&resource.Spec.QueryTrackers.InstanceSpec,
 		YsonConfigGenerator(consts.ClientConfigFileName, cfgen.GetNativeClientConfig),
-		InitJobScriptGenerator(consts.InitJobScriptFileName, queryTracker.createInitQueryTrackerStateScript),
+		InitJobNamedScriptGenerator(consts.InitJobScriptFileName, queryTracker.createInitQueryTrackerStateScript),
 	)
 	return queryTracker
 }

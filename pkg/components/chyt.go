@@ -46,17 +46,17 @@ func NewChyt(cfgen *ytconfig.NodeGenerator, chyt *apiproxy.Chyt, ytsaurus *ytv1.
 	chytComponent.initUser = NewInitJob(
 		l, chyt, "user", &ytsaurus.Spec.CommonSpec, &ytsaurus.Spec.PodSpec, &ytv1.InstanceSpec{},
 		YsonConfigGenerator(consts.ClientConfigFileName, cfgen.GetNativeClientConfig),
-		InitJobScriptGenerator(consts.InitJobScriptFileName, func() ([]string, error) { return []string{chytComponent.createInitUserScript()}, nil }),
+		InitJobScriptGenerator(chytComponent.createInitUserScript),
 	)
 	chytComponent.initEnvironment = NewInitJob(
 		l, chyt, "release", &ytsaurus.Spec.CommonSpec, &ytsaurus.Spec.PodSpec, &ytv1.InstanceSpec{Image: ptr.To(chyt.GetResource().Spec.Image)},
 		YsonConfigGenerator(consts.ClientConfigFileName, cfgen.GetNativeClientConfig),
-		InitJobScriptGenerator(consts.InitJobScriptFileName, func() ([]string, error) { return []string{chytComponent.createInitScript()}, nil }),
+		InitJobScriptGenerator(chytComponent.createInitScript),
 	)
 	chytComponent.initChPublicJob = NewInitJob(
 		l, chyt, "ch-public", &ytsaurus.Spec.CommonSpec, &ytsaurus.Spec.PodSpec, &ytv1.InstanceSpec{Image: ptr.To(chyt.GetResource().Spec.Image)},
 		YsonConfigGenerator(consts.ClientConfigFileName, cfgen.GetNativeClientConfig),
-		InitJobScriptGenerator(consts.InitJobScriptFileName, func() ([]string, error) { return []string{chytComponent.createInitChPublicScript()}, nil }),
+		InitJobScriptGenerator(chytComponent.createInitChPublicScript),
 	)
 	return chytComponent
 }

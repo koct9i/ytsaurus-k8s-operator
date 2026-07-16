@@ -102,13 +102,17 @@ func NewInitJob(
 	return initJob
 }
 
-func InitJobScriptStringGenerator(fileName string, generator func() string) ConfigGenerator {
-	return InitJobScriptGenerator(fileName, func() ([]string, error) {
-		return []string{generator()}, nil
-	})
+func InitJobScriptGenerator(generator func() string) ConfigGenerator {
+	return ConfigGenerator{
+		FileName: consts.InitJobScriptFileName,
+		Format:   ConfigFormatText,
+		Generator: func() ([]byte, error) {
+			return []byte(generator()), nil
+		},
+	}
 }
 
-func InitJobScriptGenerator(fileName string, generator TextGeneratorFunc) ConfigGenerator {
+func InitJobNamedScriptGenerator(fileName string, generator TextGeneratorFunc) ConfigGenerator {
 	return ConfigGenerator{
 		FileName: fileName,
 		Format:   ConfigFormatText,
