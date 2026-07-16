@@ -74,8 +74,8 @@ func NewYQLAgent(cfgen *ytconfig.Generator, ytsaurus *apiproxy.Ytsaurus, yc inte
 		"yql-agent-environment",
 		&resource.Spec.YQLAgents.InstanceSpec,
 		ConfigGenerator{consts.ClientConfigFileName, ConfigFormatYson, cfgen.GetNativeClientConfig},
-		initJobScriptGenerator(consts.InitJobYQLAgentInitScriptFileName, yqlAgent.createInitScript()),
-		initJobScriptGenerator(consts.InitJobYQLAgentUpdateScriptFileName, yqlAgent.createUpdateScript()),
+		InitJobScriptGenerator(consts.InitJobYQLAgentInitScriptFileName, yqlAgent.createInitScript()),
+		InitJobScriptGenerator(consts.InitJobYQLAgentUpdateScriptFileName, yqlAgent.createUpdateScript()),
 	)
 	return yqlAgent
 }

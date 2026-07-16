@@ -78,7 +78,7 @@ func NewQueueAgent(
 		"qa-state",
 		&resource.Spec.QueueAgents.InstanceSpec,
 		ConfigGenerator{consts.ClientConfigFileName, ConfigFormatYson, cfgen.GetNativeClientConfig},
-		initJobScriptGenerator(consts.InitJobScriptFileName, queueAgent.createInitQAStateScript),
+		InitJobScriptGenerator(consts.InitJobScriptFileName, queueAgent.createInitQAStateScript),
 	)
 	return queueAgent
 }

@@ -119,9 +119,9 @@ func NewMaster(
 			"default",
 			&mastersSpec.InstanceSpec,
 			ConfigGenerator{consts.ClientConfigFileName, ConfigFormatYson, cfgen.GetNativeClientConfig},
-			initJobScriptGenerator(consts.InitJobClusterInitializationScriptFileName, master.scriptInitialization),
-			initJobScriptGenerator(consts.InitJobMasterExitReadOnlyScriptFileName, master.scriptExitReadOnly),
-			initJobScriptGenerator(consts.InitJobSidecarsInitializeScriptFileName, master.scriptInitialization),
+			InitJobScriptGenerator(consts.InitJobClusterInitializationScriptFileName, master.scriptInitialization),
+			InitJobScriptGenerator(consts.InitJobMasterExitReadOnlyScriptFileName, master.scriptExitReadOnly),
+			InitJobScriptGenerator(consts.InitJobSidecarsInitializeScriptFileName, master.scriptInitialization),
 		)
 	}
 
