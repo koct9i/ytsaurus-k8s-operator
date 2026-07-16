@@ -118,7 +118,7 @@ func NewMaster(
 			ytsaurus,
 			"default",
 			&mastersSpec.InstanceSpec,
-			ConfigGenerator{consts.ClientConfigFileName, ConfigFormatYson, cfgen.GetNativeClientConfig},
+			YsonConfigGenerator(consts.ClientConfigFileName, cfgen.GetNativeClientConfig),
 			InitJobScriptGenerator(consts.InitJobClusterInitializationScriptFileName, master.scriptInitialization),
 			InitJobScriptGenerator(consts.InitJobMasterExitReadOnlyScriptFileName, master.scriptExitReadOnly),
 			InitJobScriptGenerator(consts.InitJobSidecarsInitializeScriptFileName, master.scriptInitialization),

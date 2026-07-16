@@ -71,7 +71,7 @@ func newTestJob(ytsaurus *apiproxy.Ytsaurus, script string) *InitJob {
 		&ytv1.InstanceSpec{
 			Image: ptr.To("dummy-image"),
 		},
-		ConfigGenerator{consts.ClientConfigFileName, ConfigFormatYson, func() ([]byte, error) { return []byte("dummy-cfg"), nil }},
+		YsonConfigGenerator(consts.ClientConfigFileName, func() ([]byte, error) { return []byte("dummy-cfg"), nil }),
 		ConfigGenerator{consts.InitJobScriptFileName, ConfigFormatText, func() ([]byte, error) { return []byte(script), nil }},
 	)
 }

@@ -83,7 +83,7 @@ func NewScheduler(
 		ytsaurus,
 		"user",
 		&resource.Spec.Schedulers.InstanceSpec,
-		ConfigGenerator{consts.ClientConfigFileName, ConfigFormatYson, cfgen.GetNativeClientConfig},
+		YsonConfigGenerator(consts.ClientConfigFileName, cfgen.GetNativeClientConfig),
 		InitJobScriptStringGenerator(consts.InitJobScriptFileName, scheduler.createInitUserScript),
 	)
 
@@ -92,7 +92,7 @@ func NewScheduler(
 		ytsaurus,
 		"op-archive",
 		&resource.Spec.Schedulers.InstanceSpec,
-		ConfigGenerator{consts.ClientConfigFileName, ConfigFormatYson, cfgen.GetNativeClientConfig},
+		YsonConfigGenerator(consts.ClientConfigFileName, cfgen.GetNativeClientConfig),
 		InitJobScriptGenerator(consts.InitJobOperationsArchiveScriptFileName, scheduler.scriptInitOperationsArchive),
 		InitJobScriptGenerator(consts.InitJobOperationsArchiveUpdateScriptFileName, scheduler.scriptInitOperationsArchive),
 	)

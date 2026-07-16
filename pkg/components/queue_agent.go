@@ -77,7 +77,7 @@ func NewQueueAgent(
 		ytsaurus,
 		"qa-state",
 		&resource.Spec.QueueAgents.InstanceSpec,
-		ConfigGenerator{consts.ClientConfigFileName, ConfigFormatYson, cfgen.GetNativeClientConfig},
+		YsonConfigGenerator(consts.ClientConfigFileName, cfgen.GetNativeClientConfig),
 		InitJobScriptGenerator(consts.InitJobScriptFileName, queueAgent.createInitQAStateScript),
 	)
 	return queueAgent

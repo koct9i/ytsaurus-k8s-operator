@@ -94,7 +94,7 @@ func NewYtsaurusClient(
 		ytsaurus,
 		"user",
 		&ytv1.InstanceSpec{},
-		ConfigGenerator{consts.ClientConfigFileName, ConfigFormatYson, cfgen.GetNativeClientConfig},
+		YsonConfigGenerator(consts.ClientConfigFileName, cfgen.GetNativeClientConfig),
 		InitJobScriptStringGenerator(consts.InitJobScriptFileName, ytsaurusClient.createInitUserScript),
 	)
 	return ytsaurusClient
