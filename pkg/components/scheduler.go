@@ -65,19 +65,12 @@ func NewScheduler(
 	)
 
 	scheduler := Scheduler{
-		serverComponent: newLocalServerComponent(l, ytsaurus, srv),
-		cfgen:           cfgen,
-		master:          master,
-		tabletNodes:     tabletNodes,
-		ytsaurusClient:  yc,
-		initUserJob: NewInitJobForYtsaurus(
-			l,
-			ytsaurus,
-			"user",
-			consts.ClientConfigFileName,
-			cfgen.GetNativeClientConfig,
-			&resource.Spec.Schedulers.InstanceSpec,
-		),
+		serverComponent:  newLocalServerComponent(l, ytsaurus, srv),
+		cfgen:            cfgen,
+		master:           master,
+		tabletNodes:      tabletNodes,
+		ytsaurusClient:   yc,
+		initUserJob:      nil,
 		initOpArchiveJob: nil,
 		secret: resources.NewStringSecret(
 			l.GetSecretName(),
@@ -85,13 +78,21 @@ func NewScheduler(
 			ytsaurus),
 	}
 
+	scheduler.initUserJob = NewInitJobForYtsaurus(
+		l,
+		ytsaurus,
+		"user",
+		&resource.Spec.Schedulers.InstanceSpec,
+		ConfigGenerator{consts.ClientConfigFileName, ConfigFormatYson, cfgen.GetNativeClientConfig},
+		initJobScriptStringGenerator(consts.InitJobScriptFileName, scheduler.createInitUserScript),
+	)
+
 	scheduler.initOpArchiveJob = NewInitJobForYtsaurus(
 		l,
 		ytsaurus,
 		"op-archive",
-		consts.ClientConfigFileName,
-		cfgen.GetNativeClientConfig,
 		&resource.Spec.Schedulers.InstanceSpec,
+		ConfigGenerator{consts.ClientConfigFileName, ConfigFormatYson, cfgen.GetNativeClientConfig},
 		initJobScriptGenerator(consts.InitJobOperationsArchiveScriptFileName, scheduler.scriptInitOperationsArchive),
 		initJobScriptGenerator(consts.InitJobOperationsArchiveUpdateScriptFileName, scheduler.scriptInitOperationsArchive),
 	)
@@ -166,10 +167,6 @@ func (s *Scheduler) Sync(ctx context.Context, dry bool) (ComponentStatus, error)
 func (s *Scheduler) initOpArchive(ctx context.Context, dry bool) (ComponentStatus, error) {
 	if len(s.tabletNodes) == 0 {
 		return ComponentStatusReady(), nil
-	}
-
-	if !dry {
-		s.initUserJob.SetInitScript(s.createInitUserScript())
 	}
 
 	status, err := s.initUserJob.Sync(ctx, dry)

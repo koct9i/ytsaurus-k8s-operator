@@ -61,12 +61,10 @@ func NewInitJob(
 	labeller *labeller.Labeller,
 	apiProxy apiproxy.APIProxy,
 	name string,
-	configFileName string,
-	generator ConfigGeneratorFunc,
 	commonSpec *ytv1.CommonSpec,
 	commonPodSpec *ytv1.PodSpec,
 	instanceSpec *ytv1.InstanceSpec,
-	scriptGenerators ...ConfigGenerator,
+	generators ...ConfigGenerator,
 ) *InitJob {
 	var busClientSecret *resources.TLSSecret
 
@@ -78,12 +76,6 @@ func NewInitJob(
 				consts.BusClientSecretMountPoint)
 		}
 	}
-
-	configGenerators := append([]ConfigGenerator{{
-		FileName:  configFileName,
-		Format:    ConfigFormatYson,
-		Generator: generator,
-	}}, scriptGenerators...)
 
 	initJob := &InitJob{
 		component: component{
@@ -103,11 +95,17 @@ func NewInitJob(
 		caRootBundle:    resources.NewCARootBundle(commonSpec.CARootBundle),
 		caBundle:        resources.NewCABundle(commonSpec.CABundle),
 		busClientSecret: busClientSecret,
-		configs:         NewConfigMapBuilder(labeller, apiProxy, labeller.GetInitJobConfigMapName(name), nil, configGenerators...),
+		configs:         NewConfigMapBuilder(labeller, apiProxy, labeller.GetInitJobConfigMapName(name), nil, generators...),
 		scriptFileName:  consts.InitJobScriptFileName,
 	}
 
 	return initJob
+}
+
+func initJobScriptStringGenerator(fileName string, generator func() string) ConfigGenerator {
+	return initJobScriptGenerator(fileName, func() ([]string, error) {
+		return []string{generator()}, nil
+	})
 }
 
 func initJobScriptGenerator(fileName string, generator TextGeneratorFunc) ConfigGenerator {
@@ -127,21 +125,18 @@ func initJobScriptGenerator(fileName string, generator TextGeneratorFunc) Config
 func NewInitJobForYtsaurus(
 	labeller *labeller.Labeller,
 	ytsaurus *apiproxy.Ytsaurus,
-	name, configFileName string,
-	generator ConfigGeneratorFunc,
+	name string,
 	instanceSpec *ytv1.InstanceSpec,
-	scriptGenerators ...ConfigGenerator,
+	generators ...ConfigGenerator,
 ) *InitJob {
 	return NewInitJob(
 		labeller,
 		ytsaurus,
 		name,
-		configFileName,
-		generator,
 		ytsaurus.GetCommonSpec(),
 		ytsaurus.GetCommonPodSpec(),
 		instanceSpec,
-		scriptGenerators...,
+		generators...,
 	)
 }
 
@@ -159,17 +154,6 @@ func (j *InitJob) Restart() {
 // NOTE: Removing either job spec, config or condition triggers job restart.
 func (j *InitJob) IsCompleted() bool {
 	return j.Exists() && j.owner.IsStatusConditionTrue(j.statusCondition)
-}
-
-func (j *InitJob) SetInitScript(script string) {
-	j.scriptFileName = consts.InitJobScriptFileName
-	j.configs.AddGenerator(
-		consts.InitJobScriptFileName,
-		ConfigFormatText,
-		func() ([]byte, error) {
-			return []byte(script), nil
-		},
-	)
 }
 
 func (j *InitJob) RunScript(

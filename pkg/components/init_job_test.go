@@ -55,7 +55,7 @@ func syncJobUntilReady(job *InitJob) {
 	}, waitTimeout, waitTick).Should(Equal(SyncStatusReady))
 }
 
-func newTestJob(ytsaurus *apiproxy.Ytsaurus) *InitJob {
+func newTestJob(ytsaurus *apiproxy.Ytsaurus, script string) *InitJob {
 	resource := ytsaurus.GetResource()
 	return NewInitJob(
 		&labeller.Labeller{
@@ -66,13 +66,13 @@ func newTestJob(ytsaurus *apiproxy.Ytsaurus) *InitJob {
 		},
 		ytsaurus,
 		"dummy",
-		consts.ClientConfigFileName,
-		func() ([]byte, error) { return []byte("dummy-cfg"), nil },
 		&resource.Spec.CommonSpec,
 		&resource.Spec.PodSpec,
 		&ytv1.InstanceSpec{
 			Image: ptr.To("dummy-image"),
 		},
+		ConfigGenerator{consts.ClientConfigFileName, ConfigFormatYson, func() ([]byte, error) { return []byte("dummy-cfg"), nil }},
+		ConfigGenerator{consts.InitJobScriptFileName, ConfigFormatText, func() ([]byte, error) { return []byte(script), nil }},
 	)
 }
 
@@ -106,8 +106,7 @@ var _ = Describe("InitJob", func() {
 		})
 
 		It("should delete job and prepare restart", func(ctx context.Context) {
-			job := newTestJob(ytsaurus)
-			job.SetInitScript(scriptBefore)
+			job := newTestJob(ytsaurus, scriptBefore)
 			syncJobUntilReady(job)
 
 			job.Restart()
@@ -130,13 +129,11 @@ var _ = Describe("InitJob", func() {
 		})
 
 		It("should update script on job restart", func(ctx context.Context) {
-			job := newTestJob(ytsaurus)
-			job.SetInitScript(scriptBefore)
+			job := newTestJob(ytsaurus, scriptBefore)
 			syncJobUntilReady(job)
 
 			// Imagine that new version of operator wants to set new init script for job.
-			job = newTestJob(ytsaurus)
-			job.SetInitScript(scriptAfter)
+			job = newTestJob(ytsaurus, scriptAfter)
 			job.Restart()
 			syncJobUntilReady(job)
 
@@ -149,7 +146,7 @@ var _ = Describe("InitJob", func() {
 		})
 
 		It("should keep scripts for different reasons under different names", func(ctx context.Context) {
-			job := newTestJob(ytsaurus)
+			job := newTestJob(ytsaurus, scriptBefore)
 			firstScript := func() ([]string, error) {
 				return []string{scriptBefore}, nil
 			}

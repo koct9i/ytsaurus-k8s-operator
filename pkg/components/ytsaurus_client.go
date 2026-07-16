@@ -70,7 +70,7 @@ func NewYtsaurusClient(
 		configOverrides = resources.NewConfigMap(overrides.Name, l, ytsaurus)
 	}
 
-	return &YtsaurusClient{
+	ytsaurusClient := &YtsaurusClient{
 		virtualComponent: virtualComponent{
 			component: newComponent(l, ytsaurus),
 		},
@@ -84,19 +84,20 @@ func NewYtsaurusClient(
 			l,
 			ytsaurus,
 		),
-		initUserJob: NewInitJobForYtsaurus(
-			l,
-			ytsaurus,
-			"user",
-			consts.ClientConfigFileName,
-			cfgen.GetNativeClientConfig,
-			&ytv1.InstanceSpec{},
-		),
 		secret: resources.NewStringSecret(
 			l.GetSecretName(),
 			l,
 			ytsaurus),
 	}
+	ytsaurusClient.initUserJob = NewInitJobForYtsaurus(
+		l,
+		ytsaurus,
+		"user",
+		&ytv1.InstanceSpec{},
+		ConfigGenerator{consts.ClientConfigFileName, ConfigFormatYson, cfgen.GetNativeClientConfig},
+		initJobScriptStringGenerator(consts.InitJobScriptFileName, ytsaurusClient.createInitUserScript),
+	)
+	return ytsaurusClient
 }
 
 func (yc *YtsaurusClient) Fetch(ctx context.Context) error {
@@ -379,9 +380,6 @@ func (yc *YtsaurusClient) Sync(ctx context.Context, dry bool) (ComponentStatus, 
 		return ComponentStatusWaitingFor(yc.secret.Name()), err
 	}
 
-	if !dry {
-		yc.initUserJob.SetInitScript(yc.createInitUserScript())
-	}
 	status, err := yc.initUserJob.Sync(ctx, dry)
 	if err != nil || status.SyncStatus != SyncStatusReady {
 		return status, err

@@ -32,38 +32,27 @@ type Spyt struct {
 
 func NewSpyt(cfgen *ytconfig.NodeGenerator, spyt *apiproxy.Spyt, ytsaurus *ytv1.Ytsaurus) *Spyt {
 	l := cfgen.GetComponentLabeller(consts.SpytType, spyt.GetResource().Name)
-	return &Spyt{
+	spytComponent := &Spyt{
 		labeller: l,
 		spyt:     spyt,
 		cfgen:    cfgen,
 		ytsaurus: ytsaurus,
-		initUser: NewInitJob(
-			l,
-			spyt,
-			"user",
-			consts.ClientConfigFileName,
-			cfgen.GetNativeClientConfig,
-			&ytsaurus.Spec.CommonSpec,
-			&ytsaurus.Spec.PodSpec,
-			&ytv1.InstanceSpec{},
-		),
-		initEnvironment: NewInitJob(
-			l,
-			spyt,
-			"spyt-environment",
-			consts.ClientConfigFileName,
-			cfgen.GetNativeClientConfig,
-			&ytsaurus.Spec.CommonSpec,
-			&ytsaurus.Spec.PodSpec,
-			&ytv1.InstanceSpec{
-				Image: &spyt.GetResource().Spec.Image,
-			},
-		),
 		secret: resources.NewStringSecret(
 			l.GetSecretName(),
 			l,
 			spyt),
 	}
+	spytComponent.initUser = NewInitJob(
+		l, spyt, "user", &ytsaurus.Spec.CommonSpec, &ytsaurus.Spec.PodSpec, &ytv1.InstanceSpec{},
+		ConfigGenerator{consts.ClientConfigFileName, ConfigFormatYson, cfgen.GetNativeClientConfig},
+		initJobScriptGenerator(consts.InitJobScriptFileName, func() ([]string, error) { return []string{spytComponent.createInitUserScript()}, nil }),
+	)
+	spytComponent.initEnvironment = NewInitJob(
+		l, spyt, "spyt-environment", &ytsaurus.Spec.CommonSpec, &ytsaurus.Spec.PodSpec, &ytv1.InstanceSpec{Image: &spyt.GetResource().Spec.Image},
+		ConfigGenerator{consts.ClientConfigFileName, ConfigFormatYson, cfgen.GetNativeClientConfig},
+		initJobScriptGenerator(consts.InitJobScriptFileName, func() ([]string, error) { return []string{spytComponent.createInitScript()}, nil }),
+	)
+	return spytComponent
 }
 
 func (s *Spyt) createInitUserScript() string {
@@ -142,9 +131,6 @@ func (s *Spyt) Sync(ctx context.Context, dry bool) (ComponentStatus, error) {
 		return ComponentStatusWaitingFor(s.secret.Name()), err
 	}
 
-	if !dry {
-		s.initUser.SetInitScript(s.createInitUserScript())
-	}
 	status, err := s.initUser.Sync(ctx, dry)
 	if status.SyncStatus != SyncStatusReady {
 		s.spyt.GetResource().Status.ReleaseStatus = ytv1.SpytReleaseStatusCreatingUser
@@ -152,7 +138,6 @@ func (s *Spyt) Sync(ctx context.Context, dry bool) (ComponentStatus, error) {
 	}
 
 	if !dry {
-		s.initEnvironment.SetInitScript(s.createInitScript())
 		job := s.initEnvironment.Build()
 		container := &job.Spec.Template.Spec.Containers[0]
 		env := []corev1.EnvVar{
