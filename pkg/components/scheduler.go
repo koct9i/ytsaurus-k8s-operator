@@ -83,19 +83,19 @@ func NewScheduler(
 		ytsaurus,
 		"user",
 		&resource.Spec.Schedulers.InstanceSpec,
-		YsonConfigGenerator(consts.ClientConfigFileName, cfgen.GetNativeClientConfig),
-		InitJobScriptGenerator(scheduler.createInitUserScript),
 	)
+	scheduler.initUserJob.AddYsonConfig(consts.ClientConfigFileName, cfgen.GetNativeClientConfig)
+	scheduler.initUserJob.AddInitJobScript(scheduler.createInitUserScript)
 
 	scheduler.initOpArchiveJob = NewInitJobForYtsaurus(
 		l,
 		ytsaurus,
 		"op-archive",
 		&resource.Spec.Schedulers.InstanceSpec,
-		YsonConfigGenerator(consts.ClientConfigFileName, cfgen.GetNativeClientConfig),
-		InitJobNamedScriptGenerator(consts.InitJobOperationsArchiveScriptFileName, scheduler.scriptInitOperationsArchive),
-		InitJobNamedScriptGenerator(consts.InitJobOperationsArchiveUpdateScriptFileName, scheduler.scriptInitOperationsArchive),
 	)
+	scheduler.initOpArchiveJob.AddYsonConfig(consts.ClientConfigFileName, cfgen.GetNativeClientConfig)
+	scheduler.initOpArchiveJob.AddNamedInitJobScript(consts.InitJobOperationsArchiveScriptFileName, scheduler.scriptInitOperationsArchive)
+	scheduler.initOpArchiveJob.AddNamedInitJobScript(consts.InitJobOperationsArchiveUpdateScriptFileName, scheduler.scriptInitOperationsArchive)
 	scheduler.initOpArchiveJob.envFrom = []corev1.EnvFromSource{scheduler.secret.GetEnvSource()}
 
 	return &scheduler

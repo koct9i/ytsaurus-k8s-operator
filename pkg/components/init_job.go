@@ -144,6 +144,26 @@ func NewInitJobForYtsaurus(
 	)
 }
 
+func (j *InitJob) AddGenerator(generator ConfigGenerator) {
+	j.configs.AddGenerator(generator.FileName, generator.Format, generator.Generator)
+}
+
+func (j *InitJob) AddYsonConfig(fileName string, generator ConfigGeneratorFunc) {
+	j.AddGenerator(YsonConfigGenerator(fileName, generator))
+}
+
+func (j *InitJob) AddScript(fileName string, generator TextGeneratorFunc) {
+	j.AddGenerator(InitJobNamedScriptGenerator(fileName, generator))
+}
+
+func (j *InitJob) AddInitJobScript(generator func() string) {
+	j.AddGenerator(InitJobScriptGenerator(generator))
+}
+
+func (j *InitJob) AddNamedInitJobScript(fileName string, generator TextGeneratorFunc) {
+	j.AddScript(fileName, generator)
+}
+
 func (j *InitJob) Name() string {
 	return j.initJob.Name()
 }
