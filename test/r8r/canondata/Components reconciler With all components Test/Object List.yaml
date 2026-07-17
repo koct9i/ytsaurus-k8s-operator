@@ -736,6 +736,7 @@
   resourceVersion: "1"
 - annotations:
     extra-pod-annotation: "true"
+    ytsaurus.tech/init-job-reason: InitJob
     ytsaurus.tech/observed-generation: "1"
   generation: 1
   labels:
@@ -1179,6 +1180,7 @@
   resourceVersion: "1"
 - annotations:
     extra-pod-annotation: "true"
+    ytsaurus.tech/init-job-reason: ClusterInitialization
     ytsaurus.tech/observed-generation: "1"
   generation: 1
   labels:
@@ -1376,6 +1378,7 @@
   resourceVersion: "1"
 - annotations:
     extra-pod-annotation: "true"
+    ytsaurus.tech/init-job-reason: InitJob
     ytsaurus.tech/observed-generation: "1"
   generation: 1
   labels:
@@ -1420,6 +1423,7 @@
   resourceVersion: "1"
 - annotations:
     extra-pod-annotation: "true"
+    ytsaurus.tech/init-job-reason: InitJob
     ytsaurus.tech/observed-generation: "1"
   generation: 1
   labels:
@@ -1508,6 +1512,7 @@
   resourceVersion: "1"
 - annotations:
     extra-pod-annotation: "true"
+    ytsaurus.tech/init-job-reason: InitJob
     ytsaurus.tech/observed-generation: "1"
   generation: 1
   labels:
@@ -1617,6 +1622,7 @@
   resourceVersion: "1"
 - annotations:
     extra-pod-annotation: "true"
+    ytsaurus.tech/init-job-reason: YQLAgentInit
     ytsaurus.tech/observed-generation: "1"
   generation: 1
   labels:

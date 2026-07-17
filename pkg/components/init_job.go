@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"path"
+	"slices"
 	"strings"
 
 	"k8s.io/utils/ptr"
@@ -43,7 +44,6 @@ type InitJob struct {
 
 	initJob *resources.Job
 	configs *ConfigMapBuilder
-	script  TextGeneratorFunc
 	envFrom []corev1.EnvFromSource
 
 	caRootBundle    *resources.CABundle
@@ -52,6 +52,7 @@ type InitJob struct {
 
 	statusCondition string // Condition for tracking job state.
 	reason          string // Changing reason triggers fresh start.
+	scriptFileName  string
 
 	builtJob *batchv1.Job
 }
@@ -60,11 +61,10 @@ func NewInitJob(
 	labeller *labeller.Labeller,
 	apiProxy apiproxy.APIProxy,
 	name string,
-	configFileName string,
-	generator ConfigGeneratorFunc,
 	commonSpec *ytv1.CommonSpec,
 	commonPodSpec *ytv1.PodSpec,
 	instanceSpec *ytv1.InstanceSpec,
+	generators ...ConfigGenerator,
 ) *InitJob {
 	var busClientSecret *resources.TLSSecret
 
@@ -95,24 +95,15 @@ func NewInitJob(
 		caRootBundle:    resources.NewCARootBundle(commonSpec.CARootBundle),
 		caBundle:        resources.NewCABundle(commonSpec.CABundle),
 		busClientSecret: busClientSecret,
-		configs:         NewConfigMapBuilder(labeller, apiProxy, labeller.GetInitJobConfigMapName(name), nil),
-		script: func() ([]string, error) {
-			return nil, fmt.Errorf("script undefined")
-		},
+		configs: NewConfigMapBuilder(
+			labeller,
+			apiProxy,
+			labeller.GetInitJobConfigMapName(name),
+			nil,
+			generators...,
+		),
+		scriptFileName: consts.InitJobScriptName,
 	}
-
-	initJob.configs.AddGenerator(configFileName, ConfigFormatYson, generator)
-	initJob.configs.AddGenerator(
-		consts.InitJobScriptFileName,
-		ConfigFormatText,
-		func() ([]byte, error) {
-			text, err := initJob.script()
-			if err != nil {
-				return nil, err
-			}
-			return []byte(strings.Join(text, "\n")), nil
-		},
-	)
 
 	return initJob
 }
@@ -120,20 +111,36 @@ func NewInitJob(
 func NewInitJobForYtsaurus(
 	labeller *labeller.Labeller,
 	ytsaurus *apiproxy.Ytsaurus,
-	name, configFileName string,
-	generator ConfigGeneratorFunc,
+	name string,
 	instanceSpec *ytv1.InstanceSpec,
+	generators ...ConfigGenerator,
 ) *InitJob {
 	return NewInitJob(
 		labeller,
 		ytsaurus,
 		name,
-		configFileName,
-		generator,
 		ytsaurus.GetCommonSpec(),
 		ytsaurus.GetCommonPodSpec(),
 		instanceSpec,
+		generators...,
 	)
+}
+
+func (j *InitJob) AddScript(fileName string, generator TextGeneratorFunc) {
+	j.configs.AddGenerator(fileName, ConfigFormatText, func() ([]byte, error) {
+		text, err := generator()
+		if err != nil {
+			return nil, err
+		}
+		return []byte(strings.Join(text, "\n")), nil
+	})
+}
+
+// TODO: Migrate to AddScript.
+func (j *InitJob) AddInitJobScript(generator func() string) {
+	j.configs.AddGenerator(consts.InitJobScriptName, ConfigFormatText, func() ([]byte, error) {
+		return []byte(generator()), nil
+	})
 }
 
 func (j *InitJob) Name() string {
@@ -152,21 +159,20 @@ func (j *InitJob) IsCompleted() bool {
 	return j.Exists() && j.owner.IsStatusConditionTrue(j.statusCondition)
 }
 
-func (j *InitJob) SetInitScript(script string) {
-	j.script = func() ([]string, error) {
-		return []string{script}, nil
-	}
-}
-
 func (j *InitJob) RunScript(
 	ctx context.Context,
 	dry bool,
 	reason string,
-	script TextGeneratorFunc,
+	scriptFileName string,
 	complete func(status *ComponentStatus),
 ) (ComponentStatus, error) {
+	if !slices.ContainsFunc(j.configs.generators, func(g ConfigGenerator) bool { return g.FileName == scriptFileName }) {
+		err := fmt.Errorf("generator not found: %v", scriptFileName)
+		return ComponentStatusBlocked("%v", err), err
+	}
 	j.reason = reason
-	j.script = script
+	j.scriptFileName = scriptFileName
+	j.builtJob = nil
 	status, err := j.Sync(ctx, dry)
 	if err == nil && status.IsReady() && complete != nil {
 		complete(&status)
@@ -179,7 +185,7 @@ func (j *InitJob) RunUpdateScript(
 	dry bool,
 	ytsaurus *apiproxy.Ytsaurus,
 	updateState ytv1.UpdateState,
-	script TextGeneratorFunc,
+	scriptFileName string,
 	complete func(),
 ) (ComponentStatus, error) {
 	updateCondition := ytsaurus.GetUpdateStateCompleteCondition(updateState)
@@ -195,7 +201,7 @@ func (j *InitJob) RunUpdateScript(
 			Message: fmt.Sprintf("Job %v for %v is starting", j.Name(), updateState),
 		})
 	}
-	return j.RunScript(ctx, dry, string(updateState), script, func(status *ComponentStatus) {
+	return j.RunScript(ctx, dry, string(updateState), scriptFileName, func(status *ComponentStatus) {
 		if dry {
 			*status = ComponentStatusWaitingFor("update condition %v", updateCondition)
 			return
@@ -237,7 +243,7 @@ func (j *InitJob) Build() *batchv1.Job {
 						Command: []string{
 							"/bin/bash",
 							"-eux",
-							path.Join(consts.ConfigMountPoint, consts.InitJobScriptFileName),
+							path.Join(consts.ConfigMountPoint, j.scriptFileName),
 						},
 						Env:     getDefaultEnv(),
 						EnvFrom: j.envFrom,
@@ -268,6 +274,9 @@ func (j *InitJob) Build() *batchv1.Job {
 			},
 		},
 	}
+
+	metav1.SetMetaDataAnnotation(&job.ObjectMeta, consts.InitJobReasonAnnotationName, j.reason)
+	metav1.SetMetaDataAnnotation(&job.Spec.Template.ObjectMeta, consts.InitJobReasonAnnotationName, j.reason)
 
 	podSpec := &job.Spec.Template.Spec
 

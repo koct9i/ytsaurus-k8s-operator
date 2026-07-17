@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"strings"
 
 	"github.com/BurntSushi/toml"
 	"go.ytsaurus.tech/yt/go/yson"
@@ -49,6 +50,28 @@ type ConfigGenerator struct {
 	Format ConfigFormat
 	// Generator must generate config in YSON.
 	Generator ConfigGeneratorFunc
+}
+
+func YsonConfigGenerator(fileName string, generator ConfigGeneratorFunc) ConfigGenerator {
+	return ConfigGenerator{
+		FileName:  fileName,
+		Format:    ConfigFormatYson,
+		Generator: generator,
+	}
+}
+
+func TextConfigGenerator(fileName string, generator TextGeneratorFunc) ConfigGenerator {
+	return ConfigGenerator{
+		FileName: fileName,
+		Format:   ConfigFormatText,
+		Generator: func() ([]byte, error) {
+			text, err := generator()
+			if err != nil {
+				return nil, err
+			}
+			return []byte(strings.Join(text, "\n")), nil
+		},
+	}
 }
 
 type ConfigMapBuilder struct {
@@ -258,6 +281,9 @@ func (h *ConfigMapBuilder) needReload() (ComponentStatus, error) {
 			}
 		}
 	}
+	if h.configMap.IsAnnotationChanged(consts.InitJobReasonAnnotationName) {
+		return ComponentStatusNeedUpdate("Annotation %s changed", consts.InitJobReasonAnnotationName), nil
+	}
 	return ComponentStatusReady(), nil
 }
 
@@ -269,6 +295,9 @@ func (h *ConfigMapBuilder) Build() (*corev1.ConfigMap, error) {
 	}
 
 	for _, descriptor := range h.generators {
+		if _, exists := cm.Data[descriptor.FileName]; exists {
+			return nil, fmt.Errorf("duplicate config generator: %v", descriptor.FileName)
+		}
 		data, err := h.getConfig(descriptor)
 		if err != nil {
 			return nil, err
