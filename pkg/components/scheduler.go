@@ -65,37 +65,35 @@ func NewScheduler(
 	)
 
 	scheduler := Scheduler{
-		serverComponent:  newLocalServerComponent(l, ytsaurus, srv),
-		cfgen:            cfgen,
-		master:           master,
-		tabletNodes:      tabletNodes,
-		ytsaurusClient:   yc,
-		initUserJob:      nil,
-		initOpArchiveJob: nil,
+		serverComponent: newLocalServerComponent(l, ytsaurus, srv),
+		cfgen:           cfgen,
+		master:          master,
+		tabletNodes:     tabletNodes,
+		ytsaurusClient:  yc,
+		initUserJob: NewInitJobForYtsaurus(
+			l,
+			ytsaurus,
+			"user",
+			&resource.Spec.Schedulers.InstanceSpec,
+		),
+		initOpArchiveJob: NewInitJobForYtsaurus(
+			l,
+			ytsaurus,
+			"op-archive",
+			&resource.Spec.Schedulers.InstanceSpec,
+		),
 		secret: resources.NewStringSecret(
 			l.GetSecretName(),
 			l,
 			ytsaurus),
 	}
 
-	scheduler.initUserJob = NewInitJobForYtsaurus(
-		l,
-		ytsaurus,
-		"user",
-		&resource.Spec.Schedulers.InstanceSpec,
-	)
 	scheduler.initUserJob.AddYsonConfig(consts.ClientConfigFileName, cfgen.GetNativeClientConfig)
 	scheduler.initUserJob.AddInitJobScript(scheduler.createInitUserScript)
-
-	scheduler.initOpArchiveJob = NewInitJobForYtsaurus(
-		l,
-		ytsaurus,
-		"op-archive",
-		&resource.Spec.Schedulers.InstanceSpec,
-	)
 	scheduler.initOpArchiveJob.AddYsonConfig(consts.ClientConfigFileName, cfgen.GetNativeClientConfig)
 	scheduler.initOpArchiveJob.AddNamedInitJobScript(consts.InitJobOperationsArchiveScriptFileName, scheduler.scriptInitOperationsArchive)
 	scheduler.initOpArchiveJob.AddNamedInitJobScript(consts.InitJobOperationsArchiveUpdateScriptFileName, scheduler.scriptInitOperationsArchive)
+
 	scheduler.initOpArchiveJob.envFrom = []corev1.EnvFromSource{scheduler.secret.GetEnvSource()}
 
 	return &scheduler

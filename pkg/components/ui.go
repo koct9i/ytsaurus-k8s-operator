@@ -82,18 +82,18 @@ func NewUI(cfgen *ytconfig.Generator, ytsaurus *apiproxy.Ytsaurus, master Compon
 			ytsaurus),
 		caRootBundle: resources.NewCARootBundle(resource.Spec.CARootBundle),
 		caBundle:     resources.NewCABundle(resource.Spec.CABundle),
-		master:       master,
+		initJob: NewInitJobForYtsaurus(
+			l,
+			ytsaurus,
+			"default",
+			&ytv1.InstanceSpec{
+				PodSpec: resource.Spec.UI.PodSpec,
+			},
+		),
+		master: master,
 	}
-	ui.initJob = NewInitJobForYtsaurus(
-		l,
-		ytsaurus,
-		"default",
-		&ytv1.InstanceSpec{
-			PodSpec: resource.Spec.UI.PodSpec,
-		},
-		YsonConfigGenerator(consts.ClientConfigFileName, cfgen.GetNativeClientConfig),
-		InitJobScriptGenerator(ui.createInitScript),
-	)
+	ui.initJob.AddYsonConfig(consts.ClientConfigFileName, cfgen.GetNativeClientConfig)
+	ui.initJob.AddInitJobScript(ui.createInitScript)
 	return ui
 }
 

@@ -66,17 +66,17 @@ func NewYQLAgent(cfgen *ytconfig.Generator, ytsaurus *apiproxy.Ytsaurus, yc inte
 			l.GetSecretName(),
 			l,
 			ytsaurus),
+		initEnvironment: NewInitJobForYtsaurus(
+			l,
+			ytsaurus,
+			"yql-agent-environment",
+			&resource.Spec.YQLAgents.InstanceSpec,
+		),
 		execSecret: execSecret,
 	}
-	yqlAgent.initEnvironment = NewInitJobForYtsaurus(
-		l,
-		ytsaurus,
-		"yql-agent-environment",
-		&resource.Spec.YQLAgents.InstanceSpec,
-		YsonConfigGenerator(consts.ClientConfigFileName, cfgen.GetNativeClientConfig),
-		InitJobNamedScriptGenerator(consts.InitJobYQLAgentInitScriptFileName, yqlAgent.createInitScript()),
-		InitJobNamedScriptGenerator(consts.InitJobYQLAgentUpdateScriptFileName, yqlAgent.createUpdateScript()),
-	)
+	yqlAgent.initEnvironment.AddYsonConfig(consts.ClientConfigFileName, cfgen.GetNativeClientConfig)
+	yqlAgent.initEnvironment.AddNamedInitJobScript(consts.InitJobYQLAgentInitScriptFileName, yqlAgent.createInitScript())
+	yqlAgent.initEnvironment.AddNamedInitJobScript(consts.InitJobYQLAgentUpdateScriptFileName, yqlAgent.createUpdateScript())
 	return yqlAgent
 }
 

@@ -114,27 +114,27 @@ func NewStrawberryController(
 		spec:            resource.Spec.StrawberryController,
 		master:          master,
 		scheduler:       scheduler,
-		dataNodes:       dataNodes,
+		initUserAndUrlJob: NewInitJobForYtsaurus(
+			l,
+			ytsaurus,
+			"user",
+			&ytv1.InstanceSpec{PodSpec: resource.Spec.StrawberryController.PodSpec},
+		),
+		initChytClusterJob: NewInitJobForYtsaurus(
+			l,
+			ytsaurus,
+			"cluster",
+			&ytv1.InstanceSpec{
+				PodSpec: resource.Spec.StrawberryController.PodSpec,
+				Image:   ptr.To(image),
+			},
+		),
+		dataNodes: dataNodes,
 	}
-	controller.initUserAndUrlJob = NewInitJobForYtsaurus(
-		l,
-		ytsaurus,
-		"user",
-		&ytv1.InstanceSpec{PodSpec: resource.Spec.StrawberryController.PodSpec},
-		YsonConfigGenerator(consts.ClientConfigFileName, cfgen.GetNativeClientConfig),
-		InitJobScriptGenerator(controller.createInitUserAndUrlScript),
-	)
-	controller.initChytClusterJob = NewInitJobForYtsaurus(
-		l,
-		ytsaurus,
-		"cluster",
-		&ytv1.InstanceSpec{
-			PodSpec: resource.Spec.StrawberryController.PodSpec,
-			Image:   ptr.To(image),
-		},
-		YsonConfigGenerator(ChytInitClusterJobConfigFileName, cfgen.GetStrawberryInitClusterConfig),
-		InitJobScriptGenerator(controller.createInitChytClusterScript),
-	)
+	controller.initUserAndUrlJob.AddYsonConfig(consts.ClientConfigFileName, cfgen.GetNativeClientConfig)
+	controller.initUserAndUrlJob.AddInitJobScript(controller.createInitUserAndUrlScript)
+	controller.initChytClusterJob.AddYsonConfig(ChytInitClusterJobConfigFileName, cfgen.GetStrawberryInitClusterConfig)
+	controller.initChytClusterJob.AddInitJobScript(controller.createInitChytClusterScript)
 	return controller
 }
 

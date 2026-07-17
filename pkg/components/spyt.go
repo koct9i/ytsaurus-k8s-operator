@@ -37,21 +37,21 @@ func NewSpyt(cfgen *ytconfig.NodeGenerator, spyt *apiproxy.Spyt, ytsaurus *ytv1.
 		spyt:     spyt,
 		cfgen:    cfgen,
 		ytsaurus: ytsaurus,
+		initUser: NewInitJob(
+			l, spyt, "user", &ytsaurus.Spec.CommonSpec, &ytsaurus.Spec.PodSpec, &ytv1.InstanceSpec{},
+		),
+		initEnvironment: NewInitJob(
+			l, spyt, "spyt-environment", &ytsaurus.Spec.CommonSpec, &ytsaurus.Spec.PodSpec, &ytv1.InstanceSpec{Image: &spyt.GetResource().Spec.Image},
+		),
 		secret: resources.NewStringSecret(
 			l.GetSecretName(),
 			l,
 			spyt),
 	}
-	spytComponent.initUser = NewInitJob(
-		l, spyt, "user", &ytsaurus.Spec.CommonSpec, &ytsaurus.Spec.PodSpec, &ytv1.InstanceSpec{},
-		YsonConfigGenerator(consts.ClientConfigFileName, cfgen.GetNativeClientConfig),
-		InitJobScriptGenerator(spytComponent.createInitUserScript),
-	)
-	spytComponent.initEnvironment = NewInitJob(
-		l, spyt, "spyt-environment", &ytsaurus.Spec.CommonSpec, &ytsaurus.Spec.PodSpec, &ytv1.InstanceSpec{Image: &spyt.GetResource().Spec.Image},
-		YsonConfigGenerator(consts.ClientConfigFileName, cfgen.GetNativeClientConfig),
-		InitJobScriptGenerator(spytComponent.createInitScript),
-	)
+	spytComponent.initUser.AddYsonConfig(consts.ClientConfigFileName, cfgen.GetNativeClientConfig)
+	spytComponent.initUser.AddInitJobScript(spytComponent.createInitUserScript)
+	spytComponent.initEnvironment.AddYsonConfig(consts.ClientConfigFileName, cfgen.GetNativeClientConfig)
+	spytComponent.initEnvironment.AddInitJobScript(spytComponent.createInitScript)
 	return spytComponent
 }
 

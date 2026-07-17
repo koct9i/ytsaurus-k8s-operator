@@ -84,19 +84,20 @@ func NewYtsaurusClient(
 			l,
 			ytsaurus,
 		),
+		initUserJob: NewInitJobForYtsaurus(
+			l,
+			ytsaurus,
+			"user",
+			&ytv1.InstanceSpec{},
+		),
 		secret: resources.NewStringSecret(
 			l.GetSecretName(),
 			l,
 			ytsaurus),
 	}
-	ytsaurusClient.initUserJob = NewInitJobForYtsaurus(
-		l,
-		ytsaurus,
-		"user",
-		&ytv1.InstanceSpec{},
-		YsonConfigGenerator(consts.ClientConfigFileName, cfgen.GetNativeClientConfig),
-		InitJobScriptGenerator(ytsaurusClient.createInitUserScript),
-	)
+	ytsaurusClient.initUserJob.AddYsonConfig(consts.ClientConfigFileName, cfgen.GetNativeClientConfig)
+	ytsaurusClient.initUserJob.AddInitJobScript(ytsaurusClient.createInitUserScript)
+
 	return ytsaurusClient
 }
 

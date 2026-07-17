@@ -64,19 +64,19 @@ func NewQueryTracker(
 		tabletNodes:     tabletNodes,
 		initCondition:   "queryTrackerInitCompleted",
 		ytsaurusClient:  yc,
+		initQTState: NewInitJobForYtsaurus(
+			l,
+			ytsaurus,
+			"qt-state",
+			&resource.Spec.QueryTrackers.InstanceSpec,
+		),
 		secret: resources.NewStringSecret(
 			l.GetSecretName(),
 			l,
 			ytsaurus),
 	}
-	queryTracker.initQTState = NewInitJobForYtsaurus(
-		l,
-		ytsaurus,
-		"qt-state",
-		&resource.Spec.QueryTrackers.InstanceSpec,
-		YsonConfigGenerator(consts.ClientConfigFileName, cfgen.GetNativeClientConfig),
-		InitJobNamedScriptGenerator(consts.InitJobScriptFileName, queryTracker.createInitQueryTrackerStateScript),
-	)
+	queryTracker.initQTState.AddYsonConfig(consts.ClientConfigFileName, cfgen.GetNativeClientConfig)
+	queryTracker.initQTState.AddNamedInitJobScript(consts.InitJobScriptFileName, queryTracker.createInitQueryTrackerStateScript)
 	return queryTracker
 }
 

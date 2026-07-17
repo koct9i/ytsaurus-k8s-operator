@@ -67,19 +67,19 @@ func NewQueueAgent(
 		tabletNodes:     tabletNodes,
 		initCondition:   "queueAgentInitCompleted",
 		ytsaurusClient:  yc,
+		initQAStateJob: NewInitJobForYtsaurus(
+			l,
+			ytsaurus,
+			"qa-state",
+			&resource.Spec.QueueAgents.InstanceSpec,
+		),
 		secret: resources.NewStringSecret(
 			l.GetSecretName(),
 			l,
 			ytsaurus),
 	}
-	queueAgent.initQAStateJob = NewInitJobForYtsaurus(
-		l,
-		ytsaurus,
-		"qa-state",
-		&resource.Spec.QueueAgents.InstanceSpec,
-		YsonConfigGenerator(consts.ClientConfigFileName, cfgen.GetNativeClientConfig),
-		InitJobNamedScriptGenerator(consts.InitJobScriptFileName, queueAgent.createInitQAStateScript),
-	)
+	queueAgent.initQAStateJob.AddYsonConfig(consts.ClientConfigFileName, cfgen.GetNativeClientConfig)
+	queueAgent.initQAStateJob.AddNamedInitJobScript(consts.InitJobScriptFileName, queueAgent.createInitQAStateScript)
 	return queueAgent
 }
 

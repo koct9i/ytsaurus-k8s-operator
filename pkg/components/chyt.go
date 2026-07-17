@@ -38,24 +38,24 @@ func NewChyt(cfgen *ytconfig.NodeGenerator, chyt *apiproxy.Chyt, ytsaurus *ytv1.
 		chyt:     chyt,
 		cfgen:    cfgen,
 		ytsaurus: ytsaurus,
+		initUser: NewInitJob(
+			l, chyt, "user", &ytsaurus.Spec.CommonSpec, &ytsaurus.Spec.PodSpec, &ytv1.InstanceSpec{},
+		),
+		initEnvironment: NewInitJob(
+			l, chyt, "release", &ytsaurus.Spec.CommonSpec, &ytsaurus.Spec.PodSpec, &ytv1.InstanceSpec{Image: ptr.To(chyt.GetResource().Spec.Image)},
+		),
+		initChPublicJob: NewInitJob(
+			l, chyt, "ch-public", &ytsaurus.Spec.CommonSpec, &ytsaurus.Spec.PodSpec, &ytv1.InstanceSpec{Image: ptr.To(chyt.GetResource().Spec.Image)},
+		),
 		secret: resources.NewStringSecret(
 			l.GetSecretName(),
 			l,
 			chyt),
 	}
-	chytComponent.initUser = NewInitJob(
-		l, chyt, "user", &ytsaurus.Spec.CommonSpec, &ytsaurus.Spec.PodSpec, &ytv1.InstanceSpec{},
-	)
 	chytComponent.initUser.AddYsonConfig(consts.ClientConfigFileName, cfgen.GetNativeClientConfig)
 	chytComponent.initUser.AddInitJobScript(chytComponent.createInitUserScript)
-	chytComponent.initEnvironment = NewInitJob(
-		l, chyt, "release", &ytsaurus.Spec.CommonSpec, &ytsaurus.Spec.PodSpec, &ytv1.InstanceSpec{Image: ptr.To(chyt.GetResource().Spec.Image)},
-	)
 	chytComponent.initEnvironment.AddYsonConfig(consts.ClientConfigFileName, cfgen.GetNativeClientConfig)
 	chytComponent.initEnvironment.AddInitJobScript(chytComponent.createInitScript)
-	chytComponent.initChPublicJob = NewInitJob(
-		l, chyt, "ch-public", &ytsaurus.Spec.CommonSpec, &ytsaurus.Spec.PodSpec, &ytv1.InstanceSpec{Image: ptr.To(chyt.GetResource().Spec.Image)},
-	)
 	chytComponent.initChPublicJob.AddYsonConfig(consts.ClientConfigFileName, cfgen.GetNativeClientConfig)
 	chytComponent.initChPublicJob.AddInitJobScript(chytComponent.createInitChPublicScript)
 	return chytComponent
