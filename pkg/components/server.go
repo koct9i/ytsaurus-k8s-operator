@@ -544,6 +544,7 @@ func (s *serverImpl) rebuildStatefulSet() *appsv1.StatefulSet {
 		Tolerations:  getTolerationsWithDefault(s.instanceSpec.Tolerations, s.commonPodSpec.Tolerations),
 		DNSConfig:    ptrDefault(s.instanceSpec.DNSConfig, s.commonPodSpec.DNSConfig),
 	}
+	setContainerResources(podSpec.InitContainers, podSpec.Containers[0].Resources)
 
 	if ptr.Deref(s.instanceSpec.HostNetwork, ptr.Deref(s.commonPodSpec.HostNetwork, false)) {
 		podSpec.HostNetwork = true
