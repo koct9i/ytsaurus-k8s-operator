@@ -24,6 +24,7 @@ func NewMasterCache(cfgen *ytconfig.Generator, ytsaurus *apiproxy.Ytsaurus, yc i
 
 	resource := ytsaurus.GetResource()
 	srv := newServer(
+		cfgen,
 		l,
 		ytsaurus,
 		&resource.Spec.MasterCaches.InstanceSpec,
