@@ -9,7 +9,11 @@ metadata:
     app.kubernetes.io/managed-by: ytsaurus-k8s-operator
     app.kubernetes.io/name: yt-master
     app.kubernetes.io/part-of: yt-test-ytsaurus
+    cell-role.ytsaurus.tech/cypress-node-host: ""
+    cell-role.ytsaurus.tech/transaction-coordinator: ""
     yt_component: test-ytsaurus-yt-master
+    ytsaurus.tech/cell-id: 65726e65-ad6b7562-10259-79747361
+    ytsaurus.tech/cell-tag: "1"
     ytsaurus.tech/cluster-name: test-ytsaurus
   name: ms
   namespace: ytsaurus-components
@@ -20,7 +24,7 @@ metadata:
     kind: Ytsaurus
     name: test-ytsaurus
     uid: ""
-  resourceVersion: "1"
+  resourceVersion: "2"
 spec:
   podManagementPolicy: Parallel
   replicas: 1
@@ -40,6 +44,8 @@ spec:
         app.kubernetes.io/managed-by: ytsaurus-k8s-operator
         app.kubernetes.io/name: yt-master
         app.kubernetes.io/part-of: yt-test-ytsaurus
+        cell-role.ytsaurus.tech/cypress-node-host: ""
+        cell-role.ytsaurus.tech/transaction-coordinator: ""
         global-pod-label: "true"
         instance-pod-label: "true"
         yt_component: test-ytsaurus-yt-master
@@ -112,6 +118,8 @@ spec:
         volumeMounts:
         - mountPath: /yt/master-data
           name: master-data
+        - mountPath: /yt/master-logs
+          name: master-logs
         - mountPath: /config_template
           name: config-template
           readOnly: true
@@ -181,7 +189,7 @@ spec:
         - bash
         - -xc
         - 'echo ''Init locations''; mkdir -p /yt/master-data/master-changelogs; mkdir
-          -p /yt/master-data/master-snapshots; '
+          -p /yt/master-data/master-snapshots; mkdir -p /yt/master-logs; '
         env:
         - name: K8S_POD_NAME
           valueFrom:
@@ -203,10 +211,18 @@ spec:
           value: /etc/ssl/certs/ca-certificates.crt
         image: ghcr.io/ytsaurus/ytsaurus:stable-25.2.2
         name: prepare-locations
-        resources: {}
+        resources:
+          limits:
+            cpu: "1"
+            memory: 2Gi
+          requests:
+            cpu: "0"
+            memory: "0"
         volumeMounts:
         - mountPath: /yt/master-data
           name: master-data
+        - mountPath: /yt/master-logs
+          name: master-logs
         - mountPath: /config_template
           name: config-template
           readOnly: true
@@ -248,10 +264,18 @@ spec:
           value: /etc/ssl/certs/ca-certificates.crt
         image: ghcr.io/ytsaurus/ytsaurus:stable-25.2.2
         name: postprocess-config
-        resources: {}
+        resources:
+          limits:
+            cpu: "1"
+            memory: 2Gi
+          requests:
+            cpu: "0"
+            memory: "0"
         volumeMounts:
         - mountPath: /yt/master-data
           name: master-data
+        - mountPath: /yt/master-logs
+          name: master-logs
         - mountPath: /config_template
           name: config-template
           readOnly: true
@@ -301,6 +325,15 @@ spec:
       resources:
         requests:
           storage: 5Gi
+    status: {}
+  - metadata:
+      name: master-logs
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 1Gi
     status: {}
 status:
   availableReplicas: 0

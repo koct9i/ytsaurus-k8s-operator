@@ -92,6 +92,8 @@ spec:
             cpu: "0"
             memory: "0"
         volumeMounts:
+        - mountPath: /yt/yql-agent-logs
+          name: yql-agent-logs
         - mountPath: /config_template
           name: config-template
           readOnly: true
@@ -127,7 +129,7 @@ spec:
       - command:
         - bash
         - -xc
-        - 'echo ''Init locations''; '
+        - 'echo ''Init locations''; mkdir -p /yt/yql-agent-logs; '
         env:
         - name: K8S_POD_NAME
           valueFrom:
@@ -149,8 +151,16 @@ spec:
           value: /etc/ssl/certs/ca-certificates.crt
         image: ghcr.io/ytsaurus/query-tracker:stable-0.1.2
         name: prepare-locations
-        resources: {}
+        resources:
+          limits:
+            cpu: "4"
+            memory: 8Gi
+          requests:
+            cpu: "0"
+            memory: "0"
         volumeMounts:
+        - mountPath: /yt/yql-agent-logs
+          name: yql-agent-logs
         - mountPath: /config_template
           name: config-template
           readOnly: true
@@ -192,8 +202,16 @@ spec:
           value: /etc/ssl/certs/ca-certificates.crt
         image: ghcr.io/ytsaurus/query-tracker:stable-0.1.2
         name: postprocess-config
-        resources: {}
+        resources:
+          limits:
+            cpu: "4"
+            memory: 8Gi
+          requests:
+            cpu: "0"
+            memory: "0"
         volumeMounts:
+        - mountPath: /yt/yql-agent-logs
+          name: yql-agent-logs
         - mountPath: /config_template
           name: config-template
           readOnly: true
@@ -246,6 +264,16 @@ spec:
             path: token
           secretName: yt-yql-agent-exec-secret
   updateStrategy: {}
+  volumeClaimTemplates:
+  - metadata:
+      name: yql-agent-logs
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 1Gi
+    status: {}
 status:
   availableReplicas: 0
   replicas: 0

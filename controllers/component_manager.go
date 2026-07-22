@@ -99,7 +99,7 @@ func NewComponentManager(
 	yc := components.NewYtsaurusClient(cfgen, ytsaurus, m, hps[0], getAllComponents)
 	allComponents = append(allComponents, yc)
 
-	d := components.NewDiscovery(cfgen, ytsaurus, yc)
+	d := components.NewDiscovery(cfgen, ytsaurus, yc, m)
 	allComponents = append(allComponents, d)
 
 	var dnds []components.Component
@@ -146,7 +146,7 @@ func NewComponentManager(
 	var tnds []components.Component
 	if len(resource.Spec.TabletNodes) > 0 {
 		for idx, tndSpec := range resource.Spec.TabletNodes {
-			tnds = append(tnds, components.NewTabletNode(nodeCfgGen, ytsaurus, yc, tndSpec, idx == 0))
+			tnds = append(tnds, components.NewTabletNode(nodeCfgGen, ytsaurus, yc, m, tndSpec, idx == 0))
 		}
 	}
 	allComponents = append(allComponents, tnds...)
@@ -185,7 +185,7 @@ func NewComponentManager(
 	}
 
 	if resource.Spec.MasterCaches != nil {
-		mc := components.NewMasterCache(cfgen, ytsaurus, yc)
+		mc := components.NewMasterCache(cfgen, ytsaurus, yc, m)
 		allComponents = append(allComponents, mc)
 	}
 
@@ -449,6 +449,20 @@ func (cm *ComponentManager) applyUpdatePlan(updatePlan []ytv1.ComponentUpdateSel
 			cm.status.canUpdate = append(cm.status.canUpdate, component)
 		} else {
 			cm.status.cannotUpdate = append(cm.status.cannotUpdate, component)
+		}
+	}
+}
+
+func (cm *ComponentManager) initUpdateConditions(ctx context.Context) {
+	// Take snapshot of status conditions to change them during update without changing current update workflow.
+	conditions := []string{
+		consts.ConditionMasterCellsRegistration,
+		consts.ConditionMasterCellsSettlement,
+		consts.ConditionMasterCellsCompletion,
+	}
+	for _, name := range conditions {
+		if condition := cm.ytsaurus.GetStatusCondition(name); condition != nil {
+			cm.ytsaurus.SetUpdateStatusCondition(ctx, *condition)
 		}
 	}
 }

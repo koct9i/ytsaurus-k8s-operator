@@ -7,6 +7,7 @@ const (
 	ConditionReadyToWork                = "ReadyToWork"
 	ConditionImageHeaterReady           = "ImageHeaterReady"
 	ConditionImageHeaterComplete        = "ImageHeaterComplete"
+	ConditionMasterCellRolesInitialized = "MasterCellRolesInitialized"
 	ConditionTimbertruckUserInitialized = "TimbertruckUserInitialized"
 
 	// Cluster health checks
@@ -19,8 +20,11 @@ const (
 
 // Both status and update conditions
 const (
-	ConditionTimbertruckPrepared = "TimbertruckPrepared"
-	ConditionCypressPatchApplied = "CypressPatchApplied"
+	ConditionTimbertruckPrepared     = "TimbertruckPrepared"
+	ConditionCypressPatchApplied     = "CypressPatchApplied"
+	ConditionMasterCellsRegistration = "MasterCellsRegistration"
+	ConditionMasterCellsSettlement   = "MasterCellsSettlement"
+	ConditionMasterCellsCompletion   = "MasterCellsCompletion"
 )
 
 // Component status conditions suffixes
@@ -28,6 +32,7 @@ const (
 	ConditionReady            = "Ready"
 	ConditionInitJobCompleted = "InitJobCompleted"
 	ConditionQuorumCheck      = "-QuorumCheck"
+	ConditionCellSettled      = "-Settled"
 )
 
 // Component update phase condition suffixes
@@ -60,6 +65,14 @@ const (
 	ConditionQAStateUpdated                  = "QAStateUpdated"
 	ConditionQAStatePreparedForUpdating      = "QAStatePreparedForUpdating"
 	ConditionSafeModeDisabled                = "SafeModeDisabled"
+)
+
+// Instance initialization phases and init-job reasons.
+const (
+	PhaseCellRolesInitialization = "CellRolesInitialization"
+	PhaseClusterInitialization   = "ClusterInitialization"
+	PhaseClusterReconfiguration  = "ClusterReconfiguration"
+	PhaseCellRegistration        = "CellRegistration"
 )
 
 // Conditions below are for migration from imaginary chunks to real chunks for 24.2

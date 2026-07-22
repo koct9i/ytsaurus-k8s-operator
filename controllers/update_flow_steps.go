@@ -232,8 +232,15 @@ var flowConditions = map[ytv1.UpdateState]flowCondition{
 		}
 		return stepResultMarkUnsatisfied
 	},
-	ytv1.UpdateStateWaitingForMasterExitReadOnly: flowUpdateStateCondition(ytv1.UpdateStateWaitingForMasterExitReadOnly),
-	ytv1.UpdateStateWaitingForCypressPatch:       flowCheckStatusCondition(consts.ConditionCypressPatchApplied),
+	ytv1.UpdateStateWaitingForMasterEnterReadOnly:      flowUpdateStateCondition(ytv1.UpdateStateWaitingForMasterEnterReadOnly),
+	ytv1.UpdateStateWaitingForMasterExitReadOnly:       flowUpdateStateCondition(ytv1.UpdateStateWaitingForMasterExitReadOnly),
+	ytv1.UpdateStateWaitingForMasterCellsEnterReadOnly: flowUpdateStateCondition(ytv1.UpdateStateWaitingForMasterCellsEnterReadOnly),
+	ytv1.UpdateStateWaitingForMasterCellsExitReadOnly:  flowUpdateStateCondition(ytv1.UpdateStateWaitingForMasterCellsExitReadOnly),
+	ytv1.UpdateStateWaitingForMasterCellsPreparation:   flowUpdateStateCondition(ytv1.UpdateStateWaitingForMasterCellsPreparation),
+	ytv1.UpdateStateWaitingForMasterCellsRegistration:  flowUpdateStateCondition(ytv1.UpdateStateWaitingForMasterCellsRegistration),
+	ytv1.UpdateStateWaitingForMasterCellsSettlement:    flowUpdateStateCondition(ytv1.UpdateStateWaitingForMasterCellsSettlement),
+	ytv1.UpdateStateWaitingForMasterCellsCompletion:    flowUpdateStateCondition(ytv1.UpdateStateWaitingForMasterCellsCompletion),
+	ytv1.UpdateStateWaitingForCypressPatch:             flowCheckStatusCondition(consts.ConditionCypressPatchApplied),
 	ytv1.UpdateStateWaitingForTimbertruckPrepared: func(ctx context.Context, ytsaurus *apiProxy.Ytsaurus, componentManager *ComponentManager) stepResultMark {
 		if ytsaurus.GetResource().Spec.PrimaryMasters.Timbertruck == nil || ytsaurus.IsUpdateStatusConditionTrue(consts.ConditionTimbertruckPrepared) {
 			return stepResultMarkHappy
@@ -334,6 +341,62 @@ func buildFlowTree(componentManager *ComponentManager) *flowTree {
 		st(ytv1.UpdateStateWaitingForSafeModeDisabled),
 	).chain(
 		st(ytv1.UpdateStateWaitingForTimbertruckPrepared),
+	)
+
+	return tree
+}
+
+func masterMaintenanceFlow(componentManager *ComponentManager) *flowTree {
+	updatingComponents := componentManager.status.nowUpdating
+	updMaster := hasComponent(updatingComponents, consts.MasterType)
+
+	st := newSimpleStep
+	tree := newFlowTree(st(ytv1.UpdateStateNone))
+
+	// Master new master cells are added in four phases:
+	// - Reconfiguration: new secondary master instances are started by cluster reconfiguration
+	// - Registration: old masters are restarted to register new secondary master cells without roles
+	// - Settlement: all masters are restarted to build common snapshot for all cells and assign roles
+	// - Completion: all master are restarted again to refresh cached cluster metadata
+	// Workflow depends on status update conditions which reflects cluster status at begin of update.
+	// Link: https://ytsaurus.tech/docs/en/admin-guide/cell-addition
+
+	tree.chainIf(
+		// Prepare for adding new master cell:
+		// - disable chunk refresh
+		// - allow secondary master cells without roles
+		updMaster && componentManager.ytsaurus.IsUpdateStatusConditionTrue(consts.ConditionMasterCellsRegistration),
+		st(ytv1.UpdateStateWaitingForMasterCellsPreparation),
+	).chainIf(
+		// Build snapshot, update configs and restart masters:
+		// - old masters for cell registration (dynamic propagation)
+		// - all masters for cell settlement (static propagation)
+		updMaster,
+		st(ytv1.UpdateStateWaitingForMasterCellsEnterReadOnly),
+	).chain(
+		st(ytv1.UpdateStateWaitingForPodsRemoval),
+		st(ytv1.UpdateStateWaitingForPodsCreation),
+		st(ytv1.UpdateStateWaitingForMasterReady),
+	).chainIf(
+		updMaster,
+		st(ytv1.UpdateStateWaitingForMasterCellsExitReadOnly),
+	).chainIf(
+		// Waiting for registration of new master cells.
+		// Initiate settlement pass.
+		updMaster && componentManager.ytsaurus.IsUpdateStatusConditionTrue(consts.ConditionMasterCellsRegistration),
+		st(ytv1.UpdateStateWaitingForMasterCellsRegistration),
+	).chainIf(
+		// Checks that there is no dynamically propagated master cells then do master cells settlement:
+		// - assigns roles to new master cells
+		// - mark new master cells as settled in cluster status conditions
+		// Initiate completion pass to refresh cached cluster metadata.
+		updMaster && componentManager.ytsaurus.IsUpdateStatusConditionTrue(consts.ConditionMasterCellsSettlement),
+		st(ytv1.UpdateStateWaitingForMasterCellsSettlement),
+	).chainIf(
+		// Finish master cells reconfiguration:
+		// - enable chunk refresh
+		updMaster && componentManager.ytsaurus.IsUpdateStatusConditionTrue(consts.ConditionMasterCellsCompletion),
+		st(ytv1.UpdateStateWaitingForMasterCellsCompletion),
 	)
 
 	return tree

@@ -9,6 +9,8 @@ const (
 	YTCellTagLabelName = "ytsaurus.tech/cell-tag"
 	YTCellIDLabelName  = "ytsaurus.tech/cell-id"
 
+	YTCellRoleLabelPrefix = "cell-role.ytsaurus.tech/"
+
 	YTComponentLabelName = "yt_component"
 	YTMetricsLabelName   = "yt_metrics"
 
@@ -21,6 +23,9 @@ const (
 	ConfigHashAnnotationName = "ytsaurus.tech/config-hash"
 
 	InitJobReasonAnnotationName = "ytsaurus.tech/init-job-reason"
+
+	// Instance phase initiates restart when changes.
+	InstancePhaseAnnotationName = "ytsaurus.tech/instance-phase"
 
 	// Instance hash is computed from template of pod spec.
 	InstanceHashAnnotationName = "ytsaurus.tech/instance-hash"

@@ -279,6 +279,10 @@ func (s *serverImpl) Sync(ctx context.Context) error {
 	)
 }
 
+func (s *serverImpl) getPodAnnotation(name string) string {
+	return s.statefulSet.OldObject().Spec.Template.Annotations[name]
+}
+
 func (s *serverImpl) podsImageCorrespondsToSpec() bool {
 	found := 0
 	for _, container := range s.statefulSet.OldObject().Spec.Template.Spec.Containers {
@@ -544,6 +548,7 @@ func (s *serverImpl) rebuildStatefulSet() *appsv1.StatefulSet {
 		Tolerations:  getTolerationsWithDefault(s.instanceSpec.Tolerations, s.commonPodSpec.Tolerations),
 		DNSConfig:    ptrDefault(s.instanceSpec.DNSConfig, s.commonPodSpec.DNSConfig),
 	}
+	setContainerResources(podSpec.InitContainers, podSpec.Containers[0].Resources)
 
 	if ptr.Deref(s.instanceSpec.HostNetwork, ptr.Deref(s.commonPodSpec.HostNetwork, false)) {
 		podSpec.HostNetwork = true

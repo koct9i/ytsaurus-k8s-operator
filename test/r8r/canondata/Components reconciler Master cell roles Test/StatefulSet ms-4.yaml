@@ -9,6 +9,8 @@ metadata:
     app.kubernetes.io/name: yt-master
     app.kubernetes.io/part-of: yt-test-ytsaurus
     yt_component: test-ytsaurus-yt-master-4
+    ytsaurus.tech/cell-id: 65726e65-ad6b7562-40259-79747361
+    ytsaurus.tech/cell-tag: "4"
     ytsaurus.tech/cluster-name: test-ytsaurus
   name: ms-4
   namespace: ytsaurus-components
@@ -19,7 +21,7 @@ metadata:
     kind: Ytsaurus
     name: test-ytsaurus
     uid: ""
-  resourceVersion: "1"
+  resourceVersion: "2"
 spec:
   podManagementPolicy: Parallel
   replicas: 1
@@ -111,7 +113,13 @@ spec:
               fieldPath: spec.nodeName
         image: ghcr.io/ytsaurus/ytsaurus:stable-25.2.2
         name: prepare-locations
-        resources: {}
+        resources:
+          limits:
+            cpu: "1"
+            memory: 2Gi
+          requests:
+            cpu: "0"
+            memory: "0"
         volumeMounts:
         - mountPath: /yt/master-data
           name: master-data
@@ -147,7 +155,13 @@ spec:
               fieldPath: spec.nodeName
         image: ghcr.io/ytsaurus/ytsaurus:stable-25.2.2
         name: postprocess-config
-        resources: {}
+        resources:
+          limits:
+            cpu: "1"
+            memory: 2Gi
+          requests:
+            cpu: "0"
+            memory: "0"
         volumeMounts:
         - mountPath: /yt/master-data
           name: master-data

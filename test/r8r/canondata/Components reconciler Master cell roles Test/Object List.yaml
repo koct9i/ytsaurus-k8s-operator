@@ -119,7 +119,7 @@
     kind: Ytsaurus
     name: test-ytsaurus
     uid: ""
-  resourceVersion: "1"
+  resourceVersion: "2"
 - annotations:
     ytsaurus.tech/observed-generation: "1"
   generation: 1
@@ -139,7 +139,7 @@
     kind: Ytsaurus
     name: test-ytsaurus
     uid: ""
-  resourceVersion: "1"
+  resourceVersion: "2"
 - annotations:
     ytsaurus.tech/observed-generation: "1"
   generation: 1
@@ -159,7 +159,7 @@
     kind: Ytsaurus
     name: test-ytsaurus
     uid: ""
-  resourceVersion: "1"
+  resourceVersion: "2"
 - annotations:
     ytsaurus.tech/observed-generation: "1"
   generation: 1
@@ -179,7 +179,7 @@
     kind: Ytsaurus
     name: test-ytsaurus
     uid: ""
-  resourceVersion: "1"
+  resourceVersion: "2"
 - annotations:
     ytsaurus.tech/instance-hash: <censored>
     ytsaurus.tech/observed-generation: "1"
@@ -189,7 +189,11 @@
     app.kubernetes.io/managed-by: ytsaurus-k8s-operator
     app.kubernetes.io/name: yt-master
     app.kubernetes.io/part-of: yt-test-ytsaurus
+    cell-role.ytsaurus.tech/cypress-node-host: ""
+    cell-role.ytsaurus.tech/transaction-coordinator: ""
     yt_component: test-ytsaurus-yt-master
+    ytsaurus.tech/cell-id: 65726e65-ad6b7562-10259-79747361
+    ytsaurus.tech/cell-tag: "1"
     ytsaurus.tech/cluster-name: test-ytsaurus
   name: ms
   namespace: ytsaurus-components
@@ -200,7 +204,7 @@
     kind: Ytsaurus
     name: test-ytsaurus
     uid: ""
-  resourceVersion: "1"
+  resourceVersion: "2"
 - annotations:
     ytsaurus.tech/instance-hash: <censored>
     ytsaurus.tech/observed-generation: "1"
@@ -210,7 +214,11 @@
     app.kubernetes.io/managed-by: ytsaurus-k8s-operator
     app.kubernetes.io/name: yt-master
     app.kubernetes.io/part-of: yt-test-ytsaurus
+    cell-role.ytsaurus.tech/chunk-host: ""
+    cell-role.ytsaurus.tech/cypress-node-host: ""
     yt_component: test-ytsaurus-yt-master-2
+    ytsaurus.tech/cell-id: 65726e65-ad6b7562-20259-79747361
+    ytsaurus.tech/cell-tag: "2"
     ytsaurus.tech/cluster-name: test-ytsaurus
   name: ms-2
   namespace: ytsaurus-components
@@ -221,7 +229,7 @@
     kind: Ytsaurus
     name: test-ytsaurus
     uid: ""
-  resourceVersion: "1"
+  resourceVersion: "2"
 - annotations:
     ytsaurus.tech/instance-hash: <censored>
     ytsaurus.tech/observed-generation: "1"
@@ -231,7 +239,11 @@
     app.kubernetes.io/managed-by: ytsaurus-k8s-operator
     app.kubernetes.io/name: yt-master
     app.kubernetes.io/part-of: yt-test-ytsaurus
+    cell-role.ytsaurus.tech/chunk-host: ""
+    cell-role.ytsaurus.tech/cypress-node-host: ""
     yt_component: test-ytsaurus-yt-master-3
+    ytsaurus.tech/cell-id: 65726e65-ad6b7562-30259-79747361
+    ytsaurus.tech/cell-tag: "3"
     ytsaurus.tech/cluster-name: test-ytsaurus
   name: ms-3
   namespace: ytsaurus-components
@@ -242,7 +254,7 @@
     kind: Ytsaurus
     name: test-ytsaurus
     uid: ""
-  resourceVersion: "1"
+  resourceVersion: "2"
 - annotations:
     ytsaurus.tech/instance-hash: <censored>
     ytsaurus.tech/observed-generation: "1"
@@ -253,6 +265,8 @@
     app.kubernetes.io/name: yt-master
     app.kubernetes.io/part-of: yt-test-ytsaurus
     yt_component: test-ytsaurus-yt-master-4
+    ytsaurus.tech/cell-id: 65726e65-ad6b7562-40259-79747361
+    ytsaurus.tech/cell-tag: "4"
     ytsaurus.tech/cluster-name: test-ytsaurus
   name: ms-4
   namespace: ytsaurus-components
@@ -263,8 +277,9 @@
     kind: Ytsaurus
     name: test-ytsaurus
     uid: ""
-  resourceVersion: "1"
+  resourceVersion: "2"
 - annotations:
+    ytsaurus.tech/init-job-reason: InitJob
     ytsaurus.tech/observed-generation: "1"
   generation: 1
   labels:
@@ -472,7 +487,7 @@
     kind: Ytsaurus
     name: test-ytsaurus
     uid: ""
-  resourceVersion: "1"
+  resourceVersion: "2"
 - annotations:
     ytsaurus.tech/config-hash: <censored>
     ytsaurus.tech/observed-generation: "1"
@@ -514,7 +529,7 @@
     kind: Ytsaurus
     name: test-ytsaurus
     uid: ""
-  resourceVersion: "1"
+  resourceVersion: "2"
 - annotations:
     ytsaurus.tech/config-hash: <censored>
     ytsaurus.tech/observed-generation: "1"
@@ -556,7 +571,7 @@
     kind: Ytsaurus
     name: test-ytsaurus
     uid: ""
-  resourceVersion: "1"
+  resourceVersion: "2"
 - annotations:
     ytsaurus.tech/config-hash: <censored>
     ytsaurus.tech/observed-generation: "1"
@@ -579,6 +594,7 @@
     uid: ""
   resourceVersion: "1"
 - annotations:
+    ytsaurus.tech/init-job-reason: ClusterInitialization
     ytsaurus.tech/observed-generation: "1"
   generation: 1
   labels:
@@ -619,7 +635,7 @@
     kind: Ytsaurus
     name: test-ytsaurus
     uid: ""
-  resourceVersion: "1"
+  resourceVersion: "2"
 - annotations:
     ytsaurus.tech/observed-generation: "1"
   generation: 1
@@ -640,4 +656,4 @@
     kind: Ytsaurus
     name: test-ytsaurus
     uid: ""
-  resourceVersion: "1"
+  resourceVersion: "2"
