@@ -13,13 +13,17 @@ Helm chart for the [YTsaurus Kubernetes operator](https://github.com/ytsaurus/yt
 ### From OCI registry (recommended)
 
 ```sh
-helm install ytsaurus-operator oci://registry-1.docker.io/ytsaurus/ytop-chart
+helm show values oci://registry-1.docker.io/ytsaurus/ytop-chart | sed -E 's/^/# /' > myvalues.yaml
+helm install ytsaurus-operator oci://registry-1.docker.io/ytsaurus/ytop-chart -f myvalues.yaml
 ```
+
+The `helm show values` command writes the chart documentation and default values as comments into `myvalues.yaml`, so you can uncomment and customize only the settings you want to override before installation.
 
 To install a specific version:
 
 ```sh
-helm install ytsaurus-operator oci://registry-1.docker.io/ytsaurus/ytop-chart --version <version>
+helm show values oci://registry-1.docker.io/ytsaurus/ytop-chart --version <version> | sed -E 's/^/# /' > myvalues.yaml
+helm install ytsaurus-operator oci://registry-1.docker.io/ytsaurus/ytop-chart --version <version> -f myvalues.yaml
 ```
 
 ### From source
