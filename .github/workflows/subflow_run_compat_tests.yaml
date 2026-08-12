@@ -21,6 +21,7 @@ jobs:
       - name: checkout sources
         uses: actions/checkout@v6
         with:
+          ref: ${{ github.event.pull_request.merge_commit_sha || github.sha }}
           fetch-depth: 1
 
       # https://github.com/actions/setup-go
