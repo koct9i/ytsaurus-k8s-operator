@@ -5,13 +5,15 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"reflect"
 	"strings"
 
 	"github.com/BurntSushi/toml"
-	"github.com/google/go-cmp/cmp"
 	"go.ytsaurus.tech/yt/go/yson"
 	"sigs.k8s.io/yaml"
+
+	yeml "k8s.io/apimachinery/pkg/util/yaml"
+
+	"github.com/pmezard/go-difflib/difflib"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -20,6 +22,7 @@ import (
 	"github.com/ytsaurus/ytsaurus-k8s-operator/pkg/consts"
 	"github.com/ytsaurus/ytsaurus-k8s-operator/pkg/labeller"
 	"github.com/ytsaurus/ytsaurus-k8s-operator/pkg/resources"
+	"github.com/ytsaurus/ytsaurus-k8s-operator/pkg/ypatch"
 )
 
 const (
@@ -42,7 +45,9 @@ type TextGeneratorFunc func() ([]string, error)
 type ConfigGeneratorFunc func() ([]byte, error)
 
 type ConfigGenerator struct {
-	FileName string
+	FileName            string
+	ConfigOverridesName string
+	GlobalOverridesName string
 	// Format is the desired serialization format for config map.
 	// Note that conversion from YSON to Format (if needed) is performed as a very last
 	// step of config generation pipeline.
@@ -70,6 +75,17 @@ func TextConfigGenerator(fileName string, generator TextGeneratorFunc) ConfigGen
 			}
 			return []byte(strings.Join(text, "\n")), nil
 		},
+	}
+}
+
+func ServerConfigGenerator(l *labeller.Labeller, generator ConfigGeneratorFunc) ConfigGenerator {
+	configName := l.GetServerConfigName()
+	return ConfigGenerator{
+		FileName:            configName + ".yson",
+		ConfigOverridesName: configName,
+		GlobalOverridesName: consts.YtserverAllConfigOverrideName,
+		Format:              ConfigFormatYson,
+		Generator:           generator,
 	}
 }
 
@@ -109,47 +125,26 @@ func (h *ConfigMapBuilder) AddGenerator(fileName string, format ConfigFormat, ge
 	})
 }
 
-func mergeMapsRecursively(dst, src map[string]interface{}) map[string]interface{} {
-	for key, srcVal := range src {
-		if dstVal, ok := dst[key]; ok {
-			srcMap, srcMapOk := mapify(srcVal)
-			dstMap, dstMapOk := mapify(dstVal)
-			if srcMapOk && dstMapOk {
-				srcVal = mergeMapsRecursively(dstMap, srcMap)
-			}
-		}
-		dst[key] = srcVal
+func overrideYsonConfigs(base []byte, overrides []byte, format ConfigFormat) ([]byte, error) {
+	config := ypatch.OrderedValue{}
+	err := yson.Unmarshal(base, &config)
+	if err != nil {
+		return nil, err
 	}
-	return dst
-}
-
-func mapify(i interface{}) (map[string]interface{}, bool) {
-	value := reflect.ValueOf(i)
-	if value.Kind() == reflect.Map {
-		m := map[string]interface{}{}
-		for _, k := range value.MapKeys() {
-			m[k.String()] = value.MapIndex(k).Interface()
+	if format == ConfigFormatYaml {
+		var config any
+		if err = yeml.UnmarshalStrict(overrides, &config); err == nil {
+			overrides, err = yson.Marshal(config)
 		}
-		return m, true
+		if err != nil {
+			return nil, err
+		}
 	}
-	return map[string]interface{}{}, false
-}
-
-func overrideYsonConfigs(base []byte, overrides []byte) ([]byte, error) {
-	b := map[string]interface{}{}
-	err := yson.Unmarshal(base, &b)
+	err = yson.Unmarshal(overrides, &config)
 	if err != nil {
 		return base, err
 	}
-
-	o := map[string]interface{}{}
-	err = yson.Unmarshal(overrides, &o)
-	if err != nil {
-		return base, err
-	}
-
-	merged := mergeMapsRecursively(b, o)
-	return yson.MarshalFormat(merged, yson.FormatPretty)
+	return yson.MarshalFormat(&config, yson.FormatPretty)
 }
 
 func (h *ConfigMapBuilder) GetConfigMapName() string {
@@ -166,21 +161,28 @@ func (h *ConfigMapBuilder) getConfig(descriptor ConfigGenerator) ([]byte, error)
 	}
 
 	if h.overridesMap.GetResourceVersion() != "" {
-		overrideNames := []string{
-			descriptor.FileName,
-			fmt.Sprintf("%s--%s", name, descriptor.FileName),
+		overrides := []struct {
+			Name   string
+			Format ConfigFormat
+		}{
+			{fmt.Sprintf("%s.yaml", descriptor.GlobalOverridesName), ConfigFormatYaml},
+			{fmt.Sprintf("%s.yson", descriptor.GlobalOverridesName), ConfigFormatYson},
+			{fmt.Sprintf("%s.yaml", descriptor.ConfigOverridesName), ConfigFormatYaml},
+			{descriptor.FileName, ConfigFormatYson}, // NOTE: Compat, we had yson overrides for toml.
+			{fmt.Sprintf("%s--%s.yaml", name, descriptor.ConfigOverridesName), ConfigFormatYaml},
+			{fmt.Sprintf("%s--%s", name, descriptor.FileName), ConfigFormatYson},
 		}
-		for _, overrideName := range overrideNames {
-			if value, ok := h.overridesMap.Data[overrideName]; ok {
-				configWithOverrides, err := overrideYsonConfigs(serializedConfig, []byte(value))
+		for _, override := range overrides {
+			if value, ok := h.overridesMap.Data[override.Name]; ok {
+				configWithOverrides, err := overrideYsonConfigs(serializedConfig, []byte(value), override.Format)
 				if err != nil {
 					h.apiProxy.RecordWarning("Failure", fmt.Sprintf("Cannot apply configmap/%s %q override %q: %s",
-						name, descriptor.FileName, overrideName, err))
+						name, descriptor.FileName, override.Name, err))
 					return nil, fmt.Errorf("failed to apply configmap/%s %q override %q: %w",
-						name, descriptor.FileName, overrideName, err)
+						name, descriptor.FileName, override.Name, err)
 				}
 				h.apiProxy.RecordNormal("Override", fmt.Sprintf("Applied configmap/%s %q override %q",
-					name, descriptor.FileName, overrideName))
+					name, descriptor.FileName, override.Name))
 				serializedConfig = configWithOverrides
 			}
 		}
@@ -254,20 +256,23 @@ func (h *ConfigMapBuilder) needReload() (ComponentStatus, error) {
 		if err != nil {
 			return ComponentStatusBlocked("Config %s generation error: %v", descriptor.FileName, err), err
 		}
-		curConfig := h.getCurrentConfigValue(descriptor.FileName)
-		if !cmp.Equal(curConfig, newConfig) {
-			if curConfig == nil {
-				h.apiProxy.RecordNormal(
-					"Reconciliation",
-					fmt.Sprintf("Config %s needs creation", descriptor.FileName))
-				return ComponentStatusNeedUpdate("Config %s needs creation", descriptor.FileName), nil
-			} else {
-				configsDiff := cmp.Diff(string(curConfig), string(newConfig))
-				h.apiProxy.RecordNormal(
-					"Reconciliation",
-					fmt.Sprintf("Config %s needs reload. Diff: %s", descriptor.FileName, configsDiff))
-				return ComponentStatusNeedUpdate("Config %s needs reload", descriptor.FileName), nil
+		if curConfig := h.getCurrentConfigValue(descriptor.FileName); curConfig == nil && newConfig != nil {
+			h.apiProxy.RecordNormal("Reconciliation", fmt.Sprintf("Config %s needs creation", descriptor.FileName))
+			return ComponentStatusNeedUpdate("Config %s needs creation", descriptor.FileName), nil
+		} else if !bytes.Equal(curConfig, newConfig) {
+			diff := difflib.UnifiedDiff{
+				A:        difflib.SplitLines(string(curConfig)),
+				B:        difflib.SplitLines(string(newConfig)),
+				FromFile: "old/" + descriptor.FileName,
+				ToFile:   "new/" + descriptor.FileName,
+				Context:  3,
 			}
+			configsDiff, err := difflib.GetUnifiedDiffString(diff)
+			if err != nil {
+				return ComponentStatusBlocked("Config %s diff generation error: %v", descriptor.FileName, err), err
+			}
+			h.apiProxy.RecordNormal("Reconciliation", fmt.Sprintf("Config %s needs reload. Diff:\n%s", descriptor.FileName, configsDiff))
+			return ComponentStatusNeedUpdate("Config %s needs reload", descriptor.FileName), nil
 		}
 	}
 	if h.configMap.IsAnnotationChanged(consts.InitJobReasonAnnotationName) {
